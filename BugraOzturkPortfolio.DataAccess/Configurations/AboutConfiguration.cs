@@ -1,0 +1,22 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using BugraOzturkPortfolio.Entities.Concrete;
+
+namespace BugraOzturkPortfolio.DataAccess.Configurations
+{
+    public class AboutConfiguration : IEntityTypeConfiguration<About>
+    {
+        public void Configure(EntityTypeBuilder<About> builder)
+        {
+            builder.HasKey(a => a.Id);
+            builder.Property(a => a.Title).IsRequired().HasMaxLength(100);
+            builder.Property(a => a.SubTitle).IsRequired().HasMaxLength(150);
+            builder.Property(a => a.Description).IsRequired();
+            builder.Property(a => a.ImageUrl).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.CvUrl).IsRequired().HasMaxLength(500);
+            builder.Property(a => a.Email).IsRequired().HasMaxLength(100);
+            builder.Property(a => a.Phone).IsRequired().HasMaxLength(20);
+            builder.Property(a => a.Address).IsRequired().HasMaxLength(250);
+        }
+    }
+}
