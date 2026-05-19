@@ -1,1 +1,4 @@
-<Solution />
+<Solution>
+  <Project Path="BugraOzturkPortfolio.DataAccess/BugraOzturkPortfolio.DataAccess.csproj" />
+  <Project Path="BugraOzturkPortfolio.Entities/BugraOzturkPortfolio.Entities.csproj" />
+</Solution>
