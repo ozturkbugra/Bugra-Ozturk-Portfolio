@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 
 <head>
     <meta charset="utf-8">
@@ -39,14 +39,14 @@
             </a>
         </div>
 
-        <button class="sidebar-toggle" title="Toggle Sidebar">
+        <button class="sidebar-toggle" title="Menüyü Aç/Kapat">
             <i class="bi bi-layout-sidebar-inset"></i>
         </button>
 
         <div class="header-search">
             <form class="search-form" action="#" method="GET">
                 <i class="bi bi-search search-icon"></i>
-                <input type="search" name="q" placeholder="Search users, invoices, tickets..." autocomplete="off">
+                <input type="search" name="q" placeholder="Proje, kategori veya mesaj ara..." autocomplete="off">
                 <kbd class="search-shortcut">/</kbd>
             </form>
         </div>
@@ -56,49 +56,49 @@
                 <div class="header-action-cluster">
 
                     <div class="header-action-wrap dropdown lang-dropdown">
-                        <button class="header-action lang-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Language">
-                            <img src="https://flagcdn.com/w40/us.png" alt="EN" class="lang-flag">
+                        <button class="header-action lang-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Dil">
+                            <img src="https://flagcdn.com/w40/tr.png" alt="TR" class="lang-flag">
                         </button>
                         <div class="dropdown-menu dropdown-menu-end lang-menu">
-                            <div class="menu-title">Language</div>
+                            <div class="menu-title">Dil Seçimi</div>
                             <a class="lang-item active" href="#">
-                                <img src="https://flagcdn.com/w40/us.png" alt="EN" class="lang-flag">
-                                <span>English</span>
+                                <img src="https://flagcdn.com/w40/tr.png" alt="TR" class="lang-flag">
+                                <span>Türkçe</span>
                                 <i class="bi bi-check2"></i>
                             </a>
                         </div>
                     </div>
 
                     <div class="header-action-wrap dropdown quickaccess-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Quick Access">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Hızlı Erişim">
                             <i class="bi bi-grid-3x3-gap"></i>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end quickaccess-menu">
-                            <div class="menu-title">Quick Actions</div>
+                            <div class="menu-title">Hızlı İşlemler</div>
                             <div class="quickaccess-grid">
                                 <a href="#" class="quickaccess-item">
                                     <span class="quickaccess-icon"><i class="bi bi-folder2-open"></i></span>
-                                    <span class="quickaccess-label">Files</span>
+                                    <span class="quickaccess-label">Dosyalar</span>
                                 </a>
                             </div>
                         </div>
                     </div>
 
-                    <button class="header-action theme-toggle" title="Toggle Theme">
+                    <button class="header-action theme-toggle" title="Temayı Değiştir">
                         <i class="ph-light ph-moon-stars theme-icon-dark"></i>
                         <i class="ph-light ph-sun theme-icon-light"></i>
                     </button>
 
                     <div class="header-action-wrap dropdown messages-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Messages">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Mesajlar">
                             <i class="bi bi-chat-left-text"></i>
                             <span class="header-badge">1</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end messages-menu">
                             <div class="notification-header">
                                 <div>
-                                    <h6>Messages</h6>
-                                    <span class="notification-count">1 new message</span>
+                                    <h6>Mesajlar</h6>
+                                    <span class="notification-count">1 yeni mesaj var</span>
                                 </div>
                             </div>
                             <div class="notification-list">
@@ -107,7 +107,7 @@
                                     <div class="notification-content">
                                         <div class="notification-title">Sistem</div>
                                         <div class="notification-text">Hoş geldin Buğra, altyapı hazır!</div>
-                                        <span class="notification-time">Just now</span>
+                                        <span class="notification-time">Şimdi</span>
                                     </div>
                                 </a>
                             </div>
@@ -115,15 +115,15 @@
                     </div>
 
                     <div class="header-action-wrap dropdown notification-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Bildirimler">
                             <i class="bi bi-bell"></i>
                             <span class="header-badge">1</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end notification-menu">
                             <div class="notification-header">
                                 <div>
-                                    <h6>Notifications</h6>
-                                    <span class="notification-count">1 unread</span>
+                                    <h6>Bildirimler</h6>
+                                    <span class="notification-count">1 okunmamış bildirim</span>
                                 </div>
                             </div>
                             <div class="notification-list">
@@ -131,9 +131,9 @@
                                     <span class="notification-dot"></span>
                                     <div class="notification-icon success"><i class="bi bi-check2-circle"></i></div>
                                     <div class="notification-content">
-                                        <div class="notification-title">Database Connected</div>
+                                        <div class="notification-title">Veri Tabanı Bağlantısı</div>
                                         <div class="notification-text">SQL Server bağlantısı stabil.</div>
-                                        <span class="notification-time">1m ago</span>
+                                        <span class="notification-time">1 dk önce</span>
                                     </div>
                                 </div>
                             </div>
@@ -145,7 +145,7 @@
 
                 <div class="header-action-wrap dropdown user-dropdown">
                     <button class="dropdown-toggle user-trigger" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="user-avatar">
+                        <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="user-avatar">
                         <div class="user-brief">
                             <span class="user-name">Buğra Öztürk</span>
                             <span class="user-role">Full Stack Developer</span>
@@ -155,7 +155,7 @@
 
                     <div class="dropdown-menu dropdown-menu-end user-menu">
                         <div class="user-menu-header">
-                            <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="user-menu-avatar">
+                            <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="user-menu-avatar">
                             <div class="user-menu-info">
                                 <div class="user-menu-name">Buğra Öztürk</div>
                                 <div class="user-menu-email">bugra@example.com</div>
@@ -164,13 +164,13 @@
                         <div class="user-menu-body">
                             <a class="user-menu-item" href="#">
                                 <span class="user-menu-icon"><i class="bi bi-person"></i></span>
-                                <span>My Profile</span>
+                                <span>Profilim</span>
                             </a>
                         </div>
                         <div class="user-menu-footer">
                             <a class="user-menu-logout" href="#">
                                 <i class="bi bi-box-arrow-right"></i>
-                                <span>Sign Out</span>
+                                <span>Çıkış Yap</span>
                             </a>
                         </div>
                     </div>
@@ -178,10 +178,10 @@
             </div>
 
             <div class="header-actions-mobile">
-                <button class="header-action search-toggle" title="Search">
+                <button class="header-action search-toggle" title="Ara">
                     <i class="bi bi-search"></i>
                 </button>
-                <button class="header-action mobile-menu-toggle" title="More">
+                <button class="header-action mobile-menu-toggle" title="Daha Fazla">
                     <i class="bi bi-three-dots"></i>
                 </button>
             </div>
@@ -190,7 +190,7 @@
 
     <div class="mobile-search">
         <form class="search-form" action="#" method="GET">
-            <input type="search" name="q" placeholder="Search..." autocomplete="off">
+            <input type="search" name="q" placeholder="Ara..." autocomplete="off">
             <button type="submit"><i class="bi bi-search"></i></button>
         </form>
     </div>
@@ -226,7 +226,6 @@
         </div>
     </div>
 
-
     <aside class="sidebar">
         <nav class="sidebar-nav">
             <ul class="nav-menu">
@@ -234,8 +233,8 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="/Admin/Dashboard">
                         <span class="nav-icon"><i class="ph-light ph-squares-four"></i></span>
-                        <span class="nav-text">Dashboard</span>
-                        <span class="nav-badge nav-badge-soft">Main</span>
+                        <span class="nav-text">Panel Ana Sayfa</span>
+                        <span class="nav-badge nav-badge-soft">Ana</span>
                     </a>
                 </li>
 
@@ -282,10 +281,10 @@
         <div class="sidebar-footer">
             <div class="sidebar-footer-user">
                 <a href="#" class="sidebar-footer-profile">
-                    <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="sidebar-footer-avatar">
+                    <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="sidebar-footer-avatar">
                     <div class="sidebar-footer-info">
                         <div class="sidebar-footer-name">Buğra Öztürk</div>
-                        <div class="sidebar-footer-role">Developer</div>
+                        <div class="sidebar-footer-role">Geliştirici</div>
                     </div>
                 </a>
             </div>
@@ -302,9 +301,9 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="#">Docs</a>
-                    <a href="#">Privacy</a>
-                    <a href="#">Security</a>
+                    <a href="#">Dokümanlar</a>
+                    <a href="#">Gizlilik</a>
+                    <a href="#">Güvenlik</a>
                 </div>
                 <div class="footer-credits">
                     <div class="footer-copyright">
@@ -318,8 +317,6 @@
     <a href="#" class="back-to-top">
         <i class="bi bi-arrow-up"></i>
     </a>
-
-   
 
     <script src="~/Admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/Admin/assets/vendor/apexcharts/apexcharts.min.js"></script>
