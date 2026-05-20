@@ -1,0 +1,335 @@
+﻿@{
+    ViewData["Title"] = "Yönetim Paneli Ana Sayfa";
+}
+
+<div class="page-dashboard">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Yönetim Kontrol Merkezi</h1>
+            <p class="fx-subtitle">Sitenizin anlık ziyaretçi trafiği, gelen mesajlar ve portfolyo performans göstergeleri.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-outline-primary btn-sm"><i class="bi bi-download me-1"></i>Rapor İndir</button>
+            <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Yeni Proje Ekle</button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-xxl-8">
+            <div class="card fx-hero-card h-100">
+                <div class="card-body">
+                    <div class="fx-hero-head">
+                        <div>
+                            <div class="fx-overline">Günlük Bilgilendirme</div>
+                            <h4 class="fx-hero-title">Sistem Stabil ve Yayında</h4>
+                            <p class="fx-hero-text">
+                                Veri tabanındaki toplam proje sayınız: <strong class="text-primary">@ViewBag.TotalProjects</strong>. Veri erişim mimarisi (UnitOfWork & Repository) başarıyla bağlandı!
+                            </p>
+                        </div>
+                        <span class="badge badge-soft-success fx-hero-badge"><i class="bi bi-arrow-up-right"></i> %100 Aktif</span>
+                    </div>
+
+                    <div class="fx-kpi-grid">
+                        <div class="fx-kpi-item">
+                            <span class="fx-kpi-label">Toplam Tıklanma</span>
+                            <span class="fx-kpi-value">24,850</span>
+                            <span class="fx-kpi-trend positive">+12.5%</span>
+                        </div>
+                        <div class="fx-kpi-item">
+                            <span class="fx-kpi-label">Tekil Ziyaretçi</span>
+                            <span class="fx-kpi-value">5,432</span>
+                            <span class="fx-kpi-trend positive">+5.8%</span>
+                        </div>
+                        <div class="fx-kpi-item">
+                            <span class="fx-kpi-label">Gelen Mesajlar</span>
+                            <span class="fx-kpi-value">12</span>
+                            <span class="fx-kpi-trend positive">+2</span>
+                        </div>
+                        <div class="fx-kpi-item">
+                            <span class="fx-kpi-label">Ort. Oturum</span>
+                            <span class="fx-kpi-value">3.24 dk</span>
+                            <span class="fx-kpi-trend positive">+1.2%</span>
+                        </div>
+                    </div>
+
+                    <div class="fx-hero-footer">
+                        <div class="fx-chip-list">
+                            <span class="fx-chip"><i class="bi bi-lightning-charge"></i> SEO Skorunuz Yüksek</span>
+                            <span class="fx-chip"><i class="bi bi-hdd-network"></i> SQL Server Canlı</span>
+                            <span class="fx-chip"><i class="bi bi-shield-check"></i> Güvenlik Duvarı Aktif</span>
+                        </div>
+                        <a href="#" class="fx-link">Detaylı İstatistikler <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xxl-4">
+            <div class="card fx-pulse-card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Son İletişim Sinyalleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="fx-pulse-stat">
+                        <span class="fx-pulse-label">Okunmamış Mesaj</span>
+                        <span class="fx-pulse-value">1</span>
+                    </div>
+                    <div class="fx-pulse-stat">
+                        <span class="fx-pulse-label">Ort. Yanıt Süresi</span>
+                        <span class="fx-pulse-value">15dk</span>
+                    </div>
+                    <div class="fx-pulse-stat">
+                        <span class="fx-pulse-label">Toplam İletişim</span>
+                        <span class="fx-pulse-value">48</span>
+                    </div>
+
+                    <div class="fx-live-list">
+                        <a href="#" class="fx-live-item">
+                            <img src="~/Admin/assets/img/profile-img.webp" alt="" class="fx-live-avatar">
+                            <div>
+                                <div class="fx-live-title">Sistem Bildirimi</div>
+                                <div class="fx-live-text">Hoş geldin Buğra, FlexAdmin paneli başarıyla kuruldu.</div>
+                            </div>
+                            <span class="fx-live-time">Şimdi</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Ziyaretçi Trafik Akışı</h5>
+                    <div class="card-actions">
+                        <div class="dash-chart-tabs">
+                            <button class="dash-chart-tab active" data-period="monthly">Aylık</button>
+                            <button class="dash-chart-tab" data-period="weekly">Haftalık</button>
+                            <button class="dash-chart-tab" data-period="daily">Günlük</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="dash-chart-summary fx-summary-grid">
+                        <div class="dash-chart-summary-item">
+                            <span class="dash-chart-summary-dot" style="background: var(--accent-color);"></span>
+                            <span class="dash-chart-summary-label">Sayfa Görüntüleme</span>
+                            <span class="dash-chart-summary-value" id="summaryRevenue">48,295</span>
+                        </div>
+                        <div class="dash-chart-summary-item">
+                            <span class="dash-chart-summary-dot" style="background: var(--success-color);"></span>
+                            <span class="dash-chart-summary-label">Tekil Ziyaret</span>
+                            <span class="dash-chart-summary-value" id="summaryExpenses">28,450</span>
+                        </div>
+                        <div class="dash-chart-summary-item">
+                            <span class="dash-chart-summary-dot" style="background: var(--warning-color);"></span>
+                            <span class="dash-chart-summary-label">Yeni Kullanıcı</span>
+                            <span class="dash-chart-summary-value" id="summaryProfit">19,845</span>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="revenueChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">Trafik Kaynakları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" id="trafficChart"></div>
+                    <div class="dash-traffic-legend">
+                        <div class="dash-traffic-item"><span class="dash-traffic-dot" style="background: var(--accent-color);"></span><span class="dash-traffic-label">Doğrudan (Direct)</span><span class="dash-traffic-value">%42</span></div>
+                        <div class="dash-traffic-item"><span class="dash-traffic-dot" style="background: var(--success-color);"></span><span class="dash-traffic-label">Arama Motorları (SEO)</span><span class="dash-traffic-value">%28</span></div>
+                        <div class="dash-traffic-item"><span class="dash-traffic-dot" style="background: var(--warning-color);"></span><span class="dash-traffic-label">Referans Siteler</span><span class="dash-traffic-value">%18</span></div>
+                        <div class="dash-traffic-item"><span class="dash-traffic-dot" style="background: var(--info-color);"></span><span class="dash-traffic-label">Sosyal Medya</span><span class="dash-traffic-value">%12</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-7">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Son İletişim Mesajları</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Konu</th>
+                                    <th>Gönderen</th>
+                                    <th>Tarih</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-medium">İş Teklifi / Freelance .NET Projesi</td>
+                                    <td>
+                                        <div class="table-user">
+                                            <img src="~/Admin/assets/img/profile-img.webp" alt="" class="table-user-avatar">
+                                            <div class="table-user-name">Ahmet Yılmaz</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted">20 Mayıs 2026</td>
+                                    <td><span class="badge badge-soft-success">Okunmadı</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-5">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Yapılacaklar Listesi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="fx-task-item">
+                        <input type="checkbox" id="task-a" checked disabled>
+                        <label for="task-a">Yönetim paneli layout kurgusunu tamamla <span>Bugün</span></label>
+                        <span class="badge badge-soft-success">Bitti</span>
+                    </div>
+                    <div class="fx-task-item mt-2">
+                        <input type="checkbox" id="task-b">
+                        <label for="task-b">Hakkımda kısmının dinamik CRUD işlemlerini yaz <span>Yarın</span></label>
+                        <span class="badge badge-soft-warning">Bekliyor</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+          const successColor = getComputedStyle(document.documentElement).getPropertyValue('--success-color').trim();
+          const warningColor = getComputedStyle(document.documentElement).getPropertyValue('--warning-color').trim();
+          const infoColor = getComputedStyle(document.documentElement).getPropertyValue('--info-color').trim();
+          const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+          const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted-color').trim();
+          const surfaceColor = getComputedStyle(document.documentElement).getPropertyValue('--surface-color').trim();
+
+          const revenueData = {
+            monthly: {
+              categories: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+              revenue: [4200, 5800, 4900, 6200, 5100, 7400, 6800, 8100, 7200, 9500, 8900, 10200],
+              expenses: [2800, 3200, 2900, 3400, 3100, 3800, 3500, 4200, 3900, 4800, 4200, 5100],
+              totals: { revenue: '48,295', expenses: '28,450', profit: '19,845' }
+            },
+            weekly: {
+              categories: ['1. Hafta', '2. Hafta', '3. Hafta', '4. Hafta'],
+              revenue: [8450, 9820, 7630, 10350],
+              expenses: [5200, 6100, 4800, 6450],
+              totals: { revenue: '36,250', expenses: '22,550', profit: '13,700' }
+            },
+            daily: {
+              categories: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+              revenue: [1850, 2100, 1620, 2340, 2780, 1200, 960],
+              expenses: [1100, 1350, 980, 1420, 1680, 750, 580],
+              totals: { revenue: '12,850', expenses: '7,860', profit: '4,990' }
+            }
+          };
+
+          function updateSummary(period) {
+            var totals = revenueData[period].totals;
+            document.getElementById('summaryRevenue').textContent = totals.revenue;
+            document.getElementById('summaryExpenses').textContent = totals.expenses;
+            document.getElementById('summaryProfit').textContent = totals.profit;
+          }
+
+          var revenueOptions = {
+            series: [{ name: 'Sayfa Görüntüleme', data: revenueData.monthly.revenue }, { name: 'Tekil Ziyaret', data: revenueData.monthly.expenses }],
+            chart: { type: 'bar', height: 320, fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false } },
+            colors: [accentColor, successColor],
+            plotOptions: { bar: { columnWidth: '50%', borderRadius: 4, borderRadiusApplication: 'end' } },
+            dataLabels: { enabled: false },
+            stroke: { show: true, width: 2, colors: ['transparent'] },
+            xaxis: {
+              categories: revenueData.monthly.categories,
+              axisBorder: { show: false }, axisTicks: { show: false },
+              labels: { style: { colors: mutedColor, fontSize: '12px' } }
+            },
+            yaxis: {
+              labels: {
+                style: { colors: mutedColor, fontSize: '12px' },
+                formatter: function(value) { return (value / 1000).toFixed(1) + 'k'; }
+              }
+            },
+            grid: { borderColor: borderColor, strokeDashArray: 4 },
+            legend: { show: false },
+            fill: { opacity: 1 },
+            tooltip: { y: { formatter: function(value) { return value.toLocaleString() + ' Gösterim'; } } }
+          };
+
+          var revenueChart = new ApexCharts(document.querySelector('#revenueChart'), revenueOptions);
+          revenueChart.render();
+
+          document.querySelectorAll('.dash-chart-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+              document.querySelectorAll('.dash-chart-tab').forEach(function(t) { t.classList.remove('active'); });
+              tab.classList.add('active');
+              var period = tab.getAttribute('data-period');
+              var data = revenueData[period];
+              revenueChart.updateOptions({ xaxis: { categories: data.categories } });
+              revenueChart.updateSeries([{ name: 'Sayfa Görüntüleme', data: data.revenue }, { name: 'Tekil Ziyaret', data: data.expenses }]);
+              updateSummary(period);
+            });
+          });
+
+          var trafficOptions = {
+            series: [42, 28, 18, 12],
+            chart: { type: 'donut', height: 260, fontFamily: 'inherit' },
+            colors: [accentColor, successColor, warningColor, infoColor],
+            labels: ['Doğrudan', 'SEO', 'Referans', 'Sosyal Medya'],
+            plotOptions: {
+              pie: {
+                donut: {
+                  size: '72%',
+                  labels: {
+                    show: true,
+                    name: { fontSize: '13px', color: mutedColor },
+                    value: { fontSize: '22px', fontWeight: 700, formatter: function(val) { return '%' + val; } },
+                    total: {
+                      show: true, label: 'Toplam', fontSize: '13px', color: mutedColor,
+                      formatter: function(w) { return '%100'; }
+                    }
+                  }
+                }
+              }
+            },
+            dataLabels: { enabled: false }, legend: { show: false }, stroke: { width: 3, colors: [surfaceColor] }
+          };
+
+          var trafficChart = new ApexCharts(document.querySelector('#trafficChart'), trafficOptions);
+          trafficChart.render();
+
+          document.addEventListener('themeChanged', function() {
+            var newBorderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+            var newMutedColor = getComputedStyle(document.documentElement).getPropertyValue('--muted-color').trim();
+            var newSurfaceColor = getComputedStyle(document.documentElement).getPropertyValue('--surface-color').trim();
+            var newAccentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            var newSuccessColor = getComputedStyle(document.documentElement).getPropertyValue('--success-color').trim();
+            revenueChart.updateOptions({
+              colors: [newAccentColor, newSuccessColor], grid: { borderColor: newBorderColor },
+              xaxis: { labels: { style: { colors: newMutedColor } } }, yaxis: { labels: { style: { colors: newMutedColor } } }
+            });
+            trafficChart.updateOptions({
+              colors: [newAccentColor, newSuccessColor, getComputedStyle(document.documentElement).getPropertyValue('--warning-color').trim(), getComputedStyle(document.documentElement).getPropertyValue('--info-color').trim()],
+              stroke: { colors: [newSurfaceColor] }
+            });
+          });
+        });
+    </script>
+}

@@ -1,0 +1,341 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - FlexAdmin</title>
+    <meta name="description" content="FlexAdmin - Bootstrap Admin Template">
+    <meta name="keywords" content="admin, dashboard, bootstrap">
+
+    <link href="~/Admin/assets/img/favicon.png" rel="icon">
+    <link href="~/Admin/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link href="~/Admin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/phosphor-icons/phosphor-icons.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/lucide-icons/lucide.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/simple-datatables/style.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/choices.js/choices.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/flatpickr/flatpickr.min.css" rel="stylesheet">
+
+    <link href="~/Admin/assets/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <a href="/Admin/Dashboard" class="header-logo">
+                <img src="~/Admin/assets/img/logo.webp" alt="FlexAdmin">
+                <span>FlexAdmin</span>
+            </a>
+        </div>
+
+        <button class="sidebar-toggle" title="Toggle Sidebar">
+            <i class="bi bi-layout-sidebar-inset"></i>
+        </button>
+
+        <div class="header-search">
+            <form class="search-form" action="#" method="GET">
+                <i class="bi bi-search search-icon"></i>
+                <input type="search" name="q" placeholder="Search users, invoices, tickets..." autocomplete="off">
+                <kbd class="search-shortcut">/</kbd>
+            </form>
+        </div>
+
+        <div class="header-right">
+            <div class="header-actions-desktop">
+                <div class="header-action-cluster">
+
+                    <div class="header-action-wrap dropdown lang-dropdown">
+                        <button class="header-action lang-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Language">
+                            <img src="https://flagcdn.com/w40/us.png" alt="EN" class="lang-flag">
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end lang-menu">
+                            <div class="menu-title">Language</div>
+                            <a class="lang-item active" href="#">
+                                <img src="https://flagcdn.com/w40/us.png" alt="EN" class="lang-flag">
+                                <span>English</span>
+                                <i class="bi bi-check2"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="header-action-wrap dropdown quickaccess-dropdown">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Quick Access">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end quickaccess-menu">
+                            <div class="menu-title">Quick Actions</div>
+                            <div class="quickaccess-grid">
+                                <a href="#" class="quickaccess-item">
+                                    <span class="quickaccess-icon"><i class="bi bi-folder2-open"></i></span>
+                                    <span class="quickaccess-label">Files</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="header-action theme-toggle" title="Toggle Theme">
+                        <i class="ph-light ph-moon-stars theme-icon-dark"></i>
+                        <i class="ph-light ph-sun theme-icon-light"></i>
+                    </button>
+
+                    <div class="header-action-wrap dropdown messages-dropdown">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Messages">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span class="header-badge">1</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end messages-menu">
+                            <div class="notification-header">
+                                <div>
+                                    <h6>Messages</h6>
+                                    <span class="notification-count">1 new message</span>
+                                </div>
+                            </div>
+                            <div class="notification-list">
+                                <a href="#" class="notification-item unread">
+                                    <span class="notification-dot"></span>
+                                    <div class="notification-content">
+                                        <div class="notification-title">Sistem</div>
+                                        <div class="notification-text">Hoş geldin Buğra, altyapı hazır!</div>
+                                        <span class="notification-time">Just now</span>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="header-action-wrap dropdown notification-dropdown">
+                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                            <i class="bi bi-bell"></i>
+                            <span class="header-badge">1</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end notification-menu">
+                            <div class="notification-header">
+                                <div>
+                                    <h6>Notifications</h6>
+                                    <span class="notification-count">1 unread</span>
+                                </div>
+                            </div>
+                            <div class="notification-list">
+                                <div class="notification-item unread">
+                                    <span class="notification-dot"></span>
+                                    <div class="notification-icon success"><i class="bi bi-check2-circle"></i></div>
+                                    <div class="notification-content">
+                                        <div class="notification-title">Database Connected</div>
+                                        <div class="notification-text">SQL Server bağlantısı stabil.</div>
+                                        <span class="notification-time">1m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <span class="header-divider"></span>
+
+                <div class="header-action-wrap dropdown user-dropdown">
+                    <button class="dropdown-toggle user-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="user-avatar">
+                        <div class="user-brief">
+                            <span class="user-name">Buğra Öztürk</span>
+                            <span class="user-role">Full Stack Developer</span>
+                        </div>
+                        <i class="bi bi-chevron-down user-chevron"></i>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-end user-menu">
+                        <div class="user-menu-header">
+                            <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="user-menu-avatar">
+                            <div class="user-menu-info">
+                                <div class="user-menu-name">Buğra Öztürk</div>
+                                <div class="user-menu-email">bugra@example.com</div>
+                            </div>
+                        </div>
+                        <div class="user-menu-body">
+                            <a class="user-menu-item" href="#">
+                                <span class="user-menu-icon"><i class="bi bi-person"></i></span>
+                                <span>My Profile</span>
+                            </a>
+                        </div>
+                        <div class="user-menu-footer">
+                            <a class="user-menu-logout" href="#">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Sign Out</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions-mobile">
+                <button class="header-action search-toggle" title="Search">
+                    <i class="bi bi-search"></i>
+                </button>
+                <button class="header-action mobile-menu-toggle" title="More">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-search">
+        <form class="search-form" action="#" method="GET">
+            <input type="search" name="q" placeholder="Search..." autocomplete="off">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+
+    <div class="mobile-header-menu">
+        <div class="mobile-header-menu-content">
+            <button class="mobile-menu-item theme-toggle" title="Tema Değiştir">
+                <i class="ph-light ph-moon-stars theme-icon-dark"></i>
+                <i class="ph-light ph-sun theme-icon-light"></i>
+                <span class="mobile-menu-label">Tema</span>
+            </button>
+
+            <a href="#" class="mobile-menu-item">
+                <i class="bi bi-bell"></i>
+                <span class="badge">1</span>
+                <span class="mobile-menu-label">Bildirimler</span>
+            </a>
+
+            <a href="#" class="mobile-menu-item">
+                <i class="bi bi-chat-left-text"></i>
+                <span class="mobile-menu-label">Mesajlar</span>
+            </a>
+
+            <a href="#" class="mobile-menu-item">
+                <i class="bi bi-person"></i>
+                <span class="mobile-menu-label">Profilim</span>
+            </a>
+
+            <a href="#" class="mobile-menu-item mobile-menu-item-danger">
+                <i class="bi bi-box-arrow-right"></i>
+                <span class="mobile-menu-label">Çıkış Yap</span>
+            </a>
+        </div>
+    </div>
+
+
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <ul class="nav-menu">
+
+                <li class="nav-item">
+                    <a class="nav-link active" href="/Admin/Dashboard">
+                        <span class="nav-icon"><i class="ph-light ph-squares-four"></i></span>
+                        <span class="nav-text">Dashboard</span>
+                        <span class="nav-badge nav-badge-soft">Main</span>
+                    </a>
+                </li>
+
+                <li class="nav-heading"><span>Portfolyo İçerikleri</span></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <span class="nav-icon"><i class="ph-light ph-user"></i></span>
+                        <span class="nav-text">Hakkımda</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <span class="nav-icon"><i class="ph-light ph-kanban"></i></span>
+                        <span class="nav-text">Projelerim</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <span class="nav-icon"><i class="ph-light ph-table"></i></span>
+                        <span class="nav-text">Kategoriler</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <span class="nav-icon"><i class="ph-light ph-envelope-simple"></i></span>
+                        <span class="nav-text">Gelen Mesajlar</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <span class="nav-icon"><i class="ph-light ph-gear"></i></span>
+                        <span class="nav-text">Site Ayarları</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-user">
+                <a href="#" class="sidebar-footer-profile">
+                    <img src="~/Admin/assets/img/profile-img.webp" alt="User" class="sidebar-footer-avatar">
+                    <div class="sidebar-footer-info">
+                        <div class="sidebar-footer-name">Buğra Öztürk</div>
+                        <div class="sidebar-footer-role">Developer</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <div class="sidebar-overlay"></div>
+
+    <main class="main">
+        <div class="main-content page-dashboard">
+            @RenderBody()
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#">Docs</a>
+                    <a href="#">Privacy</a>
+                    <a href="#">Security</a>
+                </div>
+                <div class="footer-credits">
+                    <div class="footer-copyright">
+                        &copy; 2026 <a href="#">FlexAdmin</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <a href="#" class="back-to-top">
+        <i class="bi bi-arrow-up"></i>
+    </a>
+
+   
+
+    <script src="~/Admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Admin/assets/vendor/apexcharts/apexcharts.min.js"></script>
+    <script src="~/Admin/assets/vendor/chart.js/chart.umd.js"></script>
+    <script src="~/Admin/assets/vendor/echarts/echarts.min.js"></script>
+    <script src="~/Admin/assets/vendor/simple-datatables/simple-datatables.js"></script>
+    <script src="~/Admin/assets/vendor/quill/quill.js"></script>
+    <script src="~/Admin/assets/vendor/tinymce/tinymce.min.js"></script>
+    <script src="~/Admin/assets/vendor/choices.js/choices.min.js"></script>
+    <script src="~/Admin/assets/vendor/flatpickr/flatpickr.min.js"></script>
+
+    <script src="~/Admin/assets/js/theme.js"></script>
+    <script src="~/Admin/assets/js/main.js"></script>
+    <script src="~/Admin/assets/js/apps-sidebar-toggle.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
