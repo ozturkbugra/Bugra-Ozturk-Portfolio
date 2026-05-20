@@ -1,0 +1,220 @@
+﻿@model About
+
+@{
+    ViewData["Title"] = "Hakkımda Yönetimi";
+    var isEdit = Model != null;
+    var aboutId = isEdit ? Model.Id : Guid.Empty;
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Hakkımda Bilgileri</h1>
+            <p class="fx-subtitle">Portfolyo ön yüzünde görüntülenecek olan kişisel, kurumsal ve iletişim bilgileri ayarları.</p>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div id="resultToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="toastIcon" class="bi me-2 fs-5"></i>
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-100">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Profil ve İletişim Bilgilerini Güncelle</h5>
+                </div>
+                <div class="card-body">
+                    <form id="aboutForm" enctype="multipart/form-data" novalidate>
+                        <input type="hidden" id="Id" name="Id" value="@aboutId" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="Title" class="form-label fw-semibold">Ana Unvan / Başlık</label>
+                                <input type="text" class="form-control" id="Title" name="Title" value="@(Model?.Title)" placeholder="Örn: Full Stack .NET Developer" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="SubTitle" class="form-label fw-semibold">Alt Başlık</label>
+                                <input type="text" class="form-control" id="SubTitle" name="SubTitle" value="@(Model?.SubTitle)" placeholder="Örn: Yazılım Mimarı & Dijital Çözüm Ortağı">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="Email" class="form-label fw-semibold">E-posta Adresi</label>
+                                <input type="email" class="form-control" id="Email" name="Email" value="@(Model?.Email)" placeholder="Örn: bugra@example.com">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="Phone" class="form-label fw-semibold">Telefon Numarası</label>
+                                <input type="tel" class="form-control" id="Phone" name="Phone" value="@(Model?.Phone)" placeholder="Örn: +90 555 555 55 55">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="Address" class="form-label fw-semibold">Adres / Lokasyon</label>
+                                <input type="text" class="form-control" id="Address" name="Address" value="@(Model?.Address)" placeholder="Örn: Ankara, Türkiye">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Biyografi / Detaylı Hakkımda Yazısı</label>
+                            <div id="quillEditor" style="height: 200px;">
+                                @Html.Raw(Model?.Description)
+                            </div>
+                            <input type="hidden" id="Description" name="Description" />
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Profil Fotoğrafı</label>
+                                <div class="upload-dropzone p-4 border border-2 border-dashed rounded text-center bg-light" id="dropzone" style="cursor: pointer; border-color: var(--accent-color) !important;">
+                                    <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+                                    <h5 class="mt-2">Resmi sürükleyin veya tıklayın</h5>
+                                    <input type="file" id="ImageFile" name="ImageFile" accept="image/*" class="d-none" />
+                                </div>
+                                <div class="mt-3 text-center @(string.IsNullOrEmpty(Model?.ImageUrl) ? "d-none" : "")" id="previewContainer">
+                                    <img id="imgPreview" src="@(Model?.ImageUrl ?? "#")" class="img-thumbnail rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" alt="Önizleme" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="CvFile" class="form-label fw-semibold">Güncel CV Dosyası (PDF)</label>
+                                <input type="file" id="CvFile" name="CvFile" accept=".pdf" class="form-control" />
+                                @if (!string.IsNullOrEmpty(Model?.CvUrl))
+                                {
+                                    <div class="mt-2">
+                                        <a href="@Model.CvUrl" target="_blank" class="btn btn-link btn-sm p-0 text-success">
+                                            <i class="bi bi-file-earmark-pdf me-1"></i> Mevcut CV'yi Görüntüle
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="text-end border-top pt-3">
+                            <button type="submit" id="btnSubmit" class="btn btn-primary px-4">
+                                <i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                placeholder: 'Kendinizden bahsedin...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('ImageFile');
+            const previewContainer = document.getElementById('previewContainer');
+            const imgPreview = document.getElementById('imgPreview');
+
+            dropzone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.remove('bg-secondary-subtle'); }, false);
+            });
+
+            dropzone.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    fileInput.files = dt.files;
+                    handleFile(file);
+                }
+            });
+
+            function handleFile(file) {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        imgPreview.src = e.target.result;
+                        previewContainer.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function showToast(message, isSuccess) {
+                const toastEl = document.getElementById('resultToast');
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = document.getElementById('toastIcon');
+                toastMessage.textContent = message;
+                if (isSuccess) {
+                    toastEl.className = 'toast align-items-center text-white border-0 bg-success';
+                    toastIcon.className = 'bi bi-check2-circle me-2 fs-5';
+                } else {
+                    toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
+                    toastIcon.className = 'bi bi-exclamation-triangle me-2 fs-5';
+                }
+                new bootstrap.Toast(toastEl).show();
+            }
+
+            const form = document.getElementById('aboutForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (!document.getElementById('Title').value.trim()) {
+                    showToast('Lütfen unvan alanını doldurunuz!', false);
+                    return;
+                }
+
+                const quillHtml = quill.root.innerHTML;
+                if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
+                    showToast('Lütfen biyografi alanını doldurunuz!', false);
+                    return;
+                }
+                document.getElementById('Description').value = quillHtml;
+
+                const formData = new FormData(form);
+                const btnSubmit = document.getElementById('btnSubmit');
+
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
+
+                fetch('/Admin/About/Save', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, true);
+                        if (data.newId) document.getElementById('Id').value = data.newId;
+                    } else {
+                        showToast(data.message, false);
+                    }
+                })
+                .catch(() => showToast('Sistem hatası oluştu!', false))
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet';
+                });
+            });
+        });
+    </script>
+}

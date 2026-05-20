@@ -1,3 +1,5 @@
+using BugraOzturkPortfolio.Business.Abstract;
+using BugraOzturkPortfolio.Business.Concrete;
 using BugraOzturkPortfolio.DataAccess.Context;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
@@ -5,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
 
@@ -15,14 +16,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAboutService, AboutService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

@@ -15,13 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BugraOzturkPortfolio.DataAccess\BugraOzturkPortfolio.DataAccess.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Controllers\" />
     <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BugraOzturkPortfolio.Business\BugraOzturkPortfolio.Business.csproj" />
   </ItemGroup>
 
 </Project>
