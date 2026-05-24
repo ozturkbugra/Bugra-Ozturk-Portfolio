@@ -3,6 +3,7 @@
     var lastName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Surname)?.Value ?? "";
     var username = User.Identity?.Name ?? "";
     var fullNameWithUser = $"{firstName} {lastName} ({username})";
+    var currentPath = Context.Request.Path.Value ?? "";
 }
 
 <!DOCTYPE html>
@@ -51,46 +52,16 @@
         </button>
 
         <div class="header-search">
-            <form class="search-form" action="#" method="GET">
+            <div class="search-form">
                 <i class="bi bi-search search-icon"></i>
-                <input type="search" name="q" placeholder="Proje, kategori veya mesaj ara..." autocomplete="off">
+                <input type="text" id="sidebarSearchInput" placeholder="Menüde ara... ( / )" autocomplete="off">
                 <kbd class="search-shortcut">/</kbd>
-            </form>
+            </div>
         </div>
 
         <div class="header-right">
             <div class="header-actions-desktop">
                 <div class="header-action-cluster">
-
-                    <div class="header-action-wrap dropdown lang-dropdown">
-                        <button class="header-action lang-trigger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Dil">
-                            <img src="https://flagcdn.com/w40/tr.png" alt="TR" class="lang-flag">
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end lang-menu">
-                            <div class="menu-title">Dil Seçimi</div>
-                            <a class="lang-item active" href="#">
-                                <img src="https://flagcdn.com/w40/tr.png" alt="TR" class="lang-flag">
-                                <span>Türkçe</span>
-                                <i class="bi bi-check2"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="header-action-wrap dropdown quickaccess-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Hızlı Erişim">
-                            <i class="bi bi-grid-3x3-gap"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end quickaccess-menu">
-                            <div class="menu-title">Hızlı İşlemler</div>
-                            <div class="quickaccess-grid">
-                                <a href="#" class="quickaccess-item">
-                                    <span class="quickaccess-icon"><i class="bi bi-folder2-open"></i></span>
-                                    <span class="quickaccess-label">Dosyalar</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
                     <button class="header-action theme-toggle" title="Temayı Değiştir">
                         <i class="ph-light ph-moon-stars theme-icon-dark"></i>
                         <i class="ph-light ph-sun theme-icon-light"></i>
@@ -117,32 +88,6 @@
                                         <span class="notification-time">Şimdi</span>
                                     </div>
                                 </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="header-action-wrap dropdown notification-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Bildirimler">
-                            <i class="bi bi-bell"></i>
-                            <span class="header-badge">1</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end notification-menu">
-                            <div class="notification-header">
-                                <div>
-                                    <h6>Bildirimler</h6>
-                                    <span class="notification-count">1 okunmamış bildirim</span>
-                                </div>
-                            </div>
-                            <div class="notification-list">
-                                <div class="notification-item unread">
-                                    <span class="notification-dot"></span>
-                                    <div class="notification-icon success"><i class="bi bi-check2-circle"></i></div>
-                                    <div class="notification-content">
-                                        <div class="notification-title">Veri Tabanı Bağlantısı</div>
-                                        <div class="notification-text">SQL Server bağlantısı stabil.</div>
-                                        <span class="notification-time">1 dk önce</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -196,10 +141,9 @@
     </header>
 
     <div class="mobile-search">
-        <form class="search-form" action="#" method="GET">
-            <input type="search" name="q" placeholder="Ara..." autocomplete="off">
-            <button type="submit"><i class="bi bi-search"></i></button>
-        </form>
+        <div class="search-form">
+            <input type="text" id="mobileSidebarSearchInput" placeholder="Menüde ara..." autocomplete="off">
+        </div>
     </div>
 
     <div class="mobile-header-menu">
@@ -211,22 +155,16 @@
             </button>
 
             <a href="#" class="mobile-menu-item">
-                <i class="bi bi-bell"></i>
-                <span class="badge">1</span>
-                <span class="mobile-menu-label">Bildirimler</span>
-            </a>
-
-            <a href="#" class="mobile-menu-item">
                 <i class="bi bi-chat-left-text"></i>
                 <span class="mobile-menu-label">Mesajlar</span>
             </a>
 
-            <a href="#" class="mobile-menu-item">
+            <a href="/Admin/Profile" class="mobile-menu-item">
                 <i class="bi bi-person"></i>
                 <span class="mobile-menu-label">Profilim</span>
             </a>
 
-            <a href="#" class="mobile-menu-item mobile-menu-item-danger">
+            <a href="/Admin/Auth/Logout" class="mobile-menu-item mobile-menu-item-danger">
                 <i class="bi bi-box-arrow-right"></i>
                 <span class="mobile-menu-label">Çıkış Yap</span>
             </a>
@@ -235,10 +173,10 @@
 
     <aside class="sidebar">
         <nav class="sidebar-nav">
-            <ul class="nav-menu">
+            <ul class="nav-menu" id="sidebarMenu">
 
                 <li class="nav-item">
-                    <a class="nav-link active" href="/Admin/Dashboard">
+                    <a class="nav-link @(currentPath.Equals("/Admin/Dashboard", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Dashboard">
                         <span class="nav-icon"><i class="ph-light ph-squares-four"></i></span>
                         <span class="nav-text">Panel Ana Sayfa</span>
                         <span class="nav-badge nav-badge-soft">Ana</span>
@@ -248,85 +186,80 @@
                 <li class="nav-heading"><span>Portfolyo İçerikleri</span></li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/About">
-                        <span class="nav-icon"><i class="ph-light ph-user"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/About", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/About">
+                        <span class="nav-icon"><i class="ph-light ph-user-focus"></i></span>
                         <span class="nav-text">Hakkımda</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Project">
-                        <span class="nav-icon"><i class="ph-light ph-kanban"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Project", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Project">
+                        <span class="nav-icon"><i class="ph-light ph-folder-open"></i></span>
                         <span class="nav-text">Projelerim</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Category">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Category", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Category">
+                        <span class="nav-icon"><i class="ph-light ph-circles-three"></i></span>
                         <span class="nav-text">Kategoriler</span>
                     </a>
                 </li>
 
-                
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Education">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Education", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Education">
+                        <span class="nav-icon"><i class="ph-light ph-graduation-cap"></i></span>
                         <span class="nav-text">Eğitim Hayatım</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Experience">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Experience", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Experience">
+                        <span class="nav-icon"><i class="ph-light ph-briefcase"></i></span>
                         <span class="nav-text">İş Deneyimlerim</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Service">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Service", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Service">
+                        <span class="nav-icon"><i class="ph-light ph-handshake"></i></span>
                         <span class="nav-text">Hizmetlerim</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Skill">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Skill", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Skill">
+                        <span class="nav-icon"><i class="ph-light ph-cpu"></i></span>
                         <span class="nav-text">Yeteneklerim</span>
                     </a>
                 </li>
+                
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/Testimonial">
-                        <span class="nav-icon"><i class="ph ph-tag"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Testimonial", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Testimonial">
+                        <span class="nav-icon"><i class="ph-light ph-chat-centered-text"></i></span>
                         <span class="nav-text">Referanslar</span>
                     </a>
                 </li>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <span class="nav-icon"><i class="ph-light ph-envelope-simple"></i></span>
-                        <span class="nav-text">Gelen Mesajlar</span>
-                    </a>
-                </li>
+                <li class="nav-heading"><span>Sistem & Yapılandırma</span></li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/SiteSetting">
-                        <span class="nav-icon"><i class="ph-light ph-gear"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/SiteSetting", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/SiteSetting">
+                        <span class="nav-icon"><i class="ph-light ph-sliders"></i></span>
                         <span class="nav-text">Site Ayarları</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/SiteScript">
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/SiteScript", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/SiteScript">
                         <span class="nav-icon"><i class="ph-light ph-code"></i></span>
                         <span class="nav-text">Script Yönetimi</span>
                     </a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="/Admin/User">
-                        <span class="nav-icon"><i class="ph-light ph-users"></i></span>
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/User", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/User">
+                        <span class="nav-icon"><i class="ph-light ph-users-three"></i></span>
                         <span class="nav-text">Sistem Kullanıcıları</span>
                     </a>
                 </li>
@@ -334,10 +267,9 @@
             </ul>
         </nav>
 
-
         <div class="sidebar-footer">
             <div class="sidebar-footer-user">
-                <a href="#" class="sidebar-footer-profile">
+                <a href="/Admin/Profile" class="sidebar-footer-profile">
                     <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="sidebar-footer-avatar">
                     <div class="sidebar-footer-info">
                         <div class="sidebar-footer-name">@fullNameWithUser</div>
@@ -357,14 +289,9 @@
 
         <footer class="footer">
             <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#">Dokümanlar</a>
-                    <a href="#">Gizlilik</a>
-                    <a href="#">Güvenlik</a>
-                </div>
                 <div class="footer-credits">
                     <div class="footer-copyright">
-                        &copy; 2026 <a href="#">FlexAdmin</a>
+                        &copy; @DateTime.UtcNow.Year <a href="#">Buğra Öztürk</a>
                     </div>
                 </div>
             </div>
@@ -388,6 +315,83 @@
     <script src="~/Admin/assets/js/theme.js"></script>
     <script src="~/Admin/assets/js/main.js"></script>
     <script src="~/Admin/assets/js/apps-sidebar-toggle.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const desktopInput = document.getElementById("sidebarSearchInput");
+            const mobileInput = document.getElementById("mobileSidebarSearchInput");
+            const menuItems = document.querySelectorAll("#sidebarMenu .nav-item");
+            const menuHeadings = document.querySelectorAll("#sidebarMenu .nav-heading");
+
+            function localeStringNormalize(str) {
+                return str
+                    .trim()
+                    .toLowerCase()
+                    .replace(/ğ/g, "g")
+                    .replace(/ü/g, "u")
+                    .replace(/ş/g, "s")
+                    .replace(/ı/g, "i")
+                    .replace(/i̇/g, "i")
+                    .replace(/ö/g, "o")
+                    .replace(/ç/g, "c");
+            }
+
+            function filterSidebarMenu(searchText) {
+                const normalizedSearch = localeStringNormalize(searchText);
+
+                menuItems.forEach(item => {
+                    const textElement = item.querySelector(".nav-text");
+                    if (!textElement) return;
+
+                    const normalizedText = localeStringNormalize(textElement.textContent);
+
+                    if (normalizedText.includes(normalizedSearch)) {
+                        item.style.setProperty("display", "", "important");
+                    } else {
+                        item.style.setProperty("display", "none", "important");
+                    }
+                });
+
+                menuHeadings.forEach(heading => {
+                    let nextEl = heading.nextElementSibling;
+                    let hasVisibleItem = false;
+
+                    while (nextEl && !nextEl.classList.contains("nav-heading")) {
+                        if (nextEl.classList.contains("nav-item") && nextEl.style.display !== "none") {
+                            hasVisibleItem = true;
+                            break;
+                        }
+                        nextEl = nextEl.nextElementSibling;
+                    }
+
+                    if (hasVisibleItem || normalizedSearch === "") {
+                        heading.style.setProperty("display", "", "important");
+                    } else {
+                        heading.style.setProperty("display", "none", "important");
+                    }
+                });
+            }
+
+            if (desktopInput) {
+                desktopInput.addEventListener("input", function (e) {
+                    filterSidebarMenu(e.target.value);
+                });
+
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "/" && document.activeElement !== desktopInput && document.activeElement !== mobileInput) {
+                        e.preventDefault();
+                        desktopInput.focus();
+                    }
+                });
+            }
+
+            if (mobileInput) {
+                mobileInput.addEventListener("input", function (e) {
+                    filterSidebarMenu(e.target.value);
+                });
+            }
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
