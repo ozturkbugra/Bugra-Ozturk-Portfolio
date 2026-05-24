@@ -1,0 +1,226 @@
+﻿@{
+    ViewData["Title"] = "Kategori Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Proje Kategorileri</h1>
+            <p class="fx-subtitle">Projelerinizi gruplayacağınız yazılım dili, teknoloji ve departman kategorilerinin yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openCategoryCreateModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Kategori Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="categoryToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="categoryToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="categoryToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Mevcut Kategoriler</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table align-middle" id="categoryTable">
+                        <thead>
+                            <tr>
+                                <th>Kategori Adı</th>
+                                <th>Kategori Slug (SEO URL)</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="catModalTitle">Yeni Kategori Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm" novalidate>
+                    <input type="hidden" id="CatId" name="Id" />
+
+                    <div class="mb-3">
+                        <label for="CatName" class="form-label fw-semibold">Kategori Adı</label>
+                        <input type="text" class="form-control" id="CatName" name="Name" required placeholder="Örn: ASP.NET Core, React, Docker">
+                    </div>
+
+                    <div class="text-end border-top pt-3">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" id="btnCatSubmit" class="btn btn-primary px-4">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let catDataTable;
+        const catModalEl = document.getElementById('categoryModal');
+        const bootstrapCatModal = new bootstrap.Modal(catModalEl);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. İLK YÜKLENMEDE KATEGORİLERİ GETİR
+            loadCategories();
+
+            // 2. FORM SUBMIT 
+            const form = document.getElementById('categoryForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const nameInput = document.getElementById('CatName').value.trim();
+                if (!nameInput) {
+                    showCategoryToast('Lütfen kategori adını doldurunuz!', false);
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const btnSubmit = document.getElementById('btnCatSubmit');
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Kaydediliyor...';
+
+                fetch('/Admin/Category/Save', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showCategoryToast(data.message, true);
+                        bootstrapCatModal.hide();
+                        loadCategories();
+                    } else {
+                        showCategoryToast(data.message, false);
+                    }
+                })
+                .catch(() => showCategoryToast('Sistem hatası oluştu!', false))
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Kaydet';
+                });
+            });
+        });
+
+        // 3. KATEGORİLERİ AJAX İLE ÇEKİP DATATABLE'A BASMA
+        function loadCategories() {
+            fetch('/Admin/Category/GetCategoriesJson')
+                .then(response => response.json())
+                .then(data => {
+                    if (catDataTable) {
+                        catDataTable.destroy();
+                    }
+
+                    const tbody = document.getElementById('categoryTableBody');
+                    tbody.innerHTML = '';
+
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="fw-semibold">${item.name}</td>
+                            <td><span class="badge">/${item.slug}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-warning btn-sm me-1" onclick="openCategoryEditModal('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteCategory('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    catDataTable = new simpleDatatables.DataTable("#categoryTable", {
+                        searchable: true,
+                        perPage: 10,
+                        labels: { placeholder: "Ara...", perPage: "satır göster", noRows: "Kayıt bulunamadı", info: "{rows} kayıttan {start} ile {end} arası gösteriliyor" }
+                    });
+                });
+        }
+
+        // 4. MODAL TEMİZLEME VE EKLEME MODU
+        function openCategoryCreateModal() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('CatId').value = '';
+            document.getElementById('catModalTitle').textContent = 'Yeni Kategori Ekle';
+            bootstrapCatModal.show();
+        }
+
+        // 5. GÜNCELLEME İÇİN VERİ GETİRME
+        function openCategoryEditModal(id) {
+            fetch(`/Admin/Category/GetCategoryById?id=${id}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        const item = res.data;
+                        document.getElementById('CatId').value = item.id;
+                        document.getElementById('CatName').value = item.name;
+                        document.getElementById('catModalTitle').textContent = 'Kategori Düzenle';
+                        bootstrapCatModal.show();
+                    } else {
+                        showCategoryToast(res.message, false);
+                    }
+                });
+        }
+
+        // 6. ASENKRON KATEGORİ SİLME
+        function deleteCategory(id) {
+            if (confirm('Bu kategoriyi silmek istediğinize emin misiniz aga?')) {
+                fetch(`/Admin/Category/Delete?id=${id}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showCategoryToast(data.message, true);
+                            loadCategories();
+                        } else {
+                            showCategoryToast(data.message, false);
+                        }
+                    });
+            }
+        }
+
+        // 7. TOAST TETİKLEYİCİ
+        function showCategoryToast(message, isSuccess) {
+            const toastEl = document.getElementById('categoryToast');
+            document.getElementById('categoryToastMessage').textContent = message;
+            if (isSuccess) {
+                toastEl.className = 'toast align-items-center text-white border-0 bg-success';
+                document.getElementById('categoryToastIcon').className = 'bi bi-check2-circle me-2 fs-5';
+            } else {
+                toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
+                document.getElementById('categoryToastIcon').className = 'bi bi-exclamation-triangle me-2 fs-5';
+            }
+            new bootstrap.Toast(toastEl).show();
+        }
+
+        function openCategoryCreateModal() {
+            document.getElementById('categoryForm').reset();
+
+            document.getElementById('CatId').value = "00000000-0000-0000-0000-000000000000";
+
+            document.getElementById('catModalTitle').textContent = 'Yeni Kategori Ekle';
+
+            bootstrapCatModal.show();
+        }
+    </script>
+}

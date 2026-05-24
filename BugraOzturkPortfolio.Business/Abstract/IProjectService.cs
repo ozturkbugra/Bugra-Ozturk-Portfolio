@@ -6,7 +6,7 @@ namespace BugraOzturkPortfolio.Business.Abstract
     {
         Task<List<Project>> GetAllProjectsAsync();
         Task<Project?> GetProjectByIdAsync(Guid id);
-        Task<(bool Success, string Message)> SaveProjectAsync(Project model);
+        Task<(bool Success, string Message)> SaveProjectAsync(Project model, List<Guid> selectedCategoryIds, List<string> galleryImagePaths);
         Task<(bool Success, string Message)> DeleteProjectAsync(Guid id);
     }
 }

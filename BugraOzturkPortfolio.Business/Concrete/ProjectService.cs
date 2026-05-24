@@ -26,24 +26,50 @@ namespace BugraOzturkPortfolio.Business.Concrete
             return await repo.GetByIdAsync(id);
         }
 
-        public async Task<(bool Success, string Message)> SaveProjectAsync(Project model)
+        public async Task<(bool Success, string Message)> SaveProjectAsync(Project model, List<Guid> selectedCategoryIds, List<string> galleryImagePaths)
         {
             if (string.IsNullOrEmpty(model.Title) || string.IsNullOrEmpty(model.ShortDescription) || string.IsNullOrEmpty(model.FullDescription))
                 return (false, "Lütfen proje başlığı, kısa açıklama ve detaylı açıklama alanlarını doldurunuz!");
 
-            var repo = _unitOfWork.GetRepository<Project>();
+            var projectRepo = _unitOfWork.GetRepository<Project>();
+            var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
+            var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
 
-            if (model.Id == Guid.Empty)
+            if (model.Id == Guid.Empty || model.Id == default)
             {
-                // Yeni kayıt (Ekleme) durumu - ID ataması BaseEntity'ye emanet
-                await repo.AddAsync(model);
+                await projectRepo.AddAsync(model);
+                await _unitOfWork.SaveChangesAsync();
+
+                if (selectedCategoryIds != null && selectedCategoryIds.Any())
+                {
+                    foreach (var catId in selectedCategoryIds)
+                    {
+                        await mappingRepo.AddAsync(new ProjectCategoryMapping
+                        {
+                            ProjectId = model.Id,
+                            CategoryId = catId
+                        });
+                    }
+                }
+
+                if (galleryImagePaths != null && galleryImagePaths.Any())
+                {
+                    foreach (var path in galleryImagePaths)
+                    {
+                        await imageRepo.AddAsync(new ProjectImage
+                        {
+                            ProjectId = model.Id,
+                            ImageUrl = path
+                        });
+                    }
+                }
+
                 await _unitOfWork.SaveChangesAsync();
                 return (true, "Proje başarıyla eklendi.");
             }
             else
             {
-                // Mevcut kayıt (Güncelleme) durumu
-                var existProject = await repo.GetByIdAsync(model.Id);
+                var existProject = await projectRepo.GetByIdAsync(model.Id);
                 if (existProject == null)
                     return (false, "Güncellenecek proje bulunamadı!");
 
@@ -56,11 +82,42 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 existProject.GithubUrl = model.GithubUrl;
                 existProject.Order = model.Order;
 
-                // Eğer arayüzden yeni bir kapak resmi yüklendiyse yolunu güncelle, boşsa eskisi kalsın
                 if (!string.IsNullOrEmpty(model.CoverImageUrl))
                     existProject.CoverImageUrl = model.CoverImageUrl;
 
-                repo.Update(existProject);
+                projectRepo.Update(existProject);
+
+                var oldMappings = await mappingRepo.GetAllAsync();
+                var currentMappings = oldMappings.Where(x => x.ProjectId == model.Id).ToList();
+                foreach (var mapping in currentMappings)
+                {
+                    mappingRepo.Delete(mapping);
+                }
+
+                if (selectedCategoryIds != null && selectedCategoryIds.Any())
+                {
+                    foreach (var catId in selectedCategoryIds)
+                    {
+                        await mappingRepo.AddAsync(new ProjectCategoryMapping
+                        {
+                            ProjectId = model.Id,
+                            CategoryId = catId
+                        });
+                    }
+                }
+
+                if (galleryImagePaths != null && galleryImagePaths.Any())
+                {
+                    foreach (var path in galleryImagePaths)
+                    {
+                        await imageRepo.AddAsync(new ProjectImage
+                        {
+                            ProjectId = model.Id,
+                            ImageUrl = path
+                        });
+                    }
+                }
+
                 await _unitOfWork.SaveChangesAsync();
                 return (true, "Proje başarıyla güncellendi.");
             }

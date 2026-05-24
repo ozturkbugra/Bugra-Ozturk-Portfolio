@@ -40,7 +40,7 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Save(Project model, IFormFile? CoverImageFile)
+        public async Task<IActionResult> Save(Project model, IFormFile? CoverImageFile, List<IFormFile>? ProjectImagesFiles, List<Guid> SelectedCategoryIds)
         {
             try
             {
@@ -52,7 +52,9 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
                     model.CoverImageUrl = uploadedPath;
                 }
 
-                var result = await _projectService.SaveProjectAsync(model);
+                var galleryPaths = await FileHelper.UploadMultipleImagesAsync(ProjectImagesFiles, webRootPath, "uploads/projects/gallery");
+
+                var result = await _projectService.SaveProjectAsync(model, SelectedCategoryIds, galleryPaths);
 
                 if (!result.Success)
                 {
