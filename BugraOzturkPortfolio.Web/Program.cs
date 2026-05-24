@@ -23,6 +23,7 @@ builder.Services.AddScoped<IEducationService, EducationService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
+builder.Services.AddScoped<ISiteSettingService, SiteSettingService>();
 
 
 var app = builder.Build();

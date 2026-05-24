@@ -1,0 +1,99 @@
+﻿@model SiteSetting
+
+@{
+    ViewData["Title"] = "Site Ayarları";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Genel Site Ayarları</h1>
+            <p class="fx-subtitle">SEO, logo ve favicon ayarlarınızı buradan yönetin.</p>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="setToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="setToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="setToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="settingForm" enctype="multipart/form-data" novalidate>
+                <input type="hidden" name="Id" value="@(Model?.Id ?? Guid.Empty)" />
+
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Meta Title</label>
+                        <input type="text" class="form-control" name="MetaTitle" value="@Model?.MetaTitle" required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Meta Keywords</label>
+                        <input type="text" class="form-control" name="MetaKeywords" value="@Model?.MetaKeywords" required />
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-semibold">Meta Description</label>
+                        <textarea class="form-control" name="MetaDescription" rows="2" required>@Model?.MetaDescription</textarea>
+                    </div>
+               
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Favicon</label>
+                        <input type="file" class="form-control" name="FaviconFile" accept="image/*" />
+                        @if (!string.IsNullOrEmpty(Model?.FaviconUrl))
+                        {
+                            <div class="mt-2"><img src="@Model.FaviconUrl" width="40" class="img-thumbnail" /></div>
+                        }
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold">Apple Touch Icon</label>
+                        <input type="file" class="form-control" name="AppleTouchFile" accept="image/*" />
+                        @if (!string.IsNullOrEmpty(Model?.AppleTouchIconUrl))
+                        {
+                            <div class="mt-2"><img src="@Model.AppleTouchIconUrl" width="40" class="img-thumbnail" /></div>
+                        }
+                    </div>
+                </div>
+
+                <div class="text-end border-top pt-3">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-4">
+                        <i class="bi bi-shield-check me-1"></i> Ayarları Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('settingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = 'Kaydediliyor...';
+
+            const formData = new FormData(this);
+            const res = await (await fetch('/Admin/SiteSetting/Save', { method: 'POST', body: formData })).json();
+
+            showToast(res.message, res.success);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Ayarları Kaydet';
+        });
+
+        function showToast(msg, success) {
+            const el = document.getElementById('setToast');
+            document.getElementById('setToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('setToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+    </script>
+}
