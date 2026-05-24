@@ -1,4 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using BugraOzturkPortfolio.Entities.Concrete;
 using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Web.Helpers;
@@ -22,6 +27,19 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Detail(Guid id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id);
+            if (project == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(project);
+        }
+
+
+        [HttpGet]
         public async Task<IActionResult> GetProjectsJson()
         {
             var projects = await _projectService.GetAllProjectsAsync();
@@ -36,6 +54,7 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             {
                 return Json(new { success = false, message = "Proje bulunamadı!" });
             }
+
             return Json(new { success = true, data = project });
         }
 
@@ -78,6 +97,61 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
                 return Json(new { success = false, message = result.Message });
             }
             return Json(new { success = true, message = result.Message });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddGalleryImage(Guid projectId, IFormFile galleryFile)
+        {
+            try
+            {
+                var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var uploadedPath = await FileHelper.UploadImageAsync(galleryFile, webRootPath, "uploads/projects/gallery");
+
+                if (string.IsNullOrEmpty(uploadedPath))
+                    return Json(new { success = false, message = "Görsel yüklenemedi!" });
+
+                var result = await _projectService.AddProjectGalleryImageAsync(projectId, uploadedPath);
+                return Json(new { success = result.Success, message = result.Message, path = uploadedPath });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Sistem hatası oluştu!" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteGalleryImage(Guid imageId)
+        {
+            var result = await _projectService.DeleteProjectGalleryImageAsync(imageId);
+            return Json(new { success = result.Success, message = result.Message });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetFeatures(Guid projectId)
+        {
+            var features = await _projectService.GetProjectFeaturesAsync(projectId);
+            return Json(features);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveFeature(ProjectFeature feature)
+        {
+            try
+            {
+                var result = await _projectService.SaveProjectFeatureAsync(feature);
+                return Json(new { success = result.Success, message = result.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Sistem hatası oluştu!" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteFeature(Guid featureId)
+        {
+            var result = await _projectService.DeleteProjectFeatureAsync(featureId);
+            return Json(new { success = result.Success, message = result.Message });
         }
     }
 }

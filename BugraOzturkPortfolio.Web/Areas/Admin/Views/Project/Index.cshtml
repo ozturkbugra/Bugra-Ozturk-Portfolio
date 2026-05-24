@@ -28,6 +28,74 @@
     </div>
 
     <div class="row">
+
+        <div class="row d-none" id="projectDetailPanel">
+            <div class="col-12 mb-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="closeProjectDetailPanel()">
+                    <i class="bi bi-arrow-left me-1"></i> Projelere Geri Dön
+                </button>
+                <span class="fs-4 fw-bold ms-3 text-primary" id="detailPanelProjectTitle">Proje Detayları</span>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Slider Görselleri</h5>
+                        <div>
+                            <input type="file" id="detailGalleryInput" accept="image/*" class="d-none" onchange="uploadSingleGalleryImage()" />
+                            <button class="btn btn-success btn-sm" onclick="document.getElementById('detailGalleryInput').click()">
+                                <i class="bi bi-cloud-upload me-1"></i> Yeni Görsel Ekle
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="detailGalleryWrapper" class="row g-3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Proje Teknik Özellikleri</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="featureForm" class="row g-2 mb-4 align-items-end" novalidate>
+                            <input type="hidden" id="FeatureId" name="Id" />
+                            <input type="hidden" id="FeatureProjectId" name="ProjectId" />
+
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Özellik Başlığı</label>
+                                <input type="text" class="form-control form-control-sm" id="FeatureTitle" name="Title" placeholder="Örn: Yüksek Performans" required />
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-semibold">Kısa Açıklama</label>
+                                <input type="text" class="form-control form-control-sm" id="FeatureDescription" name="Description" placeholder="Örn: %100 asenkron altyapı..." required />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary btn-sm w-100" id="btnFeatureSubmit">Ekle</button>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Başlık</th>
+                                        <th>Açıklama</th>
+                                        <th class="text-end">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="featureTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
@@ -260,6 +328,9 @@
                             <td>${dateStr}</td>
                             <td><span class="badge bg-secondary">${item.order}</span></td>
                             <td class="text-end">
+                                <a class="btn btn-outline-primary btn-sm me-1" href="/Admin/Project/Detail/${item.id}" title="Detayları Yönet">
+                                    <i class="bi bi-gear"></i> Detayları Yönet
+                                </a>
                                 <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
                                 <button class="btn btn-outline-danger btn-sm" onclick="deleteProject('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
                             </td>
@@ -380,6 +451,169 @@
                         searchPlaceholderValue: 'Kategori ara...'
                     });
                 });
+        }
+
+
+                let currentActiveProjectId = null;
+
+        // 1. PANELİ AÇMA VE VERİLERİ HAVADA DETAYLANDIRMA
+        function openProjectDetailPanel(projectId, projectTitle) {
+            currentActiveProjectId = projectId;
+            document.getElementById('detailPanelProjectTitle').textContent = projectTitle + " - Detay Yönetimi";
+            document.getElementById('FeatureProjectId').value = projectId;
+
+            // Ana listeyi gizle, detay panelini patlat aga
+            document.getElementById('projectTable').closest('.row').classList.add('d-none');
+            document.getElementById('projectDetailPanel').classList.remove('d-none');
+
+            // Verileri asenkron yükle
+            loadDetailGallery();
+            loadDetailFeatures();
+        }
+
+        function closeProjectDetailPanel() {
+            currentActiveProjectId = null;
+            document.getElementById('projectDetailPanel').classList.add('d-none');
+            document.getElementById('projectTable').closest('.row').classList.remove('d-none');
+        }
+
+        // 2. TEKİL GALERİ RESİMLERİNİ GETİRME VE SİLME ŞOVU
+        function loadDetailGallery() {
+            fetch(`/Admin/Project/GetProjectById?id=${currentActiveProjectId}`)
+                .then(response => response.json())
+                .then(res => {
+                    const wrapper = document.getElementById('detailGalleryWrapper');
+                    wrapper.innerHTML = '';
+
+                    if (!res.success || !res.data.projectImages || res.data.projectImages.length === 0) {
+                        wrapper.innerHTML = '<div class="col-12 text-center text-muted py-4">Bu projeye ait henüz bir galeri resmi yok aga.</div>';
+                        return;
+                    }
+
+                    res.data.projectImages.forEach(img => {
+                        const div = document.createElement('div');
+                        div.className = 'col-md-4 col-6 position-relative gallery-item-box';
+                        div.innerHTML = `
+                            <div class="card p-1 border">
+                                <img src="${img.imageUrl}" class="rounded w-100" style="height: 100px; object-fit: cover;" />
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 p-0 d-flex align-items-center justify-content-center rounded-circle"
+                                        style="width: 24px; height: 24px;" onclick="deleteDetailGalleryImage('${img.id}')" title="Görseli Sil">
+                                    <i class="bi bi-trash fs-6"></i>
+                                </button>
+                            </div>
+                        `;
+                        wrapper.appendChild(div);
+                    });
+                });
+        }
+
+        function uploadSingleGalleryImage() {
+            const fileInput = document.getElementById('detailGalleryInput');
+            if (fileInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('projectId', currentActiveProjectId);
+            formData.append('galleryFile', fileInput.files[0]);
+
+            fetch('/Admin/Project/AddGalleryImage', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showProjectToast(data.message, true);
+                        loadDetailGallery(); // Havada tazeleyin aga
+                    } else {
+                        showProjectToast(data.message, false);
+                    }
+                    fileInput.value = ''; // Inputu temizle
+                });
+        }
+
+        function deleteDetailGalleryImage(imageId) {
+            if (confirm('Bu görseli sunucudan ve galeriden kalıcı olarak silmek istediğine emin misiniz aga?')) {
+                const formData = new FormData();
+                formData.append('imageId', imageId);
+
+                fetch('/Admin/Project/DeleteGalleryImage', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showProjectToast(data.message, true);
+                            loadDetailGallery();
+                        } else {
+                            showProjectToast(data.message, false);
+                        }
+                    });
+            }
+        }
+
+        // 3. DİNAMİK ÖZELLİK (FEATURE) AJAL TRAFİĞİ
+        function loadDetailFeatures() {
+            fetch(`/Admin/Project/GetFeatures?projectId=${currentActiveProjectId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('featureTableBody');
+                    tbody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Bu projeye ait teknik özellik eklenmemiş.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="fw-semibold text-dark">${item.title}</td>
+                            <td class="text-muted small">${item.description}</td>
+                            <td class="text-end">
+                                <button class="btn btn-link text-danger btn-sm p-0" onclick="deleteDetailFeature('${item.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        // Özellik Formu Gönderimi (Ekleme)
+        document.getElementById('featureForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById('FeatureTitle').value.trim();
+            const desc = document.getElementById('FeatureDescription').value.trim();
+            if (!title || !desc) return;
+
+            const formData = new FormData(this);
+
+            fetch('/Admin/Project/SaveFeature', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showProjectToast(data.message, true);
+                        document.getElementById('featureForm').reset();
+                        document.getElementById('FeatureId').value = '';
+                        document.getElementById('FeatureProjectId').value = currentActiveProjectId;
+                        loadDetailFeatures(); // Listeyi anlık tazele aga
+                    } else {
+                        showProjectToast(data.message, false);
+                    }
+                });
+        });
+
+        function deleteDetailFeature(featureId) {
+            if (confirm('Bu teknik özelliği silmek istediğinize emin misiniz aga?')) {
+                const formData = new FormData();
+                formData.append('featureId', featureId);
+
+                fetch('/Admin/Project/DeleteFeature', { method: 'POST', body: formData })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showProjectToast(data.message, true);
+                            loadDetailFeatures();
+                        } else {
+                            showProjectToast(data.message, false);
+                        }
+                    });
+            }
         }
     </script>
 }
