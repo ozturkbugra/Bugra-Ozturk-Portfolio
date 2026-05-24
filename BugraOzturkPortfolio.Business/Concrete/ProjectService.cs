@@ -125,15 +125,60 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
         public async Task<(bool Success, string Message)> DeleteProjectAsync(Guid id)
         {
-            var repo = _unitOfWork.GetRepository<Project>();
-            var existProject = await repo.GetByIdAsync(id);
+            var projectRepo = _unitOfWork.GetRepository<Project>();
+            var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
+            var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
 
+            // 1. Projenin varlığını kontrol et
+            var existProject = await projectRepo.GetByIdAsync(id);
             if (existProject == null)
                 return (false, "Silinecek proje bulunamadı!");
 
-            repo.Delete(existProject);
+            // Fiziksel dosyaları silebilmek için wwwroot yolunu belirle
+            var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            // 2. Projeye ait tüm galeri resimlerini veritabanından çek ve hem fiziksel hem DB'den sil
+            var allImages = await imageRepo.GetAllAsync();
+            var projectImages = allImages.Where(x => x.ProjectId == id).ToList();
+
+            foreach (var img in projectImages)
+            {
+                // Fiziksel dosyayı sunucudan sil
+                if (!string.IsNullOrEmpty(img.ImageUrl))
+                {
+                    var fullPath = Path.Combine(webRootPath, img.ImageUrl.TrimStart('/'));
+                    if (File.Exists(fullPath))
+                    {
+                        File.Delete(fullPath);
+                    }
+                }
+                // Veritabanı kaydını sil
+                imageRepo.Delete(img);
+            }
+
+            // 3. Projeye ait tüm kategori eşleşmelerini sil
+            var allMappings = await mappingRepo.GetAllAsync();
+            var projectMappings = allMappings.Where(x => x.ProjectId == id).ToList();
+            foreach (var mapping in projectMappings)
+            {
+                mappingRepo.Delete(mapping);
+            }
+
+            // 4. Projenin ana kapak resmini fiziksel olarak sunucudan sil
+            if (!string.IsNullOrEmpty(existProject.CoverImageUrl))
+            {
+                var coverFullPath = Path.Combine(webRootPath, existProject.CoverImageUrl.TrimStart('/'));
+                if (File.Exists(coverFullPath))
+                {
+                    File.Delete(coverFullPath);
+                }
+            }
+
+            // 5. Ana projeyi veritabanından sil ve tek bir transaction olarak kaydet
+            projectRepo.Delete(existProject);
+
             await _unitOfWork.SaveChangesAsync();
-            return (true, "Proje başarıyla silindi.");
+            return (true, "Proje ve ilişkili tüm görseller başarıyla silindi.");
         }
     }
 }
