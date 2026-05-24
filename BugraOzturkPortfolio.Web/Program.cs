@@ -24,6 +24,7 @@ builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<ISiteSettingService, SiteSettingService>();
+builder.Services.AddScoped<ITestimonialService, TestimonialService>();
 
 
 var app = builder.Build();

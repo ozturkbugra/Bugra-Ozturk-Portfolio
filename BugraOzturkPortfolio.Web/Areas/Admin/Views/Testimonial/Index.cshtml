@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Referans Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Müşteri / İş Ortağı Yorumları</h1>
+            <p class="fx-subtitle">Portfolyoda görüntülenecek olan referans yorumlarının yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openTestimonialModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Yorum Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="testimonialToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="testimonialToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="testimonialToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table align-middle" id="testimonialTable">
+                <thead>
+                    <tr>
+                        <th>Sıra</th>
+                        <th>Fotoğraf</th>
+                        <th>Ad Soyad</th>
+                        <th>Şirket / Pozisyon</th>
+                        <th>Yorum</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="testimonialTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="testimonialModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="testimonialForm" enctype="multipart/form-data" novalidate>
+                <input type="hidden" id="TestimonialId" name="Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Referans Ekle / Düzenle</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Ad Soyad</label>
+                            <input type="text" class="form-control" id="FullName" name="FullName" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Sıralama</label>
+                            <input type="number" class="form-control" id="Order" name="Order" value="0" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Şirket</label>
+                            <input type="text" class="form-control" id="Company" name="Company" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Pozisyon</label>
+                            <input type="text" class="form-control" id="Position" name="Position" required />
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-semibold">Profil Fotoğrafı</label>
+                            <input type="file" class="form-control" id="ImageFile" name="ImageFile" accept="image/*" />
+                            <div class="mt-2 d-none" id="imgPreviewContainer">
+                                <img id="imgPreview" src="#" class="img-thumbnail" style="width: 70px; height: 70px; object-fit: cover;" />
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label fw-semibold">Yorum / Mesaj</label>
+                            <textarea class="form-control" id="Comment" name="Comment" rows="4" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-4">
+                        <i class="bi bi-shield-check me-1"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const testimonialModal = new bootstrap.Modal(document.getElementById('testimonialModal'));
+
+        function loadTestimonials() {
+            fetch('/Admin/Testimonial/GetListJson')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('testimonialTableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(item => {
+                        const img = item.imageUrl ? `<img src="${item.imageUrl}" class="rounded-circle" style="width:40px; height:40px; object-fit:cover;"/>` : `<i class="bi bi-person-circle fs-3 text-secondary"></i>`;
+                        tbody.innerHTML += `<tr>
+                            <td><span class="badge bg-secondary">${item.order}</span></td>
+                            <td>${img}</td>
+                            <td class="fw-bold">${item.fullName}</td>
+                            <td>${item.company} / ${item.position}</td>
+                            <td>${item.comment.substring(0, 50)}${item.comment.length > 50 ? '...' : ''}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" onclick="editTestimonial('${item.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTestimonial('${item.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                });
+        }
+
+        document.getElementById('testimonialForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
+
+            const formData = new FormData(e.target);
+            const res = await (await fetch('/Admin/Testimonial/Save', { method: 'POST', body: formData })).json();
+
+            if(res.success) {
+                showTestimonialToast(res.message, true);
+                testimonialModal.hide();
+                loadTestimonials();
+            } else {
+                showTestimonialToast(res.message, false);
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Kaydet';
+        };
+
+        function openTestimonialModal() {
+            document.getElementById('testimonialForm').reset();
+            document.getElementById('TestimonialId').value = '00000000-0000-0000-0000-000000000000';
+            document.getElementById('imgPreviewContainer').classList.add('d-none');
+            testimonialModal.show();
+        }
+
+        async function editTestimonial(id) {
+            const res = await (await fetch('/Admin/Testimonial/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('TestimonialId').value = item.id;
+                document.getElementById('FullName').value = item.fullName;
+                document.getElementById('Order').value = item.order;
+                document.getElementById('Company').value = item.company;
+                document.getElementById('Position').value = item.position;
+                document.getElementById('Comment').value = item.comment;
+
+                const preview = document.getElementById('imgPreviewContainer');
+                if(item.imageUrl) {
+                    document.getElementById('imgPreview').src = item.imageUrl;
+                    preview.classList.remove('d-none');
+                } else {
+                    preview.classList.add('d-none');
+                }
+                testimonialModal.show();
+            }
+        }
+
+        async function deleteTestimonial(id) {
+            if(confirm('Bu referans yorumunu silmek istediğinize emin misiniz?')) {
+                const res = await (await fetch('/Admin/Testimonial/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showTestimonialToast(res.message, true);
+                    loadTestimonials();
+                } else {
+                    showTestimonialToast(res.message, false);
+                }
+            }
+        }
+
+        function showTestimonialToast(msg, success) {
+            const el = document.getElementById('testimonialToast');
+            document.getElementById('testimonialToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('testimonialToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+
+        loadTestimonials();
+    </script>
+}
