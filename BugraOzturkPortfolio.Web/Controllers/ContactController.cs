@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BugraOzturkPortfolio.Business.Abstract;
+﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
-using System;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BugraOzturkPortfolio.Web.Controllers
 {
@@ -13,6 +11,13 @@ namespace BugraOzturkPortfolio.Web.Controllers
         public ContactController(IContactMessageService messageService)
         {
             _messageService = messageService;
+        }
+
+        [HttpGet("iletisim")]
+        public async Task<IActionResult> Index()
+        {
+            ViewData["Title"] = "İletişim";
+            return View();
         }
 
         [HttpPost("Contact/SendMessage")]

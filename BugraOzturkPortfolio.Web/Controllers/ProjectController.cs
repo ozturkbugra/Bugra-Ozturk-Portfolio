@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Web.Models;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace BugraOzturkPortfolio.Web.Controllers
 {
@@ -23,7 +21,7 @@ namespace BugraOzturkPortfolio.Web.Controllers
             var project = await _projectService.GetProjectBySlugWithRelationsAsync(slug);
             if (project == null)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Anasayfa");
             }
 
             var allCategories = await _categoryService.GetAllCategoriesAsync();
