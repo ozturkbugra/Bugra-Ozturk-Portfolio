@@ -22,6 +22,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IEducationService, EducationService>();
 builder.Services.AddScoped<IExperienceService, ExperienceService>();
 builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<ISkillService, SkillService>();
 
 
 var app = builder.Build();

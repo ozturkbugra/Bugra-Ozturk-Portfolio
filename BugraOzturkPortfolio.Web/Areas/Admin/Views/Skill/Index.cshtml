@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Yetenek Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Yeteneklerim</h1>
+            <p class="fx-subtitle">Teknik becerilerinizi kategori (Grup) bazlı yönetin.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openSkillModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Yetenek Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="skillToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="skillToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="skillToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table align-middle" id="skillTable">
+                <thead>
+                    <tr>
+                        <th>Grup</th>
+                        <th>Yetenek (Title)</th>
+                        <th>Seviye (%)</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="skillTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="skillModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="skillForm">
+                <input type="hidden" id="SkillId" name="Id" />
+                <div class="modal-header"><h5 class="modal-title" id="modalTitle">Yetenek Ekle</h5></div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Grup Adı</label>
+                        <select class="form-select" id="GroupName" name="GroupName" required>
+                            <option value="" disabled selected>Bir grup seçiniz...</option>
+                            <option value="Front-end Development">Front-end Development</option>
+                            <option value="Back-end Development">Back-end Development</option>
+                            <option value="Database Management">Database Management</option>
+                            <option value="DevOps & Cloud">DevOps & Cloud</option>
+                            <option value="Tools & Software">Tools & Software</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yetenek Adı (Örn: .NET 8)</label>
+                        <input type="text" class="form-control" id="Title" name="Title" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Seviye (%)</label>
+                        <input type="number" class="form-control" id="Percentage" name="Percentage" min="0" max="100" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const skillModal = new bootstrap.Modal(document.getElementById('skillModal'));
+
+        function loadSkills() {
+            fetch('/Admin/Skill/GetListJson')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('skillTableBody');
+                    tbody.innerHTML = data.map(i => `<tr>
+                        <td><span class="badge bg-info text-dark">${i.groupName}</span></td>
+                        <td class="fw-bold">${i.title}</td>
+                        <td>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" style="width: ${i.percentage}%"></div>
+                            </div>
+                            <small>${i.percentage}%</small>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning" onclick="editSkill('${i.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSkill('${i.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`).join('');
+                });
+        }
+
+        document.getElementById('skillForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await (await fetch('/Admin/Skill/Save', { method: 'POST', body: new FormData(e.target) })).json();
+            if(res.success) { showSkillToast(res.message, true); skillModal.hide(); loadSkills(); }
+            else showSkillToast(res.message, false);
+        };
+
+        function openSkillModal() {
+            document.getElementById('skillForm').reset();
+            document.getElementById('SkillId').value = '00000000-0000-0000-0000-000000000000';
+            skillModal.show();
+        }
+
+                async function editSkill(id) {
+            const res = await (await fetch('/Admin/Skill/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('SkillId').value = item.id;
+                document.getElementById('Title').value = item.title;
+                document.getElementById('Percentage').value = item.percentage;
+
+                // Select elementindeki değeri set et
+                document.getElementById('GroupName').value = item.groupName;
+
+                skillModal.show();
+            }
+        }
+
+        async function deleteSkill(id) {
+            if(confirm('Silinsin mi?')) {
+                const res = await (await fetch('/Admin/Skill/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) { showSkillToast(res.message, true); loadSkills(); }
+                else showSkillToast(res.message, false);
+            }
+        }
+
+        function showSkillToast(msg, success) {
+            const el = document.getElementById('skillToast');
+            document.getElementById('skillToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('skillToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+
+        loadSkills();
+    </script>
+}
