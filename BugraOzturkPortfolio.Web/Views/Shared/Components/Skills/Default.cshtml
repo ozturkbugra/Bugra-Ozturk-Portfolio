@@ -1,0 +1,42 @@
+﻿@model List<IGrouping<string, Skill>>
+
+<section id="skills" class="skills section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Yetenekler</h2>
+        <p>Geliştirdiğim projelerde kullandığım mimari, teknoloji ve programlama dilleri</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row">
+            @if (Model != null && Model.Any())
+            {
+                int delayCounter = 200;
+
+                foreach (var group in Model)
+                {
+                    <div class="col-lg-6 mb-4">
+                        <div class="skills-category" data-aos="fade-up" data-aos-delay="@delayCounter">
+                            <h3>@group.Key</h3>
+                            <div class="skills-animation">
+                                @foreach (var skill in group)
+                                {
+                                    <div class="skill-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4>@skill.Title</h4>
+                                            <span class="skill-percentage">@skill.Percentage%</span>
+                                        </div>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: @skill.Percentage%" aria-valuenow="@skill.Percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    delayCounter += 100;
+                }
+            }
+        </div>
+    </div>
+</section>
