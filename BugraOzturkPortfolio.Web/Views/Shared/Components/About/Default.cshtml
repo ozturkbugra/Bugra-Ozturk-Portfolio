@@ -1,0 +1,87 @@
+﻿@model About
+
+<section id="about" class="about section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row">
+            <div class="col-lg-5" data-aos="zoom-in" data-aos-delay="200">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-image">
+                            <img src="@(Model != null && !string.IsNullOrEmpty(Model.ImageUrl) ? Model.ImageUrl : "/Admin/assets/img/profile-img.webp")" alt="Buğra Öztürk" class="img-fluid" style="object-fit: cover;">
+                        </div>
+                        <div class="profile-badge">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+
+                    <div class="profile-content">
+                        <h3>Buğra Öztürk</h3>
+                        <p class="profession">@(Model?.Title ?? "Full Stack .NET Developer")</p>
+
+                        <div class="contact-links">
+                            @if (Model != null)
+                            {
+                                if (!string.IsNullOrEmpty(Model.Email))
+                                {
+                                    <a href="mailto:@Model.Email" class="contact-item">
+                                        <i class="bi bi-envelope"></i>
+                                        @Model.Email
+                                    </a>
+                                }
+                                if (!string.IsNullOrEmpty(Model.Phone))
+                                {
+                                    <a href="tel:@Model.Phone" class="contact-item">
+                                        <i class="bi bi-telephone"></i>
+                                        @Model.Phone
+                                    </a>
+                                }
+                                if (!string.IsNullOrEmpty(Model.Address))
+                                {
+                                    <a href="#" class="contact-item">
+                                        <i class="bi bi-geo-alt"></i>
+                                        @Model.Address
+                                    </a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7" data-aos="fade-left" data-aos-delay="300">
+                <div class="about-content">
+                    <div class="section-header">
+                        <span class="badge-text">Hakkımda</span>
+                        <h2>@(Model?.SubTitle ?? "Dijital Deneyimler Üretiyorum")</h2>
+                    </div>
+
+                    <div class="description">
+                        @if (Model != null && !string.IsNullOrEmpty(Model.Description))
+                        {
+                            @Html.Raw(Model.Description)
+                        }
+                        else
+                        {
+                            <p>Yazılım geliştirme süreçleri ve modern mimariler üzerine odaklanarak kurumsal çözümler üretiyorum.</p>
+                        }
+                    </div>
+                 
+
+                    <div class="cta-section">
+                        @if (Model != null && !string.IsNullOrEmpty(Model.CvUrl))
+                        {
+                            <a href="@Model.CvUrl" target="_blank" class="btn btn-primary">
+                                <i class="bi bi-download"></i>
+                                Özgeçmişi İndir
+                            </a>
+                        }
+                        <a href="/iletisim" class="btn btn-outline">
+                            <i class="bi bi-chat-dots"></i>
+                            İletişime Geç
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
