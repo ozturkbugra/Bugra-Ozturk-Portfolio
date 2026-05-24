@@ -1,0 +1,168 @@
+﻿@{
+    ViewData["Title"] = "Deneyim Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">İş Deneyimlerim</h1>
+            <p class="fx-subtitle">Çalıştığınız firmalar, pozisyonlar ve sorumluluklarınızın yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openExperienceCreateModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Deneyim Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="experienceToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="experienceToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="experienceToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table align-middle" id="experienceTable">
+                <thead>
+                    <tr>
+                        <th>Firma / Pozisyon</th>
+                        <th>Tarih Aralığı</th>
+                        <th>Konum</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="experienceTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="experienceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="expModalTitle">Yeni Deneyim Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="experienceForm" novalidate>
+                    <input type="hidden" id="ExpId" name="Id" />
+                    <div class="mb-3">
+                        <label class="form-label">Firma Adı</label>
+                        <input type="text" class="form-control" id="ExpCompany" name="CompanyName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pozisyon</label>
+                        <input type="text" class="form-control" id="ExpPosition" name="Position" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Konum</label>
+                        <input type="text" class="form-control" id="ExpLocation" name="Location">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç</label>
+                            <input type="date" class="form-control" id="ExpStart" name="StartDate" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş (Boş ise günümüz)</label>
+                            <input type="date" class="form-control" id="ExpEnd" name="EndDate">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="ExpDesc" name="Description" rows="3"></textarea>
+                    </div>
+                    <div class="text-end border-top pt-3">
+                        <button type="submit" class="btn btn-primary px-4">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let expDataTable;
+        const expModal = new bootstrap.Modal(document.getElementById('experienceModal'));
+
+        document.addEventListener('DOMContentLoaded', loadExperiences);
+
+        document.getElementById('experienceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/Admin/Experience/Save', { method: 'POST', body: new FormData(this) })
+                .then(r => r.json())
+                .then(d => {
+                    if(d.success) { showExpToast(d.message, true); expModal.hide(); loadExperiences(); }
+                    else showExpToast(d.message, false);
+                });
+        });
+
+        function loadExperiences() {
+            fetch('/Admin/Experience/GetListJson')
+                .then(r => r.json())
+                .then(data => {
+                    if(expDataTable) expDataTable.destroy();
+                    const tbody = document.getElementById('experienceTableBody');
+                    tbody.innerHTML = data.map(i => `<tr>
+                        <td><strong>${i.companyName}</strong><br><small>${i.position}</small></td>
+                        <td>${new Date(i.startDate).toLocaleDateString()} - ${i.endDate ? new Date(i.endDate).toLocaleDateString() : 'Günümüz'}</td>
+                        <td>${i.location}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning" onclick="editExp('${i.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteExp('${i.id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`).join('');
+                    expDataTable = new simpleDatatables.DataTable("#experienceTable");
+                });
+        }
+
+        function openExperienceCreateModal() {
+            document.getElementById('experienceForm').reset();
+            document.getElementById('ExpId').value = "00000000-0000-0000-0000-000000000000";
+            expModal.show();
+        }
+
+        function editExp(id) {
+            fetch('/Admin/Experience/GetById?id=' + id)
+                .then(r => r.json())
+                .then(res => {
+                    if(res.success) {
+                        const i = res.data;
+                        document.getElementById('ExpId').value = i.id;
+                        document.getElementById('ExpCompany').value = i.companyName;
+                        document.getElementById('ExpPosition').value = i.position;
+                        document.getElementById('ExpLocation').value = i.location;
+                        document.getElementById('ExpStart').value = i.startDate.split('T')[0];
+                        document.getElementById('ExpEnd').value = i.endDate ? i.endDate.split('T')[0] : '';
+                        document.getElementById('ExpDesc').value = i.description;
+                        expModal.show();
+                    }
+                });
+        }
+
+        function deleteExp(id) {
+            if(confirm('Silinsin mi?')) {
+                fetch('/Admin/Experience/Delete?id=' + id, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(d => { if(d.success) { showExpToast(d.message, true); loadExperiences(); } else showExpToast(d.message, false); });
+            }
+        }
+
+        function showExpToast(msg, success) {
+            const el = document.getElementById('experienceToast');
+            document.getElementById('experienceToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('experienceToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+    </script>
+}
