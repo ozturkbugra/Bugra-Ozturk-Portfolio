@@ -1,0 +1,110 @@
+﻿@model (BugraOzturkPortfolio.Entities.Concrete.About About, List<BugraOzturkPortfolio.Entities.Concrete.Skill> Skills, List<BugraOzturkPortfolio.Entities.Concrete.Experience> Experiences, List<BugraOzturkPortfolio.Entities.Concrete.Education> Educations)
+
+<section id="resume" class="resume section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Özgeçmiş</h2>
+        <p>Eğitim hayatım, profesyonel iş deneyimlerim ve geliştirdiğim uzmanlık alanlarının kronolojik özeti.</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row gy-4">
+            <div class="col-lg-4">
+                <div class="resume-side" data-aos="fade-right" data-aos-delay="100">
+                    @if (Model.About != null)
+                    {
+                        <div class="profile-img mb-4">
+                            <img src="@(!string.IsNullOrEmpty(Model.About.ImageUrl) ? Model.About.ImageUrl : "/Admin/assets/img/profile-img.webp")" alt="Buğra Öztürk" class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: cover;">
+                        </div>
+
+                        <h3>Profesyonel Özet</h3>
+                        <div class="resume-summary-text mb-4">
+                            @Html.Raw(Model.About.Description)
+                        </div>
+
+                        <h3 class="mt-4">İletişim Bilgileri</h3>
+                        <ul class="contact-info list-unstyled">
+                            @if (!string.IsNullOrEmpty(Model.About.Address))
+                            {
+                                <li><i class="bi bi-geo-alt"></i> @Model.About.Address</li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.About.Email))
+                            {
+                                <li><i class="bi bi-envelope"></i> @Model.About.Email</li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.About.Phone))
+                            {
+                                <li><i class="bi bi-phone"></i> @Model.About.Phone</li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.About.LinkedinUrl))
+                            {
+                                <li><i class="bi bi-linkedin"></i> LinkedIn Profili</li>
+                            }
+                        </ul>
+                    }
+
+                    @if (Model.Skills != null && Model.Skills.Any())
+                    {
+                        <div class="skills-animation mt-4">
+                            <h3>Öne Çıkan Yetenekler</h3>
+                            @foreach (var skill in Model.Skills.Take(5))
+                            {
+                                <div class="skill-item mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span class="small fw-semibold">@skill.Title</span>
+                                        <span class="small ">@skill.Percentage%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar" style="width: @skill.Percentage%" aria-valuenow="@skill.Percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-8 ps-4 ps-lg-5">
+                <div class="resume-section" data-aos="fade-up">
+                    <h3><i class="bi bi-briefcase me-2"></i>Mesleki Deneyim</h3>
+                    @if (Model.Experiences != null && Model.Experiences.Any())
+                    {
+                        foreach (var exp in Model.Experiences)
+                        {
+                            <div class="resume-item">
+                                <h4>@exp.Position</h4>
+                                <h5>@exp.StartDate.ToString("MMMM yyyy") - @(exp.EndDate.HasValue ? exp.EndDate.Value.ToString("MMMM yyyy") : "Devam Ediyor")</h5>
+                                <p class="company"><i class="bi bi-building"></i> @exp.CompanyName / <span class="small">@exp.Location</span></p>
+                                <div class="resume-item-description" style="white-space: pre-line;">
+                                    @Html.Raw(exp.Description)
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="small">Kayıtlı iş deneyimi bulunamadı.</p>
+                    }
+                </div>
+
+                <div class="resume-section" data-aos="fade-up" data-aos-delay="100">
+                    <h3><i class="bi bi-mortarboard me-2"></i>Eğitim Hayatı</h3>
+                    @if (Model.Educations != null && Model.Educations.Any())
+                    {
+                        foreach (var edu in Model.Educations)
+                        {
+                            <div class="resume-item">
+                                <h4>@edu.Degree - @edu.FieldOfStudy</h4>
+                                <h5>@edu.StartDate.ToString("yyyy") - @(edu.EndDate.HasValue ? edu.EndDate.Value.ToString("yyyy") : "Devam Ediyor")</h5>
+                                <p class="company"><i class="bi bi-building"></i> @edu.InstitutionName</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="small">Kayıtlı eğitim bilgisi bulunamadı.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
