@@ -1,0 +1,232 @@
+﻿@{
+    ViewData["Title"] = "Dinamik Script Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Script Yönetimi</h1>
+            <p class="fx-subtitle">Google Analytics, Tag Manager veya Canlı Destek gibi entegrasyon kodlarını dinamik olarak yönetin.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openScriptModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Script Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="scriptToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="scriptToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="scriptToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-toast="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body pt-3">
+            <table class="table align-middle" id="scriptTable">
+                <thead>
+                    <tr>
+                        <th>Script Adı</th>
+                        <th>Kaynak URL</th>
+                        <th>Enjeksiyon Konumu (Position)</th>
+                        <th>Durum</th>
+                        <th data-sortable="false" class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="scriptTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="scriptModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="scriptForm" novalidate>
+                <input type="hidden" id="ScriptId" name="Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Script Tanımla</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label small fw-semibold">Script / Entegrasyon Adı</label>
+                            <input type="text" class="form-control" id="ScriptName" name="Name" placeholder="Örn: Google Analytics" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Enjeksiyon Konumu (Position)</label>
+                            <select class="form-select" id="ScriptPosition" name="Position" required>
+                                <option value="1">Header (&lt;head&gt; İçine)</option>
+                                <option value="2">BodyStart (&lt;body&gt; Başlangıcına)</option>
+                                <option value="3">BodyEnd (&lt;body&gt; Sonuna)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Harici Kaynak URL (Src Url)</label>
+                            <input type="text" class="form-control font-monospace small" id="ScriptUrl" name="Url" placeholder="https://cdn.example.com/api.js (Varsa doldurun)" />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Ham Script Kodu (Inline Code)</label>
+                            <textarea class="form-control font-monospace small" id="ScriptCode" name="Code" rows="6" placeholder="<script>... </script> (Varsa doğrudan yapıştırın)"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch pt-2">
+                                <input class="form-check-input" type="checkbox" id="ScriptIsActive" name="IsActive" value="true" checked>
+                                <label class="form-check-label small fw-semibold" for="ScriptIsActive">Script Sitede Aktif Olsun</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-4">
+                        <i class="bi bi-shield-check me-1"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const scriptModal = new bootstrap.Modal(document.getElementById('scriptModal'));
+        let dataTableInstance = null;
+
+        async function loadScripts() {
+            try {
+                const response = await fetch('/Admin/SiteScript/GetListJson');
+                const data = await response.json();
+
+                if (dataTableInstance) {
+                    dataTableInstance.destroy();
+                }
+
+                const tbody = document.getElementById('scriptTableBody');
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const statusBtn = item.isActive
+                        ? `<button class="btn btn-sm btn-success" onclick="toggleStatus('${item.id}')"><i class="bi bi-toggle-on me-1"></i>Aktif</button>`
+                        : `<button class="btn btn-sm btn-secondary" onclick="toggleStatus('${item.id}')"><i class="bi bi-toggle-off me-1"></i>Pasif</button>`;
+
+                    const displayUrl = item.url ? item.url : '<span class="text-muted small">Sadece Ham Kod</span>';
+
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">${item.name}</td>
+                        <td class="text-truncate font-monospace small" style="max-width: 250px;">${displayUrl}</td>
+                        <td><span class="badge bg-soft-primary text-primary px-2 py-1">${item.position}</span></td>
+                        <td>${statusBtn}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning" onclick="editScript('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteScript('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+
+                const tableEl = document.getElementById('scriptTable');
+                dataTableInstance = new simpleDatatables.DataTable(tableEl, {
+                    searchable: true,
+                    fixedHeight: false,
+                    perPage: 10,
+                    labels: {
+                        placeholder: "Ara...",
+                        perPage: "gösteriliyor",
+                        noRows: "Kayıt bulunamadı",
+                        info: "{rows} kayıttan {start} ile {end} arası gösteriliyor"
+                    }
+                });
+
+            } catch (error) {
+                showScriptToast("Veriler yüklenirken bir hata oluştu!", false);
+            }
+        }
+
+        document.getElementById('scriptForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> İşleniyor...';
+
+            const formData = new FormData(e.target);
+            if (!formData.get('IsActive')) {
+                formData.append('IsActive', 'false');
+            }
+
+            const res = await (await fetch('/Admin/SiteScript/Save', { method: 'POST', body: formData })).json();
+
+            if(res.success) {
+                showScriptToast(res.message, true);
+                scriptModal.hide();
+                await loadScripts();
+            } else {
+                showScriptToast(res.message, false);
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Kaydet';
+        };
+
+        function openScriptModal() {
+            document.getElementById('scriptForm').reset();
+            document.getElementById('ScriptId').value = '00000000-0000-0000-0000-000000000000';
+            document.getElementById('ScriptIsActive').checked = true;
+            document.getElementById('modalTitle').textContent = 'Yeni Script Entegrasyonu Tanımla';
+            scriptModal.show();
+        }
+
+        async function editScript(id) {
+            const res = await (await fetch('/Admin/SiteScript/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('ScriptId').value = item.id;
+                document.getElementById('ScriptName').value = item.name;
+                document.getElementById('ScriptPosition').value = item.position;
+                document.getElementById('ScriptUrl').value = item.url || '';
+                document.getElementById('ScriptCode').value = item.code || '';
+                document.getElementById('ScriptIsActive').checked = item.isActive;
+                document.getElementById('modalTitle').textContent = 'Script Entegrasyonunu Güncelle';
+                scriptModal.show();
+            }
+        }
+
+        async function toggleStatus(id) {
+            const res = await (await fetch('/Admin/SiteScript/ToggleStatus?id=' + id, { method: 'POST' })).json();
+            if(res.success) {
+                showScriptToast(res.message, true);
+                await loadScripts();
+            } else {
+                showScriptToast(res.message, false);
+            }
+        }
+
+        async function deleteScript(id) {
+            if(confirm('Bu script entegrasyonunu kaldırmak istediğinize emin misiniz? Sitedeki ilgili kodlar anında silinecektir.')) {
+                const res = await (await fetch('/Admin/SiteScript/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showScriptToast(res.message, true);
+                    await loadScripts();
+                } else {
+                    showScriptToast(res.message, false);
+                }
+            }
+        }
+
+        function showScriptToast(msg, success) {
+            const el = document.getElementById('scriptToast');
+            document.getElementById('scriptToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('scriptToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadScripts();
+        });
+    </script>
+}
