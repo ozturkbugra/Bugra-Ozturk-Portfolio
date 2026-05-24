@@ -55,5 +55,44 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     @await Component.InvokeAsync("SiteScript", new { position = BugraOzturkPortfolio.Entities.Concrete.ScriptPosition.BodyEnd })
+
+    <div id="cookieNoticeBar" class="bg-dark text-white py-3 position-fixed bottom-0 start-0 w-100" style="z-index: 9999; display: none; box-shadow: 0 -5px 15px rgba(0,0,0,0.15);">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+            <div class="text-center text-md-start small">
+                <i class="bi bi-shield-check text-success me-2 fs-5 align-middle"></i>
+                Sitemizde, ziyaretçi trafiğini anonim olarak analiz etmek ve kullanıcı deneyimini artırmak adına çerezler kullanılmaktadır. Sitemizi kullanmaya devam ederek gizlilik politikamızı kabul etmiş sayılırsınız.
+            </div>
+            <div class="text-nowrap">
+                <button type="button" id="btnAcceptCookies" class="btn btn-light btn-sm fw-bold px-4">Anladım</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const cookieBar = document.getElementById("cookieNoticeBar");
+        const acceptBtn = document.getElementById("btnAcceptCookies");
+
+        if (cookieBar && acceptBtn) {
+        const lastAccepted = localStorage.getItem("cookie_accepted_date");
+        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+
+        if (!lastAccepted || (new Date().getTime() - parseInt(lastAccepted)) > oneWeek) {
+        cookieBar.style.display = "block";
+        }
+
+        acceptBtn.addEventListener("click", function () {
+        localStorage.setItem("cookie_accepted_date", new Date().getTime().toString());
+
+        cookieBar.style.transition = "opacity 0.4s ease";
+        cookieBar.style.opacity = "0";
+        setTimeout(() => {
+        cookieBar.style.display = "none";
+        }, 400);
+        });
+        }
+        });
+    </script>
+
 </body>
 </html>
