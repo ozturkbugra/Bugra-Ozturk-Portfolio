@@ -1,0 +1,42 @@
+﻿@model List<Testimonial>
+
+<section id="testimonials" class="testimonials section light-background">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Referanslar</h2>
+    </div>
+
+    <div class="container">
+        <div class="testimonial-masonry">
+            @if (Model != null && Model.Any())
+            {
+                int delayCounter = 0;
+
+                foreach (var item in Model)
+                {
+                    string highlightClass = item.Comment != null && item.Comment.Length > 120 ? "highlight" : string.Empty;
+
+                    <div class="testimonial-item @highlightClass" data-aos="fade-up" data-aos-delay="@delayCounter">
+                        <div class="testimonial-content">
+                            <div class="quote-pattern">
+                                <i class="bi bi-quote"></i>
+                            </div>
+                            <p>@item.Comment</p>
+                            <div class="client-info">
+                                <div class="client-image">
+                                    <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/Admin/assets/img/profile-img.webp" : item.ImageUrl)" alt="@item.FullName">
+                                </div>
+                                <div class="client-details">
+                                    <h3>@item.FullName</h3>
+                                    <span class="position">@item.Position, @item.Company</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    delayCounter += 100;
+                    if (delayCounter > 500) delayCounter = 0;
+                }
+            }
+        </div>
+    </div>
+</section>
