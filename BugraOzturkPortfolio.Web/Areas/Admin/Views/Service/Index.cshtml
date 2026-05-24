@@ -1,0 +1,161 @@
+﻿@{
+    ViewData["Title"] = "Hizmet Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Hizmetlerim</h1>
+            <p class="fx-subtitle">Sitede sergilenecek hizmetlerin yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openServiceModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Hizmet Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="serviceToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="serviceToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="serviceToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table align-middle" id="serviceTable">
+                <thead>
+                    <tr>
+                        <th>Sıra</th>
+                        <th>İkon</th>
+                        <th>Başlık</th>
+                        <th>Açıklama</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="serviceTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="serviceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="serviceForm">
+                <input type="hidden" id="ServiceId" name="Id" />
+                <div class="modal-header"><h5 class="modal-title" id="modalTitle">Hizmet Ekle</h5></div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık</label>
+                        <input type="text" class="form-control" id="Title" name="Title" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İkon Class (Örn: bi-code-slash)</label>
+                            <input type="text" class="form-control" id="IconClass" name="IconClass" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Sıralama</label>
+                            <input type="number" class="form-control" id="Order" name="Order" value="0" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="Description" name="Description" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const serviceModal = new bootstrap.Modal(document.getElementById('serviceModal'));
+
+        function loadServices() {
+            fetch('/Admin/Service/GetListJson')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('serviceTableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(item => {
+                        tbody.innerHTML += `<tr>
+                            <td><span class="badge bg-secondary">${item.order}</span></td>
+                            <td><i class="bi ${item.iconClass} fs-4"></i></td>
+                            <td>${item.title}</td>
+                            <td>${item.description.substring(0, 50)}...</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" onclick="editService('${item.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteService('${item.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                });
+        }
+
+        document.getElementById('serviceForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const res = await (await fetch('/Admin/Service/Save', { method: 'POST', body: formData })).json();
+            if(res.success) {
+                showServiceToast(res.message, true);
+                serviceModal.hide();
+                loadServices();
+            } else {
+                showServiceToast(res.message, false);
+            }
+        };
+
+        function openServiceModal() {
+            document.getElementById('serviceForm').reset();
+            document.getElementById('ServiceId').value = '00000000-0000-0000-0000-000000000000';
+            serviceModal.show();
+        }
+
+        async function editService(id) {
+            const res = await (await fetch('/Admin/Service/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('ServiceId').value = item.id;
+                document.getElementById('Title').value = item.title;
+                document.getElementById('IconClass').value = item.iconClass;
+                document.getElementById('Order').value = item.order;
+                document.getElementById('Description').value = item.description;
+                serviceModal.show();
+            }
+        }
+
+        async function deleteService(id) {
+            if(confirm('Hizmeti silmek istediğinize emin misiniz?')) {
+                const res = await (await fetch('/Admin/Service/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showServiceToast(res.message, true);
+                    loadServices();
+                } else {
+                    showServiceToast(res.message, false);
+                }
+            }
+        }
+
+        function showServiceToast(msg, success) {
+            const el = document.getElementById('serviceToast');
+            document.getElementById('serviceToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('serviceToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+
+        loadServices();
+    </script>
+}
