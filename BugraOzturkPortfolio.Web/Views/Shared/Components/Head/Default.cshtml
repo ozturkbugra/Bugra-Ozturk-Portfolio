@@ -1,0 +1,10 @@
+﻿@model SiteSetting
+
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>@ViewData["Title"] - @(Model?.MetaTitle ?? "Buğra Öztürk")</title>
+<meta name="description" content="@(Model?.MetaDescription ?? "Buğra Öztürk - Full Stack .NET Developer Portfolyo")">
+<meta name="keywords" content="@(Model?.MetaKeywords ?? "dotnet, portfolio, software architect, developer, ankara")">
+
+<link href="@(Model != null && !string.IsNullOrEmpty(Model.FaviconUrl) ? Model.FaviconUrl : "/UI/assets/img/favicon.png")" rel="icon">
+<link href="@(Model != null && !string.IsNullOrEmpty(Model.AppleTouchIconUrl) ? Model.AppleTouchIconUrl : "/UI/assets/img/apple-touch-icon.png")" rel="apple-touch-icon">

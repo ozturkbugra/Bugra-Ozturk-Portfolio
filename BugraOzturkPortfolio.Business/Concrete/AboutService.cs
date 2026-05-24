@@ -43,6 +43,10 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 existData.Email = model.Email;
                 existData.Phone = model.Phone;
                 existData.Address = model.Address;
+                existData.TwitterUrl = model.TwitterUrl;
+                existData.FacebookUrl = model.FacebookUrl;
+                existData.InstagramUrl = model.InstagramUrl;
+                existData.LinkedinUrl = model.LinkedinUrl;
 
                 if (!string.IsNullOrEmpty(model.ImageUrl)) existData.ImageUrl = model.ImageUrl;
                 if (!string.IsNullOrEmpty(model.CvUrl)) existData.CvUrl = model.CvUrl;

@@ -1,0 +1,44 @@
+﻿@model About
+
+@{
+    var currentPath = Context.Request.Path.Value ?? "";
+}
+
+<header id="header" class="header dark-background d-flex flex-column justify-content-center">
+    <i class="header-toggle d-xl-none bi bi-list"></i>
+
+    <div class="header-container d-flex flex-column align-items-start">
+        <nav id="navmenu" class="navmenu">
+            <ul>
+                <li><a href="/" class="@(currentPath == "/" ? "active" : "")"><i class="bi bi-house navicon"></i>Ana Sayfa</a></li>
+                <li><a href="/hakkimda" class="@(currentPath.StartsWith("/hakkimda") ? "active" : "")"><i class="bi bi-person navicon"></i>Hakkımda</a></li>
+                <li><a href="/ozgecmis" class="@(currentPath.StartsWith("/ozgecmis") ? "active" : "")"><i class="bi bi-file-earmark-text navicon"></i>Özgeçmiş</a></li>
+                <li><a href="/portfolyo" class="@(currentPath.StartsWith("/portfolyo") ? "active" : "")"><i class="bi bi-images navicon"></i>Portfolyo</a></li>
+                <li><a href="/hizmetler" class="@(currentPath.StartsWith("/hizmetler") ? "active" : "")"><i class="bi bi-hdd-stack navicon"></i>Hizmetler</a></li>
+                <li><a href="/iletisim" class="@(currentPath.StartsWith("/iletisim") ? "active" : "")"><i class="bi bi-envelope navicon"></i>İletişim</a></li>
+            </ul>
+        </nav>
+
+        <div class="social-links text-center">
+            @if (Model != null)
+            {
+                if (!string.IsNullOrEmpty(Model.TwitterUrl))
+                {
+                    <a href="@Model.TwitterUrl" target="_blank" class="twitter"><i class="bi bi-twitter-x"></i></a>
+                }
+                if (!string.IsNullOrEmpty(Model.FacebookUrl))
+                {
+                    <a href="@Model.FacebookUrl" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
+                }
+                if (!string.IsNullOrEmpty(Model.InstagramUrl))
+                {
+                    <a href="@Model.InstagramUrl" target="_blank" class="instagram"><i class="bi bi-instagram"></i></a>
+                }
+                if (!string.IsNullOrEmpty(Model.LinkedinUrl))
+                {
+                    <a href="@Model.LinkedinUrl" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                }
+            }
+        </div>
+    </div>
+</header>

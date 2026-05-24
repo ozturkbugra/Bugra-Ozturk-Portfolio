@@ -63,7 +63,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Anasayfa}/{action=Index}/{id?}");
 
 
 await using (var scope = app.Services.CreateAsyncScope()) 

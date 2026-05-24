@@ -1,37 +1,49 @@
 ﻿using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
 
-public class SiteSettingService : ISiteSettingService
+namespace BugraOzturkPortfolio.Business.Concrete
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public SiteSettingService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
-
-    public async Task<SiteSetting?> GetSiteSettingAsync()
+    public class SiteSettingService : ISiteSettingService
     {
-        var repo = _unitOfWork.GetRepository<SiteSetting>();
-        return (await repo.GetAllAsync()).FirstOrDefault();
-    }
+        private readonly IUnitOfWork _unitOfWork;
+        public SiteSettingService(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
 
-    public async Task<(bool Success, string Message)> UpdateSiteSettingAsync(SiteSetting model)
-    {
-        var repo = _unitOfWork.GetRepository<SiteSetting>();
-        var exist = (await repo.GetAllAsync()).FirstOrDefault();
+        public async Task<SiteSetting?> GetSiteSettingAsync()
+        {
+            var repo = _unitOfWork.GetRepository<SiteSetting>();
+            return (await repo.GetAllAsync()).FirstOrDefault();
+        }
 
-        if (exist == null)
+        public async Task<(bool Success, string Message)> UpdateSiteSettingAsync(SiteSetting model)
         {
-            await repo.AddAsync(model);
+            var repo = _unitOfWork.GetRepository<SiteSetting>();
+            var exist = (await repo.GetAllAsync()).FirstOrDefault();
+
+            if (exist == null)
+            {
+                await repo.AddAsync(model);
+            }
+            else
+            {
+                exist.MetaTitle = model.MetaTitle;
+                exist.MetaKeywords = model.MetaKeywords;
+                exist.MetaDescription = model.MetaDescription;
+
+                if (!string.IsNullOrEmpty(model.FaviconUrl))
+                {
+                    exist.FaviconUrl = model.FaviconUrl;
+                }
+
+                if (!string.IsNullOrEmpty(model.AppleTouchIconUrl))
+                {
+                    exist.AppleTouchIconUrl = model.AppleTouchIconUrl;
+                }
+
+                exist.UpdatedDate = DateTime.UtcNow;
+                repo.Update(exist);
+            }
+            await _unitOfWork.SaveChangesAsync();
+            return (true, "Site ayarları başarıyla güncellendi.");
         }
-        else
-        {
-            exist.MetaTitle = model.MetaTitle;
-            exist.MetaKeywords = model.MetaKeywords;
-            exist.MetaDescription = model.MetaDescription;
-            exist.FaviconUrl = model.FaviconUrl;
-            exist.AppleTouchIconUrl = model.AppleTouchIconUrl;
-            exist.UpdatedDate = DateTime.UtcNow;
-            repo.Update(exist);
-        }
-        await _unitOfWork.SaveChangesAsync();
-        return (true, "Site ayarları başarıyla güncellendi.");
     }
 }
