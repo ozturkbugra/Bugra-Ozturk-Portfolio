@@ -24,8 +24,9 @@ namespace BugraOzturkPortfolio.DataAccess.Context
         public DbSet<Testimonial> Testimonials { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<User> Users { get; set; }
-
         public DbSet<SiteScript> SiteScripts { get; set; }
+        public DbSet<VisitorLog> VisitorLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
