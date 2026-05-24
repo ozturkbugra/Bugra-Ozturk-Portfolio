@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var firstName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.GivenName)?.Value ?? "";
+    var lastName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Surname)?.Value ?? "";
+    var username = User.Identity?.Name ?? "";
+    var fullNameWithUser = $"{firstName} {lastName} ({username})";
+}
+
+<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -147,7 +154,7 @@
                     <button class="dropdown-toggle user-trigger" data-bs-toggle="dropdown" aria-expanded="false">
                         <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="user-avatar">
                         <div class="user-brief">
-                            <span class="user-name">Buğra Öztürk</span>
+                            <span class="user-name">@fullNameWithUser</span>
                             <span class="user-role">Full Stack Developer</span>
                         </div>
                         <i class="bi bi-chevron-down user-chevron"></i>
@@ -157,8 +164,8 @@
                         <div class="user-menu-header">
                             <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="user-menu-avatar">
                             <div class="user-menu-info">
-                                <div class="user-menu-name">Buğra Öztürk</div>
-                                <div class="user-menu-email">bugra@example.com</div>
+                                <div class="user-menu-name">@firstName @lastName</div>
+                                <div class="user-menu-email">@User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value</div>
                             </div>
                         </div>
                         <div class="user-menu-body">
@@ -168,7 +175,7 @@
                             </a>
                         </div>
                         <div class="user-menu-footer">
-                            <a class="user-menu-logout" href="#">
+                            <a class="user-menu-logout" href="/Admin/Auth/Logout">
                                 <i class="bi bi-box-arrow-right"></i>
                                 <span>Çıkış Yap</span>
                             </a>
@@ -260,8 +267,8 @@
                         <span class="nav-text">Kategoriler</span>
                     </a>
                 </li>
-                
 
+                
                 <li class="nav-item">
                     <a class="nav-link" href="/Admin/Education">
                         <span class="nav-icon"><i class="ph ph-tag"></i></span>
@@ -313,12 +320,13 @@
             </ul>
         </nav>
 
+
         <div class="sidebar-footer">
             <div class="sidebar-footer-user">
                 <a href="#" class="sidebar-footer-profile">
                     <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="sidebar-footer-avatar">
                     <div class="sidebar-footer-info">
-                        <div class="sidebar-footer-name">Buğra Öztürk</div>
+                        <div class="sidebar-footer-name">@fullNameWithUser</div>
                         <div class="sidebar-footer-role">Geliştirici</div>
                     </div>
                 </a>

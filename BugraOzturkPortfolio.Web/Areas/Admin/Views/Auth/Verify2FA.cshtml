@@ -1,0 +1,125 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "İki Aşamalı Doğrulama";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - BugraOzturkPortfolio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link href="/Admin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/Admin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="/Admin/assets/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="fauth fauth-centered">
+        <main class="fauth-main">
+            <div class="fauth-main-inner">
+                <a href="#" class="fauth-logo fauth-logo-center">
+                    <img src="/Admin/assets/img/logo.webp" alt="BugraPortfolio">
+                    <span>BugraOzturk</span>
+                </a>
+
+                <div class="fauth-card fauth-card-sm">
+                    <div class="fauth-card-head text-center">
+                        <span class="fauth-icon"><i class="bi bi-shield-check"></i></span>
+                        <h1 class="fauth-title">2FA Doğrulaması</h1>
+                        <p class="fauth-subtitle">Authenticator uygulamanızdaki 6 haneli doğrulama kodunu girin.</p>
+                    </div>
+
+                    <div id="alertMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form class="fauth-form" id="twoFactorForm" novalidate>
+                        <div class="fauth-field">
+                            <label class="form-label visually-hidden">Doğrulama Kodu</label>
+                            <div class="fauth-otp">
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                <span class="fauth-otp-gap">-</span>
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                                <input type="text" class="form-control fauth-otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn btn-primary w-100">Kodu Doğrula</button>
+                    </form>
+
+                    <p class="fauth-foot-text"><a href="/Admin/Auth/Login" class="fauth-link"><i class="bi bi-arrow-left"></i> Giriş ekranına dön</a></p>
+                </div>
+
+                <footer class="footer-centered">
+                    <div class="footer-copyright">&copy; @DateTime.UtcNow.Year <a href="#">BugraOzturk</a>. Tüm Hakları Saklıdır.</div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+            const inputs = document.querySelectorAll('.fauth-otp-input');
+
+            // Kutucuklar arası akıllı geçiş logic'i
+            inputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (input.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && input.value.length === 0 && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+            });
+
+            document.getElementById('twoFactorForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const alertDiv = document.getElementById('alertMessage');
+                const btn = document.getElementById('btnSubmit');
+
+                alertDiv.classList.add('d-none');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Doğrulanıyor...';
+
+                // 6 kutudaki rakamları birleştirip tek bir code parametresi yapıyoruz
+                let code = '';
+                inputs.forEach(input => code += input.value);
+
+                const formData = new FormData();
+                formData.append('code', code);
+
+                try {
+                    const response = await fetch('/Admin/Auth/Verify2FA', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const res = await response.json();
+
+                    if (res.success) {
+                        window.location.href = '/Admin/Dashboard/Index';
+                    } else {
+                        alertDiv.textContent = res.message;
+                        alertDiv.classList.remove('d-none');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Kodu Doğrula';
+                    }
+                } catch (error) {
+                    alertDiv.textContent = 'Sistem hatası oluştu!';
+                    alertDiv.classList.remove('d-none');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Kodu Doğrula';
+                }
+            });
+    </script>
+</body>
+</html>

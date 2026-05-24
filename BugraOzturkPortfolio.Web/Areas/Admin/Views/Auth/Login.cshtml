@@ -1,0 +1,142 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - BugraOzturkPortfolio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <link href="~/Admin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/Admin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="~/Admin/assets/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="fauth fauth-split">
+        <aside class="fauth-visual">
+            <a href="#" class="fauth-logo">
+                <img src="~/Admin/assets/img/logo.webp" alt="BugraPortfolio">
+                <span>BugraOzturk</span>
+            </a>
+            <span class="fauth-kicker">Yönetim Paneli</span>
+            <h2 class="fauth-visual-title">Portfolyo operasyonlarınızı tek bir merkezden yönetin.</h2>
+            <p class="fauth-visual-text">İçeriklerinizi dinamik olarak güncelleyin, sistem güvenliğini ve 2FA doğrulamalarını kontrol edin.</p>
+            <div class="fauth-visual-points">
+                <div class="fauth-point"><i class="bi bi-graph-up-arrow"></i> Gerçek zamanlı yönetim</div>
+                <div class="fauth-point"><i class="bi bi-shield-lock"></i> İki aşamalı hesap güvenliği</div>
+                <div class="fauth-point"><i class="bi bi-lightning-charge"></i> Hızlı asenkron iş akışları</div>
+            </div>
+        </aside>
+
+        <main class="fauth-main">
+            <div class="fauth-main-inner">
+                <div class="fauth-card">
+                    <div class="fauth-card-head">
+                        <h1 class="fauth-title">Tekrar Hoş Geldiniz</h1>
+                        <p class="fauth-subtitle">Devam etmek için lütfen giriş yapın.</p>
+                    </div>
+
+                    <div id="alertMessage" class="alert alert-danger d-none" role="alert"></div>
+
+                    <form class="fauth-form" id="loginForm" novalidate>
+                        <div class="fauth-field">
+                            <label for="username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
+                        </div>
+
+                        <div class="fauth-field">
+                            <div class="fauth-row-between">
+                                <label for="password" class="form-label">Şifre</label>
+                                <a href="#" class="fauth-link">Şifremi Unuttum?</a>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Şifrenizi girin" required>
+                                <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="fauth-row-between mb-3">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="remember" name="rememberMe" value="true">
+                                <label class="form-check-label" for="remember">Beni Hatırla</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn btn-primary w-100">Giriş Yap</button>
+                    </form>
+                </div>
+
+                <footer class="footer-centered">
+                    <div class="footer-copyright">&copy; @DateTime.UtcNow.Year <a href="#">BugraOzturk</a>. Tüm Hakları Saklıdır.</div>
+                </footer>
+            </div>
+        </main>
+    </div>
+
+    <script>
+            // Şifre Göster/Gizle Mantığı
+            document.getElementById('togglePasswordBtn').addEventListener('click', function() {
+                const passwordInput = document.getElementById('password');
+                const icon = this.querySelector('i');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.className = 'bi bi-eye-slash';
+                } else {
+                    passwordInput.type = 'password';
+                    icon.className = 'bi bi-eye';
+                }
+            });
+
+            // Asenkron Form Gönderimi
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const alertDiv = document.getElementById('alertMessage');
+                const btn = document.getElementById('btnSubmit');
+
+                alertDiv.classList.add('d-none');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kontrol Ediliyor...';
+
+                const formData = new FormData(this);
+
+                try {
+                    const response = await fetch('/Admin/Auth/Login', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const res = await response.json();
+
+                    if (res.success) {
+                        if (res.requiresTwoFactor) {
+                            // Kullanıcı adı/şifre doğru ve 2FA aktifse doğrulama sayfasına yönlendir
+                            window.location.href = '/Admin/Auth/Verify2FA';
+                        } else {
+                            // 2FA pasifse direkt panele gir
+                            window.location.href = '/Admin/Dashboard/Index';
+                        }
+                    } else {
+                        alertDiv.textContent = res.message;
+                        alertDiv.classList.remove('d-none');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Giriş Yap';
+                    }
+                } catch (error) {
+                    alertDiv.textContent = 'Bağlantı hatası oluştu!';
+                    alertDiv.classList.remove('d-none');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Giriş Yap';
+                }
+            });
+    </script>
+</body>
+</html>

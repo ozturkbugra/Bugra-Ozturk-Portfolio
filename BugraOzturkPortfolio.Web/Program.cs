@@ -3,6 +3,7 @@ using BugraOzturkPortfolio.Business.Concrete;
 using BugraOzturkPortfolio.DataAccess.Context;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,7 +26,17 @@ builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<ISiteSettingService, SiteSettingService>();
 builder.Services.AddScoped<ITestimonialService, TestimonialService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Admin/Auth/Login";
+        options.LogoutPath = "/Admin/Auth/Logout";
+        options.AccessDeniedPath = "/Admin/Auth/AccessDenied";
+        options.Cookie.Name = "BugraPortfolio.Auth";
+        options.Cookie.HttpOnly = true;
+    });
 
 var app = builder.Build();
 
@@ -40,6 +51,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
