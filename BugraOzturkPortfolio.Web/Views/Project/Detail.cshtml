@@ -1,0 +1,113 @@
+﻿@model ProjectDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Project.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-title dark-background">
+    <div class="container d-lg-flex justify-content-between align-items-center">
+        <h1 class="mb-2 mb-lg-0">@Model.Project.Title</h1>
+        <nav class="breadcrumbs">
+            <ol>
+                <li><a href="/">Anasayfa</a></li>
+                <li class="current">Proje Detayları</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<section id="portfolio-details" class="portfolio-details section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row gy-4">
+            <div class="col-lg-8">
+                <div class="portfolio-details-slider swiper init-swiper">
+                    <script type="application/json" class="swiper-config">
+                                            {
+                                              "loop": true,
+                                              "speed": 600,
+                                              "autoplay": {
+                                                "delay": 5000
+                                              },
+                                              "slidesPerView": "auto",
+                                              "pagination": {
+                                                "el": ".swiper-pagination",
+                                                "type": "bullets",
+                                                "clickable": true
+                                              }
+                                            }
+                    </script>
+
+                    <div class="swiper-wrapper align-items-center">
+                        <div class="swiper-slide">
+                            <img src="@Model.Project.CoverImageUrl" alt="@Model.Project.Title" class="img-fluid">
+                        </div>
+                        @if (Model.Project.ProjectImages != null && Model.Project.ProjectImages.Any())
+                        {
+                            foreach (var img in Model.Project.ProjectImages)
+                            {
+                                <div class="swiper-slide">
+                                    <img src="@img.ImageUrl" alt="@Model.Project.Title" class="img-fluid">
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="portfolio-info" data-aos="fade-left" data-aos-delay="200">
+                    <h3>Proje Bilgileri</h3>
+                    <ul>
+                        <li><strong>Kategori</strong>: @(string.Join(", ", Model.Categories.Select(c => c.Name)))</li>
+                        @if (!string.IsNullOrEmpty(Model.Project.Client))
+                        {
+                            <li><strong>Müşteri / İstemci</strong>: @Model.Project.Client</li>
+                        }
+                        @if (Model.Project.ProjectDate.HasValue)
+                        {
+                            <li><strong>Proje Tarihi</strong>: @Model.Project.ProjectDate.Value.ToString("dd MMMM yyyy")</li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Project.ProjectUrl))
+                        {
+                            <li><strong>Proje URL</strong>: <a href="@Model.Project.ProjectUrl" target="_blank">@Model.Project.ProjectUrl.Replace("https://", "")</a></li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Project.GithubUrl))
+                        {
+                            <li><strong>GitHub</strong>: <a href="@Model.Project.GithubUrl" target="_blank">Kaynak Kodu</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div class="portfolio-description" data-aos="fade-up" data-aos-delay="300">
+                    <h2>Proje Genel Bakış</h2>
+                    <div class="mb-4" style="white-space: pre-line;">
+                        @Html.Raw(Model.Project.FullDescription)
+                    </div>
+
+                    @if (Model.ProjectFeatures != null && Model.ProjectFeatures.Any())
+                    {
+                        <div class="features mt-4">
+                            <h3>Öne Çıkan Teknik Özellikler</h3>
+                            <div class="row gy-3">
+                                @foreach (var feature in Model.ProjectFeatures)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="feature-item" data-aos="fade-up" data-aos-delay="400">
+                                            <i class="@feature.IconClass"></i>
+                                            <h4>@feature.Title</h4>
+                                            <p>@feature.Description</p>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

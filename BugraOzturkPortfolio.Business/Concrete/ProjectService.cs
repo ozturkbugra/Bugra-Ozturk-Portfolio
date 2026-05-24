@@ -342,5 +342,30 @@ namespace BugraOzturkPortfolio.Business.Concrete
             await _unitOfWork.SaveChangesAsync();
             return (true, "Proje özelliği başarıyla silindi.");
         }
+
+        public async Task<Project?> GetProjectBySlugWithRelationsAsync(string slug)
+        {
+            var projectRepo = _unitOfWork.GetRepository<Project>();
+            var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
+            var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
+
+            var projects = await projectRepo.GetAllAsync();
+            var project = projects.FirstOrDefault(x => x.Slug == slug && !x.IsDeleted);
+
+            if (project != null)
+            {
+                var allImages = await imageRepo.GetAllAsync();
+                var projectImages = allImages.Where(x => x.ProjectId == project.Id).OrderBy(x => x.Order).ToList();
+                foreach (var img in projectImages) { img.Project = null; }
+                project.ProjectImages = projectImages;
+
+                var allMappings = await mappingRepo.GetAllAsync();
+                var projectMappings = allMappings.Where(x => x.ProjectId == project.Id).ToList();
+                foreach (var map in projectMappings) { map.Project = null; map.Category = null; }
+                project.CategoryMappings = projectMappings;
+            }
+
+            return project;
+        }
     }
 }

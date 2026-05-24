@@ -15,5 +15,7 @@ namespace BugraOzturkPortfolio.Business.Abstract
         Task<(bool Success, string Message)> DeleteProjectFeatureAsync(Guid featureId);
 
         Task<List<Project>> GetAllProjectsWithRelationsAsync();
+
+        Task<Project?> GetProjectBySlugWithRelationsAsync(string slug);
     }
 }
