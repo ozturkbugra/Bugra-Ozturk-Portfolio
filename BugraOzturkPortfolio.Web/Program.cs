@@ -50,4 +50,19 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+
+await using (var scope = app.Services.CreateAsyncScope()) 
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var unitOfWork = services.GetRequiredService<IUnitOfWork>();
+        await DbInitializer.SeedAsync(unitOfWork);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Seed data hatasý: {ex.Message}");
+    }
+}
+
 app.Run();

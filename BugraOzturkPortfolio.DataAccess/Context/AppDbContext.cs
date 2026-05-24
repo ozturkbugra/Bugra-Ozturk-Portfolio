@@ -23,6 +23,7 @@ namespace BugraOzturkPortfolio.DataAccess.Context
         public DbSet<SiteSetting> SiteSettings { get; set; }
         public DbSet<Testimonial> Testimonials { get; set; }
         public DbSet<Skill> Skills { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
