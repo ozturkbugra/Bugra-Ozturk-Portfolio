@@ -20,7 +20,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
         public async Task LogVisitAsync(string ipAddress, string userAgent)
         {
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.Now.Date;
             string rawData = $"{ipAddress}_{userAgent}_{today:yyyyMMdd}";
             string hashedData = ComputeSha256Hash(rawData);
 
