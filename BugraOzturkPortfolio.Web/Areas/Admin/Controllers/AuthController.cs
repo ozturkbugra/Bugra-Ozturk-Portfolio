@@ -12,10 +12,12 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
     public class AuthController : Controller
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IEmailService emailService)
         {
             _authService = authService;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -161,5 +163,60 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             TempData.Remove("TwoFactorLastName");
             TempData.Remove("RememberMe");
         }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return Json(new { success = false, message = "Lütfen e-posta adresinizi giriniz." });
+
+            var (success, message, token) = await _authService.GeneratePasswordResetTokenAsync(email);
+            if (!success || token == null)
+                return Json(new { success = false, message });
+
+            var resetLink = $"{Request.Scheme}://{Request.Host}/Admin/Auth/ResetPassword?email={UrlEncode(email)}&token={token}";
+
+            try
+            {
+                await _emailService.SendResetPasswordEmailAsync(email, resetLink);
+                return Json(new { success = true, message = "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi." });
+            }
+            catch
+            {
+                return Json(new { success = false, message = "E-posta gönderilirken teknik bir hata oluştu!" });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+                return RedirectToAction("Login");
+
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string email, string token, string password, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirmPassword))
+                return Json(new { success = false, message = "Şifre alanları boş bırakılamaz." });
+
+            if (password != confirmPassword)
+                return Json(new { success = false, message = "Şifreler birbiriyle uyuşmuyor!" });
+
+            var (success, message) = await _authService.ResetPasswordAsync(email, token, password);
+            return Json(new { success, message });
+        }
+
+        private string UrlEncode(string value) => System.Net.WebUtility.UrlEncode(value);
     }
 }
