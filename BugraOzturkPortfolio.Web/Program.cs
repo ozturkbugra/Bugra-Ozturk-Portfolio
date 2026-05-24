@@ -3,6 +3,7 @@ using BugraOzturkPortfolio.Business.Concrete;
 using BugraOzturkPortfolio.DataAccess.Context;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
+using BugraOzturkPortfolio.Web.Middlewares;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +32,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISiteScriptService, SiteScriptService>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
+builder.Services.AddScoped<IVisitorLogService, VisitorLogService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -45,7 +47,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(10); // Güvenlik için 10 dakika sonra temizlensin
+    options.IdleTimeout = TimeSpan.FromMinutes(10); 
     
 });
 
@@ -59,7 +61,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseMiddleware<VisitorTrackerMiddleware>();
 app.UseRouting();
 
 app.UseAuthentication();
