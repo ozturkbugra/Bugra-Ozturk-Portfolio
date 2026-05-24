@@ -1,0 +1,229 @@
+﻿@{
+    ViewData["Title"] = "Sistem Kullanıcıları Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Sistem Kullanıcıları</h1>
+            <p class="fx-subtitle">Yönetim paneline erişimi olan admin ve editör kullanıcılarının yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openUserModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Kullanıcı Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="userToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="userToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="userToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body pt-3">
+            <table class="table align-middle" id="userTable">
+                <thead>
+                    <tr>
+                        <th>Ad Soyad (Kullanıcı Adı)</th>
+                        <th>E-Posta Adresi</th>
+                        <th>2FA Durumu</th>
+                        <th data-sortable="false" class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form id="userForm" novalidate>
+                <input type="hidden" id="UserId" name="Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Kullanıcı Tanımla</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Adı</label>
+                            <input type="text" class="form-control" id="FirstName" name="FirstName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Soyadı</label>
+                            <input type="text" class="form-control" id="LastName" name="LastName" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="Username" name="Username" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">E-Posta Adresi</label>
+                            <input type="email" class="form-control" id="Email" name="Email" required />
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold">Şifre</label>
+                            <input type="password" class="form-control" id="PlainPassword" name="plainPassword" placeholder="Değiştirmek istemiyorsanız boş bırakın" />
+                            <div id="passwordHelp" class="form-text small text-muted d-none">Yeni kayıtlarda şifre zorunludur.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="btnSubmit" class="btn btn-primary px-4">
+                        <i class="bi bi-shield-check me-1"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const userModal = new bootstrap.Modal(document.getElementById('userModal'));
+        let dataTableInstance = null;
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/Admin/User/GetListJson');
+                const data = await response.json();
+
+                if (dataTableInstance) {
+                    dataTableInstance.destroy();
+                }
+
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const tfaBadge = item.isTwoFactorEnabled
+                        ? `<span class="badge bg-soft-success text-success px-2 py-1"><i class="bi bi-shield-check me-1"></i>Aktif</span>`
+                        : `<span class="badge bg-soft-secondary text-secondary px-2 py-1"><i class="bi bi-shield-x me-1"></i>Pasif</span>`;
+
+                    const tfaResetBtn = item.isTwoFactorEnabled
+                        ? `<button class="btn btn-sm btn-outline-secondary me-1" onclick="reset2FA('${item.id}')" title="2FA Sıfırla"><i class="bi bi-shield-slash"></i></button>`
+                        : '';
+
+                    tbody.innerHTML += `<tr>
+                        <td class="fw-bold">${item.firstName} ${item.lastName} <span class="text-muted small font-monospace">(${item.username})</span></td>
+                        <td>${item.email}</td>
+                        <td>${tfaBadge}</td>
+                        <td class="text-end">
+                            ${tfaResetBtn}
+                            <button class="btn btn-sm btn-outline-warning" onclick="editUser('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+
+                const tableEl = document.getElementById('userTable');
+                dataTableInstance = new simpleDatatables.DataTable(tableEl, {
+                    searchable: true,
+                    fixedHeight: false,
+                    perPage: 10,
+                    labels: {
+                        placeholder: "Ara...",
+                        perPage: "gösteriliyor",
+                        noRows: "Kayıt bulunamadı",
+                        info: "{rows} kayıttan {start} ile {end} arası gösteriliyor"
+                    }
+                });
+
+            } catch (error) {
+                showUserToast("Veriler yüklenirken bir hata oluştu!", false);
+            }
+        }
+
+        document.getElementById('userForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> İşleniyor...';
+
+            const formData = new FormData(e.target);
+            const res = await (await fetch('/Admin/User/Save', { method: 'POST', body: formData })).json();
+
+            if(res.success) {
+                showUserToast(res.message, true);
+                userModal.hide();
+                await loadUsers();
+            } else {
+                showUserToast(res.message, false);
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-shield-check me-1"></i> Kaydet';
+        };
+
+        function openUserModal() {
+            document.getElementById('userForm').reset();
+            document.getElementById('UserId').value = '00000000-0000-0000-0000-000000000000';
+            document.getElementById('modalTitle').textContent = 'Yeni Kullanıcı Tanımla';
+            document.getElementById('passwordHelp').classList.remove('d-none');
+            document.getElementById('PlainPassword').required = true;
+            userModal.show();
+        }
+
+        async function editUser(id) {
+            const res = await (await fetch('/Admin/User/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('UserId').value = item.id;
+                document.getElementById('FirstName').value = item.firstName;
+                document.getElementById('LastName').value = item.lastName;
+                document.getElementById('Username').value = item.username;
+                document.getElementById('Email').value = item.email;
+                document.getElementById('PlainPassword').value = '';
+                document.getElementById('PlainPassword').required = false;
+                document.getElementById('passwordHelp').classList.add('d-none');
+                document.getElementById('modalTitle').textContent = 'Kullanıcı Bilgilerini Güncelle';
+                userModal.show();
+            }
+        }
+
+        async function deleteUser(id) {
+            if(confirm('Bu kullanıcıyı sistemden kaldırmak istediğinize emin misiniz?')) {
+                const res = await (await fetch('/Admin/User/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showUserToast(res.message, true);
+                    await loadUsers();
+                } else {
+                    showUserToast(res.message, false);
+                }
+            }
+        }
+
+        async function reset2FA(id) {
+            if(confirm('Kullanıcının iki aşamalı doğrulama (2FA) korumasını sıfırlamak istediğinize emin misiniz?')) {
+                const res = await (await fetch('/Admin/User/Reset2FA?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showUserToast(res.message, true);
+                    await loadUsers();
+                } else {
+                    showUserToast(res.message, false);
+                }
+            }
+        }
+
+        function showUserToast(msg, success) {
+            const el = document.getElementById('userToast');
+            document.getElementById('userToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('userToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadUsers();
+        });
+    </script>
+}
