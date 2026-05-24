@@ -34,10 +34,20 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             var repo = _unitOfWork.GetRepository<Category>();
 
+            var allCategories = await repo.GetAllAsync();
+            var isDuplicate = allCategories.Any(x =>
+                x.Name.ToLower() == model.Name.ToLower() &&
+                x.Id != model.Id &&
+                !x.IsDeleted);
+
+            if (isDuplicate)
+                return (false, "Bu isimde zaten bir kategori mevcut!");
+
             model.Slug = GenerateSlug(model.Name);
 
             if (model.Id == Guid.Empty || model.Id == default)
             {
+                model.IsDeleted = false;
                 await repo.AddAsync(model);
                 await _unitOfWork.SaveChangesAsync();
                 return (true, "Kategori başarıyla eklendi.");
@@ -45,8 +55,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
             else
             {
                 var existCategory = await repo.GetByIdAsync(model.Id);
-                if (existCategory == null)
-                    return (false, "Güncellenecek kategori bulunamadı!");
+                if (existCategory == null) return (false, "Güncellenecek kategori bulunamadı!");
 
                 existCategory.Name = model.Name;
                 existCategory.Slug = model.Slug;
@@ -66,11 +75,18 @@ namespace BugraOzturkPortfolio.Business.Concrete
             if (existCategory == null)
                 return (false, "Silinecek kategori bulunamadı!");
 
+            var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
+            var mappings = await mappingRepo.GetAllAsync();
+
+            if (mappings.Any(x => x.CategoryId == id))
+                return (false, "Bu kategori projelere bağlı olduğu için silinemez!");
+
             existCategory.IsDeleted = true;
+            existCategory.UpdatedDate = DateTime.UtcNow;
 
             repo.Update(existCategory);
             await _unitOfWork.SaveChangesAsync();
-            return (true, "Kategori başarıyla silindi (arşivlendi).");
+            return (true, "Kategori başarıyla arşivlendi.");
         }
 
         // Türkçe karakterleri temizleyen ve SEO uyumlu URL üreten metot
