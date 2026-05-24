@@ -18,7 +18,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<Category>();
             var categories = await repo.GetAllAsync();
-            return categories.ToList();
+            return categories.Where(x => !x.IsDeleted).ToList();
         }
 
         public async Task<Category?> GetCategoryByIdAsync(Guid id)
@@ -33,6 +33,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 return (false, "Lütfen kategori adını doldurunuz!");
 
             var repo = _unitOfWork.GetRepository<Category>();
+
             model.Slug = GenerateSlug(model.Name);
 
             if (model.Id == Guid.Empty || model.Id == default)
@@ -49,6 +50,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
                 existCategory.Name = model.Name;
                 existCategory.Slug = model.Slug;
+                existCategory.UpdatedDate = DateTime.UtcNow;
 
                 repo.Update(existCategory);
                 await _unitOfWork.SaveChangesAsync();
@@ -64,9 +66,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
             if (existCategory == null)
                 return (false, "Silinecek kategori bulunamadı!");
 
-            repo.Delete(existCategory);
+            existCategory.IsDeleted = true;
+
+            repo.Update(existCategory);
             await _unitOfWork.SaveChangesAsync();
-            return (true, "Kategori başarıyla silindi.");
+            return (true, "Kategori başarıyla silindi (arşivlendi).");
         }
 
         // Türkçe karakterleri temizleyen ve SEO uyumlu URL üreten metot
