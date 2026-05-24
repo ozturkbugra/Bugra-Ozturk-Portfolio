@@ -1,0 +1,58 @@
+﻿@using Microsoft.AspNetCore.Html
+@model List<Service>
+
+@{
+    HtmlString RenderServiceTitle(string title)
+    {
+        if (string.IsNullOrEmpty(title)) return new HtmlString(string.Empty);
+
+        var words = title.Trim().Split(' ');
+        if (words.Length == 1) return new HtmlString(title);
+
+        var lastWord = words.Last();
+        var mainPart = string.Join(" ", words.Take(words.Length - 1));
+
+        return new HtmlString($"{mainPart} <span>{lastWord}</span>");
+    }
+}
+
+<section id="services" class="services section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Hizmetler</h2>
+        <p>Geliştirdiğim projelerde sunduğum profesyonel yazılım çözümleri</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center">
+            @if (Model != null && Model.Any())
+            {
+                int delayCounter = 100;
+
+                foreach (var service in Model)
+                {
+                    <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="@delayCounter">
+                        <div class="service-card position-relative z-1">
+                            <div class="service-icon">
+                                <i class="@(string.IsNullOrEmpty(service.IconClass) ? "bi bi-activity" : service.IconClass)"></i>
+                            </div>
+                            <a href="/hizmet-detay/@service.Id" class="card-action d-flex align-items-center justify-content-center rounded-circle">
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
+                            <h3>
+                                <a href="/hizmet-detay/@service.Id">
+                                    @RenderServiceTitle(service.Title)
+                                </a>
+                            </h3>
+                            <p>
+                                @service.Description
+                            </p>
+                        </div>
+                    </div>
+
+                    delayCounter += 100;
+                    if (delayCounter > 300) delayCounter = 100;
+                }
+            }
+        </div>
+    </div>
+</section>
