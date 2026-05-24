@@ -16,8 +16,15 @@ namespace BugraOzturkPortfolio.Web.Controllers
         }
 
         [HttpPost("Contact/SendMessage")]
-        public async Task<IActionResult> SendMessage(ContactMessage model)
+        public async Task<IActionResult> SendMessage(ContactMessage model, [FromForm] int? UserCaptchaAnswer)
         {
+            int? correctResult = HttpContext.Session.GetInt32("CaptchaResult");
+
+            if (correctResult == null || UserCaptchaAnswer == null || UserCaptchaAnswer != correctResult)
+            {
+                return Json(new { success = false, message = "Bot doğrulaması başarısız! İşlem sonucunu kontrol edin" });
+            }
+
             if (string.IsNullOrEmpty(model.FullName) || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Body))
             {
                 return Json(new { success = false, message = "Lütfen zorunlu alanları doldurunuz!" });

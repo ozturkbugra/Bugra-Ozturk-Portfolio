@@ -70,6 +70,10 @@
                             <div class="col-12">
                                 <textarea class="form-control" name="Body" rows="6" placeholder="Mesajınız" required></textarea>
                             </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-semibold text-secondary">Bot Koruması: @ViewBag.Num1 + @ViewBag.Num2 = ?</label>
+                                <input type="number" name="UserCaptchaAnswer" class="form-control" placeholder="İşlem sonucunu yazınız" required />
+                            </div>
                             <div class="col-12 text-center">
                                 <div class="loading" id="contactLoading" style="display:none;">Gönderiliyor...</div>
                                 <div class="error-message" id="contactError" style="display:none;"></div>
@@ -117,7 +121,7 @@
         } catch (error) {
             loader.style.display = 'none';
             errBox.style.display = 'block';
-            errBox.textContent = 'Bağlantı hatası oluştu aga!';
+            errBox.textContent = 'Bağlantı hatası oluştu!';
         } finally {
             btn.disabled = false;
         }
