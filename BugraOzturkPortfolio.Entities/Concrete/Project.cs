@@ -5,6 +5,7 @@ namespace BugraOzturkPortfolio.Entities.Concrete
     public class Project : BaseEntity
     {
         public string Title { get; set; }
+        public string Slug { get; set; }
         public string ShortDescription { get; set; }
         public string FullDescription { get; set; }
         public string CoverImageUrl { get; set; }

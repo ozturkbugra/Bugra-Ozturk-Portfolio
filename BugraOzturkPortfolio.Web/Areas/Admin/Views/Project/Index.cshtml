@@ -6,7 +6,7 @@
     <div class="page-header fx-page-header">
         <div>
             <h1 class="page-title">Projelerim</h1>
-            <p class="fx-subtitle">Portfolyonuzda sergilenecek projelerin yönetim, listelememd ve düzenleme paneli.</p>
+            <p class="fx-subtitle">Portfolyonuzda sergilenecek projelerin yönetim, listeleme ve düzenleme paneli.</p>
         </div>
         <div class="page-header-actions">
             <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
@@ -28,7 +28,6 @@
     </div>
 
     <div class="row">
-
         <div class="row d-none" id="projectDetailPanel">
             <div class="col-12 mb-3">
                 <button class="btn btn-outline-secondary btn-sm" onclick="closeProjectDetailPanel()">
@@ -96,7 +95,7 @@
             </div>
         </div>
 
-        <div class="col-12">
+        <div class="col-12" id="projectMainGrid">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">Mevcut Projeler</h5>
@@ -173,7 +172,7 @@
 
                     <div class="mb-3">
                         <label for="ProjectCategories" class="form-label fw-semibold">Proje Kategorileri</label>
-                        <select class="form-select" id="ProjectCategories" name="SelectedCategoryIds" multiple data-choices data-choices-removeitem="true" data-choices-search="true">
+                        <select class="form-select" id="ProjectCategories" name="SelectedCategoryIds" multiple>
                         </select>
                     </div>
 
@@ -328,9 +327,9 @@
                             <td>${dateStr}</td>
                             <td><span class="badge bg-secondary">${item.order}</span></td>
                             <td class="text-end">
-                                <a class="btn btn-outline-primary btn-sm me-1" href="/Admin/Project/Detail/${item.id}" title="Detayları Yönet">
+                                <button class="btn btn-outline-primary btn-sm me-1" onclick="openProjectDetailPanel('${item.id}', '${item.title.replace(/'/g, "\\'")}')" title="Detayları Yönet">
                                     <i class="bi bi-gear"></i> Detayları Yönet
-                                </a>
+                                </button>
                                 <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
                                 <button class="btn btn-outline-danger btn-sm" onclick="deleteProject('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
                             </td>
@@ -349,9 +348,12 @@
         function openCreateModal() {
             document.getElementById('projectForm').reset();
             document.getElementById('Id').value = "00000000-0000-0000-0000-000000000000";
+
+            // Choices.js havuzunu güvenli sıfırla
             if (choicesInstance) {
                 choicesInstance.removeActiveItems();
             }
+
             quill.root.innerHTML = '';
             document.getElementById('projectPreviewContainer').classList.add('d-none');
             document.getElementById('modalTitle').textContent = 'Yeni Proje Ekle';
@@ -378,6 +380,7 @@
                             document.getElementById('ProjectDate').value = '';
                         }
 
+                        // Eski Choices.js seçimlerini native uçur ve havada doldur
                         if (choicesInstance && item.categoryMappings) {
                             choicesInstance.removeActiveItems();
                             const mappedIds = item.categoryMappings.map(m => m.categoryId);
@@ -444,6 +447,7 @@
                         select.appendChild(option);
                     });
 
+                    // Orijinal Choices.js nesnesini burada güvenle koruyoruz aga
                     choicesInstance = new Choices(select, {
                         removeItemButton: true,
                         searchEnabled: true,
@@ -453,20 +457,16 @@
                 });
         }
 
+        let currentActiveProjectId = null;
 
-                let currentActiveProjectId = null;
-
-        // 1. PANELİ AÇMA VE VERİLERİ HAVADA DETAYLANDIRMA
         function openProjectDetailPanel(projectId, projectTitle) {
             currentActiveProjectId = projectId;
             document.getElementById('detailPanelProjectTitle').textContent = projectTitle + " - Detay Yönetimi";
             document.getElementById('FeatureProjectId').value = projectId;
 
-            // Ana listeyi gizle, detay panelini patlat aga
-            document.getElementById('projectTable').closest('.row').classList.add('d-none');
+            document.getElementById('projectMainGrid').classList.add('d-none');
             document.getElementById('projectDetailPanel').classList.remove('d-none');
 
-            // Verileri asenkron yükle
             loadDetailGallery();
             loadDetailFeatures();
         }
@@ -474,10 +474,9 @@
         function closeProjectDetailPanel() {
             currentActiveProjectId = null;
             document.getElementById('projectDetailPanel').classList.add('d-none');
-            document.getElementById('projectTable').closest('.row').classList.remove('d-none');
+            document.getElementById('projectMainGrid').classList.remove('d-none');
         }
 
-        // 2. TEKİL GALERİ RESİMLERİNİ GETİRME VE SİLME ŞOVU
         function loadDetailGallery() {
             fetch(`/Admin/Project/GetProjectById?id=${currentActiveProjectId}`)
                 .then(response => response.json())
@@ -492,7 +491,7 @@
 
                     res.data.projectImages.forEach(img => {
                         const div = document.createElement('div');
-                        div.className = 'col-md-4 col-6 position-relative gallery-item-box';
+                        div.className = 'col-md-4 col-6 position-relative';
                         div.innerHTML = `
                             <div class="card p-1 border">
                                 <img src="${img.imageUrl}" class="rounded w-100" style="height: 100px; object-fit: cover;" />
@@ -520,16 +519,16 @@
                 .then(data => {
                     if (data.success) {
                         showProjectToast(data.message, true);
-                        loadDetailGallery(); // Havada tazeleyin aga
+                        loadDetailGallery();
                     } else {
                         showProjectToast(data.message, false);
                     }
-                    fileInput.value = ''; // Inputu temizle
+                    fileInput.value = '';
                 });
         }
 
         function deleteDetailGalleryImage(imageId) {
-            if (confirm('Bu görseli sunucudan ve galeriden kalıcı olarak silmek istediğine emin misiniz aga?')) {
+            if (confirm('Bu görseli sunucudan ve galeriden kalıcı olarak silmek istediğinize emin misiniz aga?')) {
                 const formData = new FormData();
                 formData.append('imageId', imageId);
 
@@ -546,7 +545,6 @@
             }
         }
 
-        // 3. DİNAMİK ÖZELLİK (FEATURE) AJAL TRAFİĞİ
         function loadDetailFeatures() {
             fetch(`/Admin/Project/GetFeatures?projectId=${currentActiveProjectId}`)
                 .then(response => response.json())
@@ -573,7 +571,6 @@
                 });
         }
 
-        // Özellik Formu Gönderimi (Ekleme)
         document.getElementById('featureForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -591,7 +588,7 @@
                         document.getElementById('featureForm').reset();
                         document.getElementById('FeatureId').value = '';
                         document.getElementById('FeatureProjectId').value = currentActiveProjectId;
-                        loadDetailFeatures(); // Listeyi anlık tazele aga
+                        loadDetailFeatures();
                     } else {
                         showProjectToast(data.message, false);
                     }
@@ -599,7 +596,7 @@
         });
 
         function deleteDetailFeature(featureId) {
-            if (confirm('Bu teknik özelliği silmek istediğinize emin misiniz aga?')) {
+            if (confirm('Bu teknik profesyonel özelliği silmek istediğinize emin misiniz aga?')) {
                 const formData = new FormData();
                 formData.append('featureId', featureId);
 

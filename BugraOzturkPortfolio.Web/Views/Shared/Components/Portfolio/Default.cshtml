@@ -1,0 +1,88 @@
+﻿@model (List<BugraOzturkPortfolio.Entities.Concrete.Project> Projects, List<BugraOzturkPortfolio.Entities.Concrete.Category> Categories)
+
+@{
+    string GetSlug(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return string.Empty;
+        return text.Trim().ToLower()
+            .Replace("ğ", "g").Replace("ü", "u").Replace("ş", "s")
+            .Replace("ı", "i").Replace("ö", "o").Replace("ç", "c")
+            .Replace(".", "-")  // Sinsi nokta hatasını burada kesiyoruz aga!
+            .Replace(" ", "-");
+    }
+}
+
+<section id="portfolio" class="portfolio section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>Portfolyo</h2>
+        <p>Geliştirdiğim modern yazılım mimarileri, kurumsal çözümler ve projelerimin teknik detayları.</p>
+    </div>
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="isotope-layout" data-default-filter="*" data-layout="masonry" data-sort="original-order">
+            <div class="row">
+                <div class="col-lg-3 filter-sidebar">
+                    <div class="filters-wrapper" data-aos="fade-right" data-aos-delay="150">
+                        <ul class="portfolio-filters isotope-filters">
+                            <li data-filter="*" class="filter-active">Tüm Projeler</li>
+                            @if (Model.Categories != null && Model.Categories.Any())
+                            {
+                                foreach (var cat in Model.Categories)
+                                {
+                                    <li data-filter=".filter-@GetSlug(cat.Name)">@cat.Name</li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-9">
+                    <div class="row gy-4 portfolio-container isotope-container" data-aos="fade-up" data-aos-delay="200">
+                        @if (Model.Projects != null && Model.Projects.Any())
+                        {
+                            foreach (var project in Model.Projects)
+                            {
+                                string filterClasses = string.Empty;
+                                string firstCategoryName = "Genel";
+
+                                if (project.CategoryMappings != null && project.CategoryMappings.Any() && Model.Categories != null)
+                                {
+                                    // Projenin mapping tablosundaki CategoryId'lerini ana kategori havuzuyla havada eşleştiriyoruz aga:
+                                    var matchedCategoryNames = Model.Categories
+                                        .Where(c => project.CategoryMappings.Any(m => m.CategoryId == c.Id))
+                                        .Select(c => "filter-" + GetSlug(c.Name))
+                                        .ToList();
+
+                                    filterClasses = string.Join(" ", matchedCategoryNames);
+
+                                    // Kartın üzerinde görünecek ilk kategorinin adını alıyoruz
+                                    var firstCat = Model.Categories.FirstOrDefault(c => project.CategoryMappings.Any(m => m.CategoryId == c.Id));
+                                    if (firstCat != null)
+                                    {
+                                        firstCategoryName = firstCat.Name;
+                                    }
+                                }
+
+                                <div class="col-lg-6 col-md-6 portfolio-item isotope-item @filterClasses">
+                                    <div class="portfolio-wrap">
+                                        <img src="@(!string.IsNullOrEmpty(project.CoverImageUrl) ? project.CoverImageUrl : "/UI/assets/img/portfolio/portfolio-1.webp")" class="img-fluid" alt="@project.Title" loading="lazy" style="width: 100%; height: 320px; object-fit: cover;">
+                                        <div class="portfolio-info">
+                                            <div class="content">
+                                                <span class="category">@firstCategoryName</span>
+                                                <h4>@project.Title</h4>
+                                                <div class="portfolio-links">
+                                                    <a href="@(!string.IsNullOrEmpty(project.CoverImageUrl) ? project.CoverImageUrl : "/UI/assets/img/portfolio/portfolio-1.webp")" class="glightbox" title="@project.Title"><i class="bi bi-plus-lg"></i></a>
+                                                    <a href="/proje/@project.Slug" title="Detayları Gör"><i class="bi bi-arrow-right"></i></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

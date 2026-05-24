@@ -1,6 +1,7 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
+using System.Text.RegularExpressions;
 
 namespace BugraOzturkPortfolio.Business.Concrete
 {
@@ -13,6 +14,17 @@ namespace BugraOzturkPortfolio.Business.Concrete
             _unitOfWork = unitOfWork;
         }
 
+        private string GenerateSlug(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return string.Empty;
+            text = text.Trim().ToLower();
+            text = text.Replace("ğ", "g").Replace("ü", "u").Replace("ş", "s").Replace("ı", "i").Replace("ö", "o").Replace("ç", "c");
+            text = Regex.Replace(text, @"[^a-z0-0\s-]", "");
+            text = Regex.Replace(text, @"\s+", "-");
+            text = Regex.Replace(text, @"-+", "-");
+            return text.Trim('-');
+        }
+
         public async Task<List<Project>> GetAllProjectsAsync()
         {
             var repo = _unitOfWork.GetRepository<Project>();
@@ -20,6 +32,35 @@ namespace BugraOzturkPortfolio.Business.Concrete
             return projects.ToList();
         }
 
+        public async Task<List<Project>> GetAllProjectsWithRelationsAsync()
+        {
+            var projectRepo = _unitOfWork.GetRepository<Project>();
+            var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
+            var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
+
+            var projects = (await projectRepo.GetAllAsync()).ToList();
+            var allImages = await imageRepo.GetAllAsync();
+            var allMappings = await mappingRepo.GetAllAsync(); // Ara eşleşme tablosunu çekiyoruz
+
+            foreach (var project in projects)
+            {
+                // 1. Resimleri bağla
+                var projectImages = allImages.Where(x => x.ProjectId == project.Id).OrderBy(x => x.Order).ToList();
+                foreach (var img in projectImages) { img.Project = null; }
+                project.ProjectImages = projectImages;
+
+                // 2. Kategori eşleşmelerini bağla (Sonsuz döngüyü engellemek için Project bağını kopar)
+                var projectMappings = allMappings.Where(x => x.ProjectId == project.Id).ToList();
+                foreach (var map in projectMappings)
+                {
+                    map.Project = null;
+                    map.Category = null; // Kategori nesnesini null bırakıyoruz, çünkü ID'si bize yetecek!
+                }
+                project.CategoryMappings = projectMappings;
+            }
+
+            return projects;
+        }
         public async Task<Project?> GetProjectByIdAsync(Guid id)
         {
             var projectRepo = _unitOfWork.GetRepository<Project>();
@@ -30,13 +71,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             if (project != null)
             {
-                // 1. Resimleri getir ve JSON sonsuz döngüsünü engellemek için Project referansını kopar
                 var allImages = await imageRepo.GetAllAsync();
                 var projectImages = allImages.Where(x => x.ProjectId == id).OrderBy(x => x.Order).ToList();
                 foreach (var img in projectImages) { img.Project = null; }
                 project.ProjectImages = projectImages;
 
-                // 2. Kategorileri getir ve döngüyü engelle
                 var allMappings = await mappingRepo.GetAllAsync();
                 var projectMappings = allMappings.Where(x => x.ProjectId == id).ToList();
                 foreach (var map in projectMappings) { map.Project = null; map.Category = null; }
@@ -54,6 +93,8 @@ namespace BugraOzturkPortfolio.Business.Concrete
             var projectRepo = _unitOfWork.GetRepository<Project>();
             var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
             var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
+
+            model.Slug = GenerateSlug(model.Title);
 
             if (model.Id == Guid.Empty || model.Id == default)
             {
@@ -94,6 +135,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
                     return (false, "Güncellenecek proje bulunamadı!");
 
                 existProject.Title = model.Title;
+                existProject.Slug = model.Slug;
                 existProject.ShortDescription = model.ShortDescription;
                 existProject.FullDescription = model.FullDescription;
                 existProject.Client = model.Client;
@@ -149,21 +191,17 @@ namespace BugraOzturkPortfolio.Business.Concrete
             var mappingRepo = _unitOfWork.GetRepository<ProjectCategoryMapping>();
             var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
 
-            // 1. Projenin varlığını kontrol et
             var existProject = await projectRepo.GetByIdAsync(id);
             if (existProject == null)
                 return (false, "Silinecek proje bulunamadı!");
 
-            // Fiziksel dosyaları silebilmek için wwwroot yolunu belirle
             var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-            // 2. Projeye ait tüm galeri resimlerini veritabanından çek ve hem fiziksel hem DB'den sil
             var allImages = await imageRepo.GetAllAsync();
             var projectImages = allImages.Where(x => x.ProjectId == id).ToList();
 
             foreach (var img in projectImages)
             {
-                // Fiziksel dosyayı sunucudan sil
                 if (!string.IsNullOrEmpty(img.ImageUrl))
                 {
                     var fullPath = Path.Combine(webRootPath, img.ImageUrl.TrimStart('/'));
@@ -172,11 +210,9 @@ namespace BugraOzturkPortfolio.Business.Concrete
                         File.Delete(fullPath);
                     }
                 }
-                // Veritabanı kaydını sil
                 imageRepo.Delete(img);
             }
 
-            // 3. Projeye ait tüm kategori eşleşmelerini sil
             var allMappings = await mappingRepo.GetAllAsync();
             var projectMappings = allMappings.Where(x => x.ProjectId == id).ToList();
             foreach (var mapping in projectMappings)
@@ -184,7 +220,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 mappingRepo.Delete(mapping);
             }
 
-            // 4. Projenin ana kapak resmini fiziksel olarak sunucudan sil
             if (!string.IsNullOrEmpty(existProject.CoverImageUrl))
             {
                 var coverFullPath = Path.Combine(webRootPath, existProject.CoverImageUrl.TrimStart('/'));
@@ -194,12 +229,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 }
             }
 
-            // 5. Ana projeyi veritabanından sil ve tek bir transaction olarak kaydet
             projectRepo.Delete(existProject);
-
             await _unitOfWork.SaveChangesAsync();
             return (true, "Proje ve ilişkili tüm görseller başarıyla silindi.");
         }
+
         public async Task<(bool Success, string Message)> AddProjectGalleryImageAsync(Guid projectId, string imagePath)
         {
             var projectRepo = _unitOfWork.GetRepository<Project>();
@@ -208,7 +242,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             var imageRepo = _unitOfWork.GetRepository<ProjectImage>();
 
-            // Son sırayı bulup bir artırıyoruz otomatik sıralama için
             var allImages = await imageRepo.GetAllAsync();
             var maxOrder = allImages.Where(x => x.ProjectId == projectId).Select(x => x.Order).DefaultIfEmpty(0).Max();
 
@@ -229,7 +262,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
             var img = await imageRepo.GetByIdAsync(imageId);
             if (img == null) return (false, "Silinecek görsel bulunamadı!");
 
-            // 1. Önce sunucudaki fiziksel dosyayı imha ediyoruz diski şişirmemek için
             var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
             if (!string.IsNullOrEmpty(img.ImageUrl))
             {
@@ -240,10 +272,8 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 }
             }
 
-            // 2. Sonra veritabanı kaydını uçuruyoruz
             imageRepo.Delete(img);
             await _unitOfWork.SaveChangesAsync();
-
             return (true, "Görsel başarıyla silindi.");
         }
 
@@ -251,10 +281,8 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<ProjectFeature>();
             var features = await repo.GetAllAsync();
-
             var projectFeatures = features.Where(x => x.ProjectId == projectId).OrderBy(x => x.Order).ToList();
 
-            // JSON Sonsuz Döngü hatasını engellemek için ana proje bağını koparıyoruz
             foreach (var feature in projectFeatures)
             {
                 feature.Project = null;
@@ -268,7 +296,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
             if (string.IsNullOrEmpty(feature.Title) || string.IsNullOrEmpty(feature.Description))
                 return (false, "Lütfen özellik başlığı ve açıklamasını doldurunuz!");
 
-            // İkon boş geldiyse patlamasın, jilet gibi standart bir ikon ata
             if (string.IsNullOrEmpty(feature.IconClass))
                 feature.IconClass = "bi bi-check2-circle";
 
@@ -276,7 +303,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             if (feature.Id == Guid.Empty || feature.Id == default)
             {
-                // YENİ EKLEME: Eğer sıra numarası girilmediyse, en son sırayı bulup arkasına ekle
                 if (feature.Order == 0)
                 {
                     var allFeatures = await repo.GetAllAsync();
@@ -292,7 +318,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
             }
             else
             {
-                // GÜNCELLEME MODU
                 var existFeature = await repo.GetByIdAsync(feature.Id);
                 if (existFeature == null) return (false, "Güncellenecek özellik bulunamadı!");
 
