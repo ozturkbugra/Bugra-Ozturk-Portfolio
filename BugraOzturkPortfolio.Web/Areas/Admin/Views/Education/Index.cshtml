@@ -1,0 +1,140 @@
+﻿@{
+    ViewData["Title"] = "Eğitim Bilgileri";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Eğitim Bilgilerim</h1>
+            <p class="fx-subtitle">Mezuniyet ve eğitim bilgilerinizin yönetimi.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openEducationModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Eğitim Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table" id="eduTable">
+                <thead>
+                    <tr>
+                        <th>Kurum</th>
+                        <th>Derece</th>
+                        <th>Bölüm</th>
+                        <th>Tarih</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="eduTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="eduModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="eduForm">
+                <input type="hidden" id="EduId" name="Id" />
+                <div class="modal-header"><h5 class="modal-title" id="modalTitle">Eğitim Ekle</h5></div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kurum Adı</label>
+                        <input type="text" class="form-control" id="InstitutionName" name="InstitutionName" required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Derece</label>
+                            <input type="text" class="form-control" id="Degree" name="Degree" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bölüm</label>
+                            <input type="text" class="form-control" id="FieldOfStudy" name="FieldOfStudy" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç</label>
+                            <input type="date" class="form-control" id="StartDate" name="StartDate" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş (Boşsa Devam Ediyor)</label>
+                            <input type="date" class="form-control" id="EndDate" name="EndDate" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const eduModal = new bootstrap.Modal(document.getElementById('eduModal'));
+
+        function loadEducations() {
+            fetch('/Admin/Education/GetListJson')
+                .then(r => r.json())
+                .then(data => {
+                    const tbody = document.getElementById('eduTableBody');
+                    tbody.innerHTML = '';
+                    data.forEach(item => {
+                        const start = new Date(item.startDate).toLocaleDateString();
+                        const end = item.endDate ? new Date(item.endDate).toLocaleDateString() : 'Devam Ediyor';
+                        tbody.innerHTML += `<tr>
+                            <td>${item.institutionName}</td>
+                            <td>${item.degree}</td>
+                            <td>${item.fieldOfStudy}</td>
+                            <td>${start} - ${end}</td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-warning" onclick="editEdu('${item.id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteEdu('${item.id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                });
+        }
+
+        document.getElementById('eduForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            await fetch('/Admin/Education/Save', { method: 'POST', body: formData });
+            eduModal.hide();
+            loadEducations();
+        };
+
+        function openEducationModal() {
+            document.getElementById('eduForm').reset();
+            document.getElementById('EduId').value = '00000000-0000-0000-0000-000000000000';
+            eduModal.show();
+        }
+
+        async function editEdu(id) {
+            const res = await (await fetch('/Admin/Education/GetById?id=' + id)).json();
+            if(res.success) {
+                const item = res.data;
+                document.getElementById('EduId').value = item.id;
+                document.getElementById('InstitutionName').value = item.institutionName;
+                document.getElementById('Degree').value = item.degree;
+                document.getElementById('FieldOfStudy').value = item.fieldOfStudy;
+                document.getElementById('StartDate').value = item.startDate.split('T')[0];
+                if(item.endDate) document.getElementById('EndDate').value = item.endDate.split('T')[0];
+                eduModal.show();
+            }
+        }
+
+        async function deleteEdu(id) {
+            if(confirm('Silmek istediğinize emin misiniz?')) {
+                await fetch('/Admin/Education/Delete?id=' + id, { method: 'POST' });
+                loadEducations();
+            }
+        }
+
+        loadEducations();
+    </script>
+}
