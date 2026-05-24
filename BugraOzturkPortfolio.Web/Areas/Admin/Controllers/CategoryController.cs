@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
-using BugraOzturkPortfolio.Business.Abstract;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;

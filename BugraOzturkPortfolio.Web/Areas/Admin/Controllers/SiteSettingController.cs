@@ -1,8 +1,10 @@
 ﻿using BugraOzturkPortfolio.Entities.Concrete;
 using BugraOzturkPortfolio.Web.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Area("Admin")]
+[Authorize]
 public class SiteSettingController : Controller
 {
     private readonly ISiteSettingService _service;

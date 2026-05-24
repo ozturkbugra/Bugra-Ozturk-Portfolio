@@ -2,10 +2,12 @@
 using BugraOzturkPortfolio.Entities.Concrete;
 using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Web.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class AboutController : Controller
     {
         private readonly IAboutService _aboutService;

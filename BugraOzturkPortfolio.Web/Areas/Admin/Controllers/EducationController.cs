@@ -1,8 +1,10 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [Area("Admin")]
+[Authorize]
 public class EducationController : Controller
 {
     private readonly IEducationService _educationService;

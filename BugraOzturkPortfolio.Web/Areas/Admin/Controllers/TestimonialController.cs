@@ -1,11 +1,13 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
 using BugraOzturkPortfolio.Web.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class TestimonialController : Controller
     {
         private readonly ITestimonialService _testimonialService;

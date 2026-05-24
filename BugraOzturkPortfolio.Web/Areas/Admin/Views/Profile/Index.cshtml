@@ -1,0 +1,169 @@
+﻿@{
+    ViewData["Title"] = "Profil & Güvenlik Ayarları";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Profil & Güvenlik Ayarları</h1>
+            <p class="fx-subtitle">Hesap güvenliğinizi yönetin ve iki aşamalı doğrulamayı (2FA) aktif edin.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center py-4">
+                <div class="card-body">
+                    <img src="~/Admin/assets/img/profile-img.webp" alt="Kullanıcı" class="rounded-circle mb-3 border" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h5 class="fw-bold mb-1">@User.Identity?.Name</h5>
+                    <p class="text-muted small mb-3">Full Stack Developer</p>
+                    <span class="badge bg-soft-primary text-primary px-3 py-2">Erişim Seviyesi: Admin</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-transparent py-3">
+                    <h5 class="card-title mb-0 fw-bold">Hesap Güvenliği</h5>
+                </div>
+                <div class="card-body pt-3">
+                    <div class="d-flex align-items-center justify-content-between p-3 border rounded mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-1"><i class="bi bi-shield-lock me-2 text-primary"></i>Google Authenticator (2FA)</h6>
+                            <p class="text-muted small mb-0">Giriş yaparken şifrenize ek olarak uygulamanızdaki tek kullanımlık 6 haneli kodu doğrularsınız.</p>
+                        </div>
+                        <div>
+                            <button id="btnTwoFactorToggle" class="btn btn-outline-primary btn-sm px-3" onclick="handleTwoFactorAction()">
+                                Yükleniyor...
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="twoFactorModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Google Authenticator Kurulumu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="location.reload()"></button>
+            </div>
+            <div class="modal-body text-center px-4">
+                <p class="text-muted small mb-3">Telefonunuzdan Google Authenticator uygulamasını açıp aşağıdaki QR kodu taratın.</p>
+
+                <div id="qrcode" class="d-flex justify-content-center my-3 p-3 border bg-white rounded style-width-fit mx-auto"></div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Alternatif Gizli Anahtar (Secret Key)</label>
+                    <input type="text" id="txtSecretKey" class="form-control text-center bg-light font-monospace small" readonly />
+                </div>
+
+                <hr>
+
+                <form id="frmEnable2FA" novalidate>
+                    <div class="mb-3">
+                        <label for="verificationCode" class="form-label small fw-semibold">Uygulamadaki 6 Haneli Kodu Girin</label>
+                        <input type="text" class="form-control text-center fs-5 fw-bold font-monospace tracking-wide" id="verificationCode" maxlength="6" placeholder="000000" required inputmode="numeric">
+                    </div>
+                    <div id="modalAlert" class="alert alert-danger d-none small py-2" role="alert"></div>
+                    <button type="submit" id="btnConfirm2FA" class="btn btn-primary w-100">Kurulumu Tamamla</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        const twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorModal'));
+        let isTwoFactorActive = false; 
+
+        document.addEventListener("DOMContentLoaded", () => {
+        updateToggleButton(false);
+        });
+
+        function updateToggleButton(active) {
+        isTwoFactorActive = active;
+        const btn = document.getElementById('btnTwoFactorToggle');
+        if (active) {
+        btn.textContent = "Devre Dışı Bırak";
+        btn.className = "btn btn-outline-danger btn-sm px-3";
+        } else {
+        btn.textContent = "Aktifleştir";
+        btn.className = "btn btn-outline-primary btn-sm px-3";
+        }
+        }
+
+        async function handleTwoFactorAction() {
+        if (isTwoFactorActive) {
+        if (confirm("İki aşamalı doğrulamayı kapatmak istediğinize emin misiniz? Güvenliğiniz azalacaktır.")) {
+        const res = await (await fetch('/Admin/Profile/DisableTwoFactor', { method: 'POST' })).json();
+        if (res.success) {
+        alert(res.message);
+        updateToggleButton(false);
+        } else {
+        alert(res.message);
+        }
+        }
+        } else {
+        const res = await (await fetch('/Admin/Profile/SetupTwoFactor')).json();
+        if (res.success) {
+        document.getElementById('qrcode').innerHTML = ''; // Önceki kodları temizle
+        document.getElementById('txtSecretKey').value = res.secretKey;
+
+        new QRCode(document.getElementById("qrcode"), {
+        text: res.qrCodeUrl,
+        width: 180,
+        height: 180,
+        correctLevel: QRCode.CorrectLevel.H
+        });
+
+        document.getElementById('verificationCode').value = '';
+        document.getElementById('modalAlert').classList.add('d-none');
+        twoFactorModal.show();
+        } else {
+        alert(res.message);
+        }
+        }
+        }
+
+        document.getElementById('frmEnable2FA').onsubmit = async (e) => {
+        e.preventDefault();
+        const alertDiv = document.getElementById('modalAlert');
+        const btn = document.getElementById('btnConfirm2FA');
+        const code = document.getElementById('verificationCode').value;
+
+        alertDiv.classList.add('d-none');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Doğrulanıyor...';
+
+        const formData = new FormData();
+        formData.append('code', code);
+
+        try {
+        const res = await (await fetch('/Admin/Profile/EnableTwoFactor', { method: 'POST', body: formData })).json();
+        if (res.success) {
+        twoFactorModal.hide();
+        alert(res.message);
+        updateToggleButton(true);
+        } else {
+        alertDiv.textContent = res.message;
+        alertDiv.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = 'Kurulumu Tamamla';
+        }
+        } catch {
+        alertDiv.textContent = 'Bağlantı hatası!';
+        alertDiv.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = 'Kurulumu Tamamla';
+        }
+        };
+    </script>
+}

@@ -1,16 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BugraOzturkPortfolio.Business.Abstract;
+using BugraOzturkPortfolio.Entities.Concrete;
+using BugraOzturkPortfolio.Web.Helpers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using BugraOzturkPortfolio.Entities.Concrete;
-using BugraOzturkPortfolio.Business.Abstract;
-using BugraOzturkPortfolio.Web.Helpers;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class ProjectController : Controller
     {
         private readonly IProjectService _projectService;
