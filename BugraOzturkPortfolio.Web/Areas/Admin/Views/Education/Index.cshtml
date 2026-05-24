@@ -15,6 +15,18 @@
         </div>
     </div>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="eduToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="eduToastIcon" class="bi me-2 fs-5"></i>
+                    <span id="eduToastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <table class="table" id="eduTable">
@@ -84,8 +96,8 @@
                     const tbody = document.getElementById('eduTableBody');
                     tbody.innerHTML = '';
                     data.forEach(item => {
-                        const start = new Date(item.startDate).toLocaleDateString();
-                        const end = item.endDate ? new Date(item.endDate).toLocaleDateString() : 'Devam Ediyor';
+                        const start = new Date(item.startDate).toLocaleDateString('tr-TR');
+                        const end = item.endDate ? new Date(item.endDate).toLocaleDateString('tr-TR') : 'Devam Ediyor';
                         tbody.innerHTML += `<tr>
                             <td>${item.institutionName}</td>
                             <td>${item.degree}</td>
@@ -103,9 +115,14 @@
         document.getElementById('eduForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            await fetch('/Admin/Education/Save', { method: 'POST', body: formData });
-            eduModal.hide();
-            loadEducations();
+            const res = await (await fetch('/Admin/Education/Save', { method: 'POST', body: formData })).json();
+            if(res.success) {
+                showEduToast(res.message, true);
+                eduModal.hide();
+                loadEducations();
+            } else {
+                showEduToast(res.message, false);
+            }
         };
 
         function openEducationModal() {
@@ -130,9 +147,22 @@
 
         async function deleteEdu(id) {
             if(confirm('Silmek istediğinize emin misiniz?')) {
-                await fetch('/Admin/Education/Delete?id=' + id, { method: 'POST' });
-                loadEducations();
+                const res = await (await fetch('/Admin/Education/Delete?id=' + id, { method: 'POST' })).json();
+                if(res.success) {
+                    showEduToast(res.message, true);
+                    loadEducations();
+                } else {
+                    showEduToast(res.message, false);
+                }
             }
+        }
+
+        function showEduToast(msg, success) {
+            const el = document.getElementById('eduToast');
+            document.getElementById('eduToastMessage').textContent = msg;
+            el.className = 'toast align-items-center text-white border-0 ' + (success ? 'bg-success' : 'bg-danger');
+            document.getElementById('eduToastIcon').className = 'bi ' + (success ? 'bi-check2-circle' : 'bi-exclamation-triangle');
+            new bootstrap.Toast(el).show();
         }
 
         loadEducations();
