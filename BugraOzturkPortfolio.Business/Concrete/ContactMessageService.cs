@@ -1,6 +1,10 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BugraOzturkPortfolio.Business.Concrete
 {
@@ -23,7 +27,9 @@ namespace BugraOzturkPortfolio.Business.Concrete
         public async Task<ContactMessage?> GetMessageByIdAsync(Guid id)
         {
             var repo = _unitOfWork.GetRepository<ContactMessage>();
-            return await repo.GetByIdAsync(id);
+            var message = await repo.GetByIdAsync(id);
+            if (message == null || message.IsDeleted) return null;
+            return message;
         }
 
         public async Task<(bool Success, string Message)> AddMessageAsync(ContactMessage model)
@@ -44,7 +50,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<ContactMessage>();
             var message = await repo.GetByIdAsync(id);
-            if (message == null) return (false, "Mesaj bulunamadı!");
+            if (message == null || message.IsDeleted) return (false, "Mesaj bulunamadı!");
 
             message.IsRead = true;
             repo.Update(message);
@@ -56,9 +62,10 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<ContactMessage>();
             var message = await repo.GetByIdAsync(id);
-            if (message == null) return (false, "Mesaj bulunamadı!");
+            if (message == null || message.IsDeleted) return (false, "Silinecek mesaj bulunamadı!");
 
-            repo.Delete(message);
+            message.IsDeleted = true;
+            repo.Update(message);
             await _unitOfWork.SaveChangesAsync();
             return (true, "Mesaj başarıyla silindi.");
         }
