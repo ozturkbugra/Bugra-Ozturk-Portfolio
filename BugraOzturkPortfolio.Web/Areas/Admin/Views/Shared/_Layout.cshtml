@@ -42,8 +42,7 @@
     <header class="header">
         <div class="header-left">
             <a href="/Admin/Dashboard" class="header-logo">
-                <img src="~/Admin/assets/img/logo.webp" alt="FlexAdmin">
-                <span>FlexAdmin</span>
+                <span>Buğra Portfolio Admin</span>
             </a>
         </div>
 
@@ -67,30 +66,8 @@
                         <i class="ph-light ph-sun theme-icon-light"></i>
                     </button>
 
-                    <div class="header-action-wrap dropdown messages-dropdown">
-                        <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Mesajlar">
-                            <i class="bi bi-chat-left-text"></i>
-                            <span class="header-badge">1</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end messages-menu">
-                            <div class="notification-header">
-                                <div>
-                                    <h6>Mesajlar</h6>
-                                    <span class="notification-count">1 yeni mesaj var</span>
-                                </div>
-                            </div>
-                            <div class="notification-list">
-                                <a href="#" class="notification-item unread">
-                                    <span class="notification-dot"></span>
-                                    <div class="notification-content">
-                                        <div class="notification-title">Sistem</div>
-                                        <div class="notification-text">Hoş geldin Buğra, altyapı hazır!</div>
-                                        <span class="notification-time">Şimdi</span>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                  
+                        @await Component.InvokeAsync("AdminMessagesDropdown")
                 </div>
 
                 <span class="header-divider"></span>
@@ -233,11 +210,19 @@
                         <span class="nav-text">Yeteneklerim</span>
                     </a>
                 </li>
-                
+
                 <li class="nav-item">
                     <a class="nav-link @(currentPath.StartsWith("/Admin/Testimonial", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Testimonial">
                         <span class="nav-icon"><i class="ph-light ph-chat-centered-text"></i></span>
                         <span class="nav-text">Referanslar</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center @(currentPath.StartsWith("/Admin/ContactMessage", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/ContactMessage">
+                        <span class="nav-icon"><i class="ph-light ph-envelope-simple"></i></span>
+                        <span class="nav-text">Gelen Mesajlar</span>
+                        @await Component.InvokeAsync("AdminSidebarMessagesBadge")
                     </a>
                 </li>
 
@@ -324,78 +309,78 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const desktopInput = document.getElementById("sidebarSearchInput");
-            const mobileInput = document.getElementById("mobileSidebarSearchInput");
-            const menuItems = document.querySelectorAll("#sidebarMenu .nav-item");
-            const menuHeadings = document.querySelectorAll("#sidebarMenu .nav-heading");
+        const desktopInput = document.getElementById("sidebarSearchInput");
+        const mobileInput = document.getElementById("mobileSidebarSearchInput");
+        const menuItems = document.querySelectorAll("#sidebarMenu .nav-item");
+        const menuHeadings = document.querySelectorAll("#sidebarMenu .nav-heading");
 
-            function localeStringNormalize(str) {
-                return str
-                    .trim()
-                    .toLowerCase()
-                    .replace(/ğ/g, "g")
-                    .replace(/ü/g, "u")
-                    .replace(/ş/g, "s")
-                    .replace(/ı/g, "i")
-                    .replace(/i̇/g, "i")
-                    .replace(/ö/g, "o")
-                    .replace(/ç/g, "c");
-            }
+        function localeStringNormalize(str) {
+        return str
+        .trim()
+        .toLowerCase()
+        .replace(/ğ/g, "g")
+        .replace(/ü/g, "u")
+        .replace(/ş/g, "s")
+        .replace(/ı/g, "i")
+        .replace(/i̇/g, "i")
+        .replace(/ö/g, "o")
+        .replace(/ç/g, "c");
+        }
 
-            function filterSidebarMenu(searchText) {
-                const normalizedSearch = localeStringNormalize(searchText);
+        function filterSidebarMenu(searchText) {
+        const normalizedSearch = localeStringNormalize(searchText);
 
-                menuItems.forEach(item => {
-                    const textElement = item.querySelector(".nav-text");
-                    if (!textElement) return;
+        menuItems.forEach(item => {
+        const textElement = item.querySelector(".nav-text");
+        if (!textElement) return;
 
-                    const normalizedText = localeStringNormalize(textElement.textContent);
+        const normalizedText = localeStringNormalize(textElement.textContent);
 
-                    if (normalizedText.includes(normalizedSearch)) {
-                        item.style.setProperty("display", "", "important");
-                    } else {
-                        item.style.setProperty("display", "none", "important");
-                    }
-                });
+        if (normalizedText.includes(normalizedSearch)) {
+        item.style.setProperty("display", "", "important");
+        } else {
+        item.style.setProperty("display", "none", "important");
+        }
+        });
 
-                menuHeadings.forEach(heading => {
-                    let nextEl = heading.nextElementSibling;
-                    let hasVisibleItem = false;
+        menuHeadings.forEach(heading => {
+        let nextEl = heading.nextElementSibling;
+        let hasVisibleItem = false;
 
-                    while (nextEl && !nextEl.classList.contains("nav-heading")) {
-                        if (nextEl.classList.contains("nav-item") && nextEl.style.display !== "none") {
-                            hasVisibleItem = true;
-                            break;
-                        }
-                        nextEl = nextEl.nextElementSibling;
-                    }
+        while (nextEl && !nextEl.classList.contains("nav-heading")) {
+        if (nextEl.classList.contains("nav-item") && nextEl.style.display !== "none") {
+        hasVisibleItem = true;
+        break;
+        }
+        nextEl = nextEl.nextElementSibling;
+        }
 
-                    if (hasVisibleItem || normalizedSearch === "") {
-                        heading.style.setProperty("display", "", "important");
-                    } else {
-                        heading.style.setProperty("display", "none", "important");
-                    }
-                });
-            }
+        if (hasVisibleItem || normalizedSearch === "") {
+        heading.style.setProperty("display", "", "important");
+        } else {
+        heading.style.setProperty("display", "none", "important");
+        }
+        });
+        }
 
-            if (desktopInput) {
-                desktopInput.addEventListener("input", function (e) {
-                    filterSidebarMenu(e.target.value);
-                });
+        if (desktopInput) {
+        desktopInput.addEventListener("input", function (e) {
+        filterSidebarMenu(e.target.value);
+        });
 
-                document.addEventListener("keydown", function (e) {
-                    if (e.key === "/" && document.activeElement !== desktopInput && document.activeElement !== mobileInput) {
-                        e.preventDefault();
-                        desktopInput.focus();
-                    }
-                });
-            }
+        document.addEventListener("keydown", function (e) {
+        if (e.key === "/" && document.activeElement !== desktopInput && document.activeElement !== mobileInput) {
+        e.preventDefault();
+        desktopInput.focus();
+        }
+        });
+        }
 
-            if (mobileInput) {
-                mobileInput.addEventListener("input", function (e) {
-                    filterSidebarMenu(e.target.value);
-                });
-            }
+        if (mobileInput) {
+        mobileInput.addEventListener("input", function (e) {
+        filterSidebarMenu(e.target.value);
+        });
+        }
         });
     </script>
 

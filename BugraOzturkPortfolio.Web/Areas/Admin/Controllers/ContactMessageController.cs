@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BugraOzturkPortfolio.Business.Abstract;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
     [Route("Admin/ContactMessage")]
+    [Authorize]
     public class ContactMessageController : Controller
     {
         private readonly IContactMessageService _messageService;

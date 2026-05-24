@@ -1,0 +1,42 @@
+﻿@model List<ContactMessage>
+
+<div class="header-action-wrap dropdown messages-dropdown">
+    <button class="header-action dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Mesajlar">
+        <i class="bi bi-chat-left-text"></i>
+        @if (Model.Any())
+        {
+            <span class="header-badge">@Model.Count</span>
+        }
+    </button>
+    <div class="dropdown-menu dropdown-menu-end messages-menu">
+        <div class="notification-header">
+            <div>
+                <h6>Mesajlar</h6>
+                <span class="notification-count">@Model.Count yeni mesaj var</span>
+            </div>
+        </div>
+        <div class="notification-list" style="max-height: 300px; overflow-y: auto;">
+            @if (Model.Any())
+            {
+                foreach (var msg in Model.Take(5))
+                {
+                    <a href="/Admin/ContactMessage/Detail/@msg.Id" class="notification-item unread">
+                        <span class="notification-dot"></span>
+                        <div class="notification-content">
+                            <div class="notification-title">@msg.FullName</div>
+                            <div class="notification-text">@msg.Subject</div>
+                            <span class="notification-time">@msg.CreatedDate.ToLocalTime().ToString("dd.MM HH:mm")</span>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="text-center py-3 text-muted small">Yeni mesaj bulunmuyor aga.</div>
+            }
+        </div>
+        <div class="text-center border-top p-2">
+            <a href="/Admin/ContactMessage" class="small text-primary fw-semibold">Tüm Mesajları Gör</a>
+        </div>
+    </div>
+</div>
