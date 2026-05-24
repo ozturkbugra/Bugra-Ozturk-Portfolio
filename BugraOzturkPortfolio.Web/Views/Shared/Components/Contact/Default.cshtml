@@ -1,0 +1,125 @@
+﻿@model BugraOzturkPortfolio.Entities.Concrete.About
+
+<section id="contact" class="contact section">
+    <div class="container section-title" data-aos="fade-up">
+        <h2>İletişim</h2>
+        <p>Projeleriniz, freelance iş teklifleriniz veya teknik danışmanlık talepleriniz için bana her zaman ulaşabilirsiniz.</p>
+    </div>
+
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-5">
+                <div class="info-box">
+                    <h3>İletişim Bilgileri</h3>
+                    <p>Formu doldurarak veya doğrudan mail/telefon üzerinden irtibata geçebilirsiniz. En kısa sürede dönüş sağlayacağım.</p>
+
+                    <div class="info-item">
+                        <div class="icon-box">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div class="content">
+                            <h4>Lokasyon</h4>
+                            <p>@(Model?.Address ?? "Ankara, Türkiye")</p>
+                        </div>
+                    </div>
+
+                    @if (Model != null && !string.IsNullOrEmpty(Model.Phone))
+                    {
+                        <div class="info-item">
+                            <div class="icon-box">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div class="content">
+                                <h4>Telefon</h4>
+                                <p>@Model.Phone</p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model != null && !string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="info-item">
+                            <div class="icon-box">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <div class="content">
+                                <h4>E-Posta Adresi</h4>
+                                <p>@Model.Email</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="contact-form">
+                    <h3>Mesaj Gönderin</h3>
+                    <p>Aşağıdaki formu eksiksiz doldurarak doğrudan veritabanıma güvenli mesaj bırakabilirsiniz.</p>
+
+                    <form id="vitrinContactForm" class="php-email-form">
+                        <div class="row gy-4">
+                            <div class="col-md-6">
+                                <input type="text" name="FullName" class="form-control" placeholder="Adınız Soyadınız" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="email" class="form-control" name="Email" placeholder="E-Posta Adresiniz" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="text" class="form-control" name="Subject" placeholder="Konu" required>
+                            </div>
+                            <div class="col-12">
+                                <textarea class="form-control" name="Body" rows="6" placeholder="Mesajınız" required></textarea>
+                            </div>
+                            <div class="col-12 text-center">
+                                <div class="loading" id="contactLoading" style="display:none;">Gönderiliyor...</div>
+                                <div class="error-message" id="contactError" style="display:none;"></div>
+                                <div class="sent-message" id="contactSuccess" style="display:none;">Mesajınız başarıyla iletildi. Teşekkürler!</div>
+                                <button type="submit" id="btnContactSubmit" class="btn">Mesajı Gönder</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.getElementById('vitrinContactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const loader = document.getElementById('contactLoading');
+        const errBox = document.getElementById('contactError');
+        const succBox = document.getElementById('contactSuccess');
+        const btn = document.getElementById('btnContactSubmit');
+
+        loader.style.display = 'block';
+        errBox.style.display = 'none';
+        succBox.style.display = 'none';
+        btn.disabled = true;
+
+        try {
+            const formData = new FormData(this);
+            const response = await fetch('/Contact/SendMessage', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await response.json();
+
+            loader.style.display = 'none';
+            if (res.success) {
+                succBox.style.display = 'block';
+                this.reset();
+            } else {
+                errBox.style.display = 'block';
+                errBox.textContent = res.message;
+            }
+        } catch (error) {
+            loader.style.display = 'none';
+            errBox.style.display = 'block';
+            errBox.textContent = 'Bağlantı hatası oluştu aga!';
+        } finally {
+            btn.disabled = false;
+        }
+    });
+</script>
