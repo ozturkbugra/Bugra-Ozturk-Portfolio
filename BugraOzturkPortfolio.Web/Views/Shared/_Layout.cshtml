@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="tr">
-
 <head>
     @await Component.InvokeAsync("Head")
 
@@ -17,9 +16,11 @@
     <link href="~/UI/assets/css/main.css" rel="stylesheet">
 
     @await RenderSectionAsync("Styles", required: false)
-</head>
 
+    @await Component.InvokeAsync("SiteScript", new { position = BugraOzturkPortfolio.Entities.Concrete.ScriptPosition.Header })
+</head>
 <body class="index-page">
+    @await Component.InvokeAsync("SiteScript", new { position = BugraOzturkPortfolio.Entities.Concrete.ScriptPosition.BodyStart })
 
     @await Component.InvokeAsync("Header")
 
@@ -52,6 +53,7 @@
     <script src="~/UI/assets/js/main.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
-</body>
 
+    @await Component.InvokeAsync("SiteScript", new { position = BugraOzturkPortfolio.Entities.Concrete.ScriptPosition.BodyEnd })
+</body>
 </html>

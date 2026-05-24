@@ -1,0 +1,17 @@
+﻿@model List<SiteScript>
+
+@if (Model != null && Model.Any())
+{
+    foreach (var script in Model)
+    {
+        if (!string.IsNullOrEmpty(script.Url))
+        {
+            <script src="@script.Url"></script>
+        }
+
+        if (!string.IsNullOrEmpty(script.Code))
+        {
+            @Html.Raw(script.Code)
+        }
+    }
+}
