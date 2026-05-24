@@ -1,0 +1,348 @@
+﻿@{
+    ViewData["Title"] = "Proje Yönetimi";
+}
+
+<div class="container-fluid">
+    <div class="page-header fx-page-header">
+        <div>
+            <h1 class="page-title">Projelerim</h1>
+            <p class="fx-subtitle">Portfolyonuzda sergilenecek projelerin yönetim, listeleme ve düzenleme paneli.</p>
+        </div>
+        <div class="page-header-actions">
+            <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                <i class="bi bi-plus-lg me-1"></i> Yeni Proje Ekle
+            </button>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        <div id="projectToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center">
+                    <i id="toastIcon" class="bi me-2 fs-5"></i>
+                    <span id="toastMessage"></span>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Mevcut Projeler</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table align-middle" id="projectTable">
+                        <thead>
+                            <tr>
+                                <th>Görsel</th>
+                                <th>Proje Başlığı</th>
+                                <th>Müşteri / İstemci</th>
+                                <th>Proje Tarihi</th>
+                                <th>Sıra</th>
+                                <th class="text-end">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Yeni Proje Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="projectForm" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" id="Id" name="Id" />
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-8">
+                            <label for="Title" class="form-label fw-semibold">Proje Başlığı</label>
+                            <input type="text" class="form-control" id="Title" name="Title" required placeholder="Örn: Mini ERP Projesi">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="Order" class="form-label fw-semibold">Görüntüleme Sırası</label>
+                            <input type="number" class="form-control" id="Order" name="Order" value="0" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="Client" class="form-label fw-semibold">Müşteri / İstemci</label>
+                            <input type="text" class="form-control" id="Client" name="Client" placeholder="Örn: Metaş Yazılım veya Freelance">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ProjectDate" class="form-label fw-semibold">Proje Tarihi</label>
+                            <input type="date" class="form-control" id="ProjectDate" name="ProjectDate">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="ProjectUrl" class="form-label fw-semibold">Canlı Önizleme Linki (Opsiyonel)</label>
+                            <input type="url" class="form-control" id="ProjectUrl" name="ProjectUrl" placeholder="https://...">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="GithubUrl" class="form-label fw-semibold">GitHub Repo Linki (Opsiyonel)</label>
+                            <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" placeholder="https://github.com/...">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ShortDescription" class="form-label fw-semibold">Kısa Açıklama (Listeleme Alanı İçin)</label>
+                        <input type="text" class="form-control" id="ShortDescription" name="ShortDescription" required placeholder="Projenin kart üzerinde görünecek tek cümlelik özeti.">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Detaylı Proje Açıklaması</label>
+                        <div id="projectQuill" style="height: 180px;"></div>
+                        <input type="hidden" id="FullDescription" name="FullDescription" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Proje Kapak Görseli</label>
+                        <div class="upload-dropzone p-3 border border-2 border-dashed rounded text-center bg-light" id="projectDropzone" style="cursor: pointer; border-color: var(--accent-color) !important;">
+                            <i class="bi bi-images fs-2 text-primary"></i>
+                            <h6 class="mt-2">Görsel sürükleyin veya tıklayın</h6>
+                            <input type="file" id="CoverImageFile" name="CoverImageFile" accept="image/*" class="d-none" />
+                        </div>
+                        <div class="mt-3 text-center d-none" id="projectPreviewContainer">
+                            <img id="projectImgPreview" src="#" class="img-thumbnail" style="max-height: 120px; object-fit: cover;" alt="Önizleme" />
+                        </div>
+                    </div>
+
+                    <div class="text-end border-top pt-3">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" id="btnProjectSubmit" class="btn btn-primary px-4">Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let dataTable;
+        let quill;
+        const modalEl = document.getElementById('projectModal');
+        const bootstrapModal = new bootstrap.Modal(modalEl);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 1. QUILL EDİTÖR KURULUMU
+            quill = new Quill('#projectQuill', {
+                theme: 'snow',
+                placeholder: 'Proje detaylarını, kullanılan teknolojileri yazın...',
+                modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
+            });
+
+            // 2. İLK YÜKLENMEDE PROJELERİ GETİR
+            loadProjects();
+
+            // 3. SÜRÜKLE BIRAK RESİM KURULUMU
+            const dropzone = document.getElementById('projectDropzone');
+            const fileInput = document.getElementById('CoverImageFile');
+            const previewContainer = document.getElementById('projectPreviewContainer');
+            const imgPreview = document.getElementById('projectImgPreview');
+
+            dropzone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function () { handleProjectFile(this.files[0]); });
+
+            dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); });
+            dropzone.addEventListener('dragleave', () => dropzone.classList.remove('bg-secondary-subtle'));
+            dropzone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropzone.classList.remove('bg-secondary-subtle');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleProjectFile(file);
+                }
+            });
+
+            function handleProjectFile(file) {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        imgPreview.src = e.target.result;
+                        previewContainer.classList.remove('d-none');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 4. FORM SUBMIT OPERASYONU (Ekleme ve Güncelleme Ortak)
+            const form = document.getElementById('projectForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (!document.getElementById('Title').value.trim() || !document.getElementById('ShortDescription').value.trim()) {
+                    showProjectToast('Lütfen gerekli alanları doldurunuz!', false);
+                    return;
+                }
+
+                const quillHtml = quill.root.innerHTML;
+                if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
+                    showProjectToast('Lütfen proje detaylı açıklamasını yazınız!', false);
+                    return;
+                }
+                document.getElementById('FullDescription').value = quillHtml;
+
+                const formData = new FormData(form);
+                const btnSubmit = document.getElementById('btnProjectSubmit');
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Kaydediliyor...';
+
+                fetch('/Admin/Project/Save', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showProjectToast(data.message, true);
+                        bootstrapModal.hide();
+                        loadProjects(); // Tabloyu havada yenile aga
+                    } else {
+                        showProjectToast(data.message, false);
+                    }
+                })
+                .catch(() => showProjectToast('Sistem hatası oluştu!', false))
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Kaydet';
+                });
+            });
+        });
+
+        // 5. PROJELERİ AJAX İLE ÇEKİP TABLOYA BASMA VE DATATABLE TETİKLEME
+        function loadProjects() {
+            fetch('/Admin/Project/GetProjectsJson')
+                .then(response => response.json())
+                .then(data => {
+                    if (dataTable) {
+                        dataTable.destroy(); // Eski tablo motorunu patlatıp yenisini kuruyoruz dom kırılmasın diye
+                    }
+
+                    const tbody = document.getElementById('projectTableBody');
+                    tbody.innerHTML = '';
+
+                    data.forEach(item => {
+                        const dateStr = item.projectDate ? new Date(item.projectDate).toLocaleDateString('tr-TR') : '-';
+                        const imgUrl = item.coverImageUrl ? item.coverImageUrl : '/Admin/assets/img/logo.webp';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><img src="${imgUrl}" class="rounded" style="width:50px; height:35px; object-fit:cover;" /></td>
+                            <td class="fw-semibold">${item.title}</td>
+                            <td>${item.client ?? '-'}</td>
+                            <td>${dateStr}</td>
+                            <td><span class="badge bg-secondary">${item.order}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteProject('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Şablonun orijinal Simple-DataTables motorunu bağlıyoruz aga
+                    dataTable = new simpleDatatables.DataTable("#projectTable", {
+                        searchable: true,
+                        perPage: 10,
+                        labels: { placeholder: "Ara...", perPage: "{select} satır göster", noRows: "Kayıt bulunamadı", info: "{rows} kayıttan {start} ile {end} arası gösteriliyor" }
+                    });
+                });
+        }
+
+        // 6. MODAL TEMİZLEME VE EKLEME MODU
+        function openCreateModal() {
+            document.getElementById('projectForm').reset();
+            document.getElementById('Id').value = '';
+            quill.root.innerHTML = '';
+            document.getElementById('projectPreviewContainer').classList.add('d-none');
+            document.getElementById('modalTitle').textContent = 'Yeni Proje Ekle';
+            bootstrapModal.show();
+        }
+
+        // 7. GÜNCELLEME İÇİN VERİ GETİRME VE MODAL AÇMA (SPA Mantığı aga)
+        function openEditModal(id) {
+            fetch(`/Admin/Project/GetProjectById?id=${id}`)
+                .then(response => response.json())
+                .then(res => {
+                    if (res.success) {
+                        const item = res.data;
+                        document.getElementById('Id').value = item.id;
+                        document.getElementById('Title').value = item.title;
+                        document.getElementById('Order').value = item.order;
+                        document.getElementById('Client').value = item.client;
+                        document.getElementById('ShortDescription').value = item.shortDescription;
+                        document.getElementById('ProjectUrl').value = item.projectUrl;
+                        document.getElementById('GithubUrl').value = item.githubUrl;
+
+                        if (item.projectDate) {
+                            document.getElementById('ProjectDate').value = item.projectDate.split('T')[0];
+                        } else {
+                            document.getElementById('ProjectDate').value = '';
+                        }
+
+                        quill.root.innerHTML = item.fullDescription ?? '';
+
+                        const previewContainer = document.getElementById('projectPreviewContainer');
+                        const imgPreview = document.getElementById('projectImgPreview');
+                        if (item.coverImageUrl) {
+                            imgPreview.src = item.coverImageUrl;
+                            previewContainer.classList.remove('d-none');
+                        } else {
+                            previewContainer.classList.add('d-none');
+                        }
+
+                        document.getElementById('modalTitle').textContent = 'Proje Düzenle';
+                        bootstrapModal.show();
+                    } else {
+                        showProjectToast(res.message, false);
+                    }
+                });
+        }
+
+        // 8. ASENKRON PROJE SİLME OPERASYONU
+        function deleteProject(id) {
+            if (confirm('Bu projeyi silmek istediğinize emin misiniz aga?')) {
+                fetch(`/Admin/Project/Delete?id=${id}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showProjectToast(data.message, true);
+                            loadProjects();
+                        } else {
+                            showProjectToast(data.message, false);
+                        }
+                    });
+            }
+        }
+
+        // 9. TOAST TETİKLEYİCİ
+        function showProjectToast(message, isSuccess) {
+            const toastEl = document.getElementById('projectToast');
+            document.getElementById('toastMessage').textContent = message;
+            if (isSuccess) {
+                toastEl.className = 'toast align-items-center text-white border-0 bg-success';
+                document.getElementById('toastIcon').className = 'bi bi-check2-circle me-2 fs-5';
+            } else {
+                toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
+                document.getElementById('toastIcon').className = 'bi bi-exclamation-triangle me-2 fs-5';
+            }
+            new bootstrap.Toast(toastEl).show();
+        }
+    </script>
+}
