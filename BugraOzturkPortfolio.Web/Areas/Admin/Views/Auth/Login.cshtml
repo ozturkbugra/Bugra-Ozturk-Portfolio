@@ -17,6 +17,14 @@
     <link href="~/Admin/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="~/Admin/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="~/Admin/assets/css/main.css" rel="stylesheet">
+    <script>
+            (function () {
+                const currentTheme = localStorage.getItem('theme');
+                if (currentTheme === 'dark') {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            })();
+    </script>
 </head>
 
 <body>
@@ -49,7 +57,7 @@
                     <form class="fauth-form" id="loginForm" novalidate>
                         <div class="fauth-field">
                             <label for="username" class="form-label">Kullanıcı Adı</label>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
+                            <input type="text" class="form-control" id="username" name="username" autofocus placeholder="Kullanıcı adınızı girin" required>
                         </div>
 
                         <div class="fauth-field">
