@@ -92,6 +92,25 @@
         });
         }
         });
+
+        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener('click', function (e) {
+        const toggleBtn = e.target.closest('.header-toggle');
+        if (toggleBtn) {
+        const headerEl = document.getElementById('header');
+        if (headerEl) {
+        headerEl.classList.toggle('header-show');
+        }
+        const iconEl = toggleBtn.classList.contains('bi') ? toggleBtn : toggleBtn.querySelector('.bi');
+        if (iconEl) {
+        iconEl.classList.toggle('bi-list');
+        iconEl.classList.toggle('bi-x');
+        }
+        }
+        });
+        });
+
+
     </script>
 
 </body>
