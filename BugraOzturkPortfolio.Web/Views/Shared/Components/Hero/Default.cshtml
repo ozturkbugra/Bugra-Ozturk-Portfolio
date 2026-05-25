@@ -15,7 +15,6 @@
                         {
                             <h1>Buğra <span class="accent-text">ÖZTÜRK</span></h1>
                             <p class="lead"><span class="typed" data-typed-items="@Model.Title"></span></p>
-                            
                         }
                         else
                         {
@@ -31,21 +30,25 @@
                         <div class="social-links">
                             @if (Model != null)
                             {
+                                if (!string.IsNullOrEmpty(Model.LinkedinUrl))
+                                {
+                                    <a href="@Model.LinkedinUrl" target="_blank"><i class="bi bi-linkedin"></i></a>
+                                }
+                                if (!string.IsNullOrEmpty(Model.GithubUrl))
+                                {
+                                    <a href="@Model.GithubUrl" target="_blank"><i class="bi bi-github"></i></a>
+                                }
                                 if (!string.IsNullOrEmpty(Model.TwitterUrl))
                                 {
                                     <a href="@Model.TwitterUrl" target="_blank"><i class="bi bi-twitter-x"></i></a>
-                                }
-                                if (!string.IsNullOrEmpty(Model.FacebookUrl))
-                                {
-                                    <a href="@Model.FacebookUrl" target="_blank"><i class="bi bi-facebook"></i></a>
                                 }
                                 if (!string.IsNullOrEmpty(Model.InstagramUrl))
                                 {
                                     <a href="@Model.InstagramUrl" target="_blank"><i class="bi bi-instagram"></i></a>
                                 }
-                                if (!string.IsNullOrEmpty(Model.LinkedinUrl))
+                                if (!string.IsNullOrEmpty(Model.FacebookUrl))
                                 {
-                                    <a href="@Model.LinkedinUrl" target="_blank"><i class="bi bi-linkedin"></i></a>
+                                    <a href="@Model.FacebookUrl" target="_blank"><i class="bi bi-facebook"></i></a>
                                 }
                             }
                         </div>
