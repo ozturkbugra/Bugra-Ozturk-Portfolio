@@ -1726,40 +1726,15 @@ section,
     color: var(--default-color);
 }
 
-.services .service-header .service-summary .service-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 12px 30px;
-    background-color: var(--accent-color);
-    color: var(--contrast-color);
-    border-radius: 4px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-    .services .service-header .service-summary .service-btn i {
-        margin-left: 10px;
-        transition: transform 0.3s ease;
-    }
-
-    .services .service-header .service-summary .service-btn:hover {
-        background-color: color-mix(in srgb, var(--accent-color), transparent 15%);
-        color: var(--contrast-color);
-    }
-
-        .services .service-header .service-summary .service-btn:hover i {
-            transform: translateX(5px);
-        }
-
 @media (max-width: 992px) {
     .services .service-header .service-summary {
         margin-top: 30px;
     }
 }
 
+/* --- HİZMET KARTLARI (YENİLENEN KISIM) --- */
 .services .service-card {
-    padding: 40px 40px 40px 40px;
-    margin-bottom: 30px;
+    padding: 40px;
     border: 2px solid color-mix(in srgb, var(--accent-color), transparent 90%);
     transition: all 0.3s ease;
 }
@@ -1785,52 +1760,20 @@ section,
         font-size: 28px;
         margin-bottom: 15px;
         font-weight: 700;
+        color: var(--heading-color);
     }
 
-        .services .service-card h3 a {
-            color: var(--heading-color);
-            transition: color 0.3s ease;
+        /* Başlık içindeki span alt satıra düşmesin, yan yana nizamlı kalsın aga */
+        .services .service-card h3 span {
+            display: inline;
+            color: var(--accent-color);
         }
-
-            .services .service-card h3 a span {
-                display: block;
-            }
-
-            .services .service-card h3 a:hover {
-                color: var(--accent-color);
-            }
 
     .services .service-card p {
         color: var(--default-color);
         transition: color 0.3s ease;
         margin-bottom: 0;
     }
-
-    .services .service-card .card-action {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 80px;
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--accent-color);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(20px);
-        transition: all 0.3s ease;
-    }
-
-        .services .service-card .card-action i {
-            font-size: 24px;
-            color: var(--contrast-color);
-            transition: transform 0.3s ease;
-        }
-
-        .services .service-card .card-action:hover i {
-            transform: rotate(45deg);
-        }
 
     .services .service-card::before {
         content: "";
@@ -1857,22 +1800,8 @@ section,
             background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
         }
 
-        .services .service-card:hover h3 a {
-            color: var(--accent-color);
-        }
-
-            .services .service-card:hover h3 a:hover {
-                color: var(--accent-color);
-            }
-
         .services .service-card:hover p {
             color: color-mix(in srgb, var(--default-color), transparent 20%);
-        }
-
-        .services .service-card:hover .card-action {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
         }
 
         .services .service-card:hover .service-icon i {
@@ -1881,17 +1810,11 @@ section,
 
 @media (max-width: 768px) {
     .services .service-card {
-        padding: 150px 25px 25px;
+        padding: 40px 25px 25px; /* Üst padding karmaşasını düzelttik aga */
     }
 
         .services .service-card h3 {
             font-size: 24px;
-        }
-
-        .services .service-card .service-icon {
-            position: absolute;
-            top: 40px;
-            left: 25px;
         }
 }
 
@@ -1900,7 +1823,6 @@ section,
         padding: 70px 0 50px;
     }
 }
-
 /*--------------------------------------------------------------
 # Testimonials Section
 --------------------------------------------------------------*/

@@ -22,7 +22,7 @@
     </div>
 
     <div class="container" data-aos="fade-up" data-aos-delay="100">
-        <div class="row justify-content-center">
+        <div class="row justify-content-center gy-4">
             @if (Model != null && Model.Any())
             {
                 int delayCounter = 100;
@@ -30,19 +30,14 @@
                 foreach (var service in Model)
                 {
                     <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="@delayCounter">
-                        <div class="service-card position-relative z-1">
-                            <div class="service-icon">
+                        <div class="service-card position-relative z-1 d-flex flex-column h-100 mb-0">
+                            <div class="service-icon align-self-start">
                                 <i class="@(string.IsNullOrEmpty(service.IconClass) ? "bi bi-activity" : service.IconClass)"></i>
                             </div>
-                            <a href="/hizmet-detay/@service.Id" class="card-action d-flex align-items-center justify-content-center rounded-circle">
-                                <i class="bi bi-arrow-up-right"></i>
-                            </a>
                             <h3>
-                                <a href="/hizmet-detay/@service.Id">
-                                    @RenderServiceTitle(service.Title)
-                                </a>
+                                @RenderServiceTitle(service.Title)
                             </h3>
-                            <p>
+                            <p class="flex-grow-1">
                                 @service.Description
                             </p>
                         </div>
