@@ -6,6 +6,17 @@
     var aboutId = isEdit ? Model.Id : Guid.Empty;
 }
 
+
+    <style>
+        /* Modaldaki kırpma alanının sınırlarını korumak için */
+        .cropper-container-wrapper {
+            max-height: 450px;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+
 <div class="container-fluid">
     <div class="page-header fx-page-header">
         <div>
@@ -127,113 +138,195 @@
     </div>
 </div>
 
+<div class="modal fade" id="cropperModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="cropperModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropperModalLabel"><i class="bi bi-crop me-2"></i>Görseli Hizala ve Kırp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="cropper-container-wrapper text-center">
+                    <img id="cropperImage" src="" style="max-width: 100%; display: block;" alt="Kırpılacak Alan" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" id="btnCropAndSave" class="btn btn-sm btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> Kırpmayı Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var quill = new Quill('#quillEditor', {
-                theme: 'snow',
-                placeholder: 'Kendinizden bahsedin...',
-                modules: {
-                    toolbar: [
-                        [{ 'header': [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        ['clean']
-                    ]
-                }
-            });
+        var quill = new Quill('#quillEditor', {
+        theme: 'snow',
+        placeholder: 'Kendinizden bahsedin...',
+        modules: {
+        toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['clean']
+        ]
+        }
+        });
 
-            const dropzone = document.getElementById('dropzone');
-            const fileInput = document.getElementById('ImageFile');
-            const previewContainer = document.getElementById('previewContainer');
-            const imgPreview = document.getElementById('imgPreview');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('ImageFile');
+        const previewContainer = document.getElementById('previewContainer');
+        const imgPreview = document.getElementById('imgPreview');
 
-            dropzone.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
+        // Cropper Tanımlamaları
+        let cropper = null;
+        let croppedBlob = null;
+        const cropperModalElement = document.getElementById('cropperModal');
+        const cropperModal = new bootstrap.Modal(cropperModalElement);
+        const cropperImage = document.getElementById('cropperImage');
+        const btnCropAndSave = document.getElementById('btnCropAndSave');
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); }, false);
-            });
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.remove('bg-secondary-subtle'); }, false);
-            });
+        dropzone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
 
-            dropzone.addEventListener('drop', function (e) {
-                const dt = e.dataTransfer;
-                const file = dt.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    fileInput.files = dt.files;
-                    handleFile(file);
-                }
-            });
+        ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.remove('bg-secondary-subtle'); }, false);
+        });
 
-            function handleFile(file) {
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        imgPreview.src = e.target.result;
-                        previewContainer.classList.remove('d-none');
-                    }
-                    reader.readAsDataURL(file);
-                }
-            }
+        dropzone.addEventListener('drop', function (e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        if (file && file.type.startsWith('image/')) {
+        handleFile(file);
+        }
+        });
 
-            function showToast(message, isSuccess) {
-                const toastEl = document.getElementById('resultToast');
-                const toastMessage = document.getElementById('toastMessage');
-                const toastIcon = document.getElementById('toastIcon');
-                toastMessage.textContent = message;
-                if (isSuccess) {
-                    toastEl.className = 'toast align-items-center text-white border-0 bg-success';
-                    toastIcon.className = 'bi bi-check2-circle me-2 fs-5';
-                } else {
-                    toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
-                    toastIcon.className = 'bi bi-exclamation-triangle me-2 fs-5';
-                }
-                new bootstrap.Toast(toastEl).show();
-            }
+        function handleFile(file) {
+        if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+        cropperImage.src = e.target.result;
+        cropperModal.show();
+        }
+        reader.readAsDataURL(file);
+        }
+        }
 
-            const form = document.getElementById('aboutForm');
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
+        // Modal açıldığında Cropper motorunu 1:1 kare oranına kilitleyip çalıştırıyoruz aga
+        cropperModalElement.addEventListener('shown.bs.modal', function () {
+        cropper = new Cropper(cropperImage, {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true,
+        restore: false
+        });
+        });
 
-                if (!document.getElementById('Title').value.trim()) {
-                    showToast('Lütfen unvan alanını doldurunuz!', false);
-                    return;
-                }
+        // Modal her kapandığında hafızayı sıfırlıyoruz ki tarayıcı kasmasın
+        cropperModalElement.addEventListener('hidden.bs.modal', function () {
+        if (cropper) {
+        cropper.destroy();
+        cropper = null;
+        }
+        // Eğer kullanıcı kırpmadan modalı kapattıysa inputu temizle
+        if (!croppedBlob) {
+        fileInput.value = '';
+        }
+        });
 
-                const quillHtml = quill.root.innerHTML;
-                if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
-                    showToast('Lütfen biyografi alanını doldurunuz!', false);
-                    return;
-                }
-                document.getElementById('Description').value = quillHtml;
+        // Kırpmayı onayla butonuna basıldığında canvas üretim bacağı
+        btnCropAndSave.addEventListener('click', function () {
+        if (cropper) {
+        const canvas = cropper.getCroppedCanvas({
+        width: 500,
+        height: 500,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+        });
 
-                const formData = new FormData(form);
-                const btnSubmit = document.getElementById('btnSubmit');
+        // Önizleme alanını kırpılmış yeni resimle besle
+        imgPreview.src = canvas.toDataURL('image/jpeg');
+        previewContainer.classList.remove('d-none');
 
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
+        // Canvas'ı backend'e gönderilebilir binary dosya (Blob) formatına dönüştür
+        canvas.toBlob(function (blob) {
+        croppedBlob = blob;
+        cropperModal.hide();
+        }, 'image/jpeg', 0.9);
+        }
+        });
 
-                fetch('/Admin/About/Save', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(data.message, true);
-                        if (data.newId) document.getElementById('Id').value = data.newId;
-                    } else {
-                        showToast(data.message, false);
-                    }
-                })
-                .catch(() => showToast('Sistem hatası oluştu!', false))
-                .finally(() => {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = '<i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet';
-                });
-            });
+        function showToast(message, isSuccess) {
+        const toastEl = document.getElementById('resultToast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastIcon = document.getElementById('toastIcon');
+        toastMessage.textContent = message;
+        if (isSuccess) {
+        toastEl.className = 'toast align-items-center text-white border-0 bg-success';
+        toastIcon.className = 'bi bi-check2-circle me-2 fs-5';
+        } else {
+        toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
+        toastIcon.className = 'bi bi-exclamation-triangle me-2 fs-5';
+        }
+        new bootstrap.Toast(toastEl).show();
+        }
+
+        const form = document.getElementById('aboutForm');
+        form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!document.getElementById('Title').value.trim()) {
+        showToast('Lütfen unvan alanını doldurunuz!', false);
+        return;
+        }
+
+        const quillHtml = quill.root.innerHTML;
+        if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
+        showToast('Lütfen biyografi alanını doldurunuz!', false);
+        return;
+        }
+        document.getElementById('Description').value = quillHtml;
+
+        const formData = new FormData(form);
+
+        // Eğer kullanıcı resmi manuel kırptıysa, sinsi dokunuşla form verisini eziyoruz
+        if (croppedBlob) {
+        formData.delete('ImageFile');
+        formData.append('ImageFile', croppedBlob, 'profile_identity_square.jpg');
+        }
+
+        const btnSubmit = document.getElementById('btnSubmit');
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
+
+        fetch('/Admin/About/Save', {
+        method: 'POST',
+        body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+        if (data.success) {
+        showToast(data.message, true);
+        if (data.newId) document.getElementById('Id').value = data.newId;
+        croppedBlob = null; // Başarılı kayıt sonrası blob hafızasını sıfırla
+        } else {
+        showToast(data.message, false);
+        }
+        })
+        .catch(() => showToast('Sistem hatası oluştu!', false))
+        .finally(() => {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet';
+        });
+        });
         });
     </script>
 }
