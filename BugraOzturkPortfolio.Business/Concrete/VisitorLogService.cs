@@ -68,7 +68,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
             var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
             var repo = _unitOfWork.GetRepository<VisitorLog>();
 
-            // 1. Veriyi parametresiz çekip filtreyi bellek üstünde uyguluyoruz aga
             var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
 
             return period.ToLower() switch
@@ -86,12 +85,10 @@ namespace BugraOzturkPortfolio.Business.Concrete
             var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
             var repo = _unitOfWork.GetRepository<VisitorLog>();
 
-            // 2. Aynı şekilde burada da in-memory filtreye geçtik aga
             var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
 
             var history = new Dictionary<string, int>();
 
-            // Son 7 günü geriye doğru tarayıp sıralı sözlük yapıyoruz
             for (int i = 6; i >= 0; i--)
             {
                 var targetDate = nowInTurkey.Date.AddDays(-i);
@@ -106,10 +103,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<VisitorLog>();
 
-            // 3. Pasta grafiği bacağını da hatasız hale getirdik aga
             var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
-
-            // Günlere göre gruplayıp en yüksek hit alan ilk 5 günü pasta dilimine fırlatıyoruz
             var topDays = allLogs
                 .GroupBy(x => x.VisitDate)
                 .Select(g => new { DateStr = g.Key.ToString("dd.MM.yyyy"), Count = g.Count() })
@@ -118,6 +112,22 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 .ToDictionary(x => x.DateStr, x => x.Count);
 
             return topDays;
+        }
+
+        public async Task<Dictionary<string, int>> GetVisitorCountHistoryForCalendarAsync()
+        {
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+
+            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
+
+            var calendarData = allLogs
+                .GroupBy(x => x.VisitDate)
+                .ToDictionary(
+                    g => g.Key.ToString("yyyy-MM-dd"),
+                    g => g.Count()
+                );
+
+            return calendarData;
         }
     }
 }

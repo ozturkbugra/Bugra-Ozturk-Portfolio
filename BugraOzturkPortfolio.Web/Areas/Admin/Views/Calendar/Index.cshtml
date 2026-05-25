@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "Ziyaretçi Takip Takvimi";
+}
+
+    
+<div class="calendar-app">
+    <button class="calendar-sidebar-toggle" id="calendarSidebarToggle" aria-label="Toggle calendar sidebar">
+        <i class="bi bi-calendar3"></i>
+        <span>Mini Takvim & İstatistikler</span>
+    </button>
+
+    <div class="calendar-sidebar-overlay" id="calendarSidebarOverlay"></div>
+
+    <div class="calendar-sidebar" id="calendarSidebar">
+        <button class="calendar-sidebar-close" id="calendarSidebarClose" aria-label="Close sidebar">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="card">
+            <div class="card-body mini-calendar">
+                <div class="mini-calendar-header">
+                    <span class="mini-calendar-title" id="miniCalendarTitle">Ocak 2026</span>
+                    <div class="mini-calendar-nav">
+                        <button id="miniCalendarPrev"><i class="bi bi-chevron-left"></i></button>
+                        <button id="miniCalendarNext"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div class="mini-calendar-grid" id="miniCalendarGrid"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Yoğunluk Skalası</h5>
+            </div>
+            <div class="card-body p-0 event-categories">
+                <div class="event-category-item">
+                    <div class="event-category-color" style="background: var(--danger-color);"></div>
+                    <span class="event-category-name">Yüksek Trafik (50+)</span>
+                </div>
+                <div class="event-category-item">
+                    <div class="event-category-color" style="background: var(--warning-color);"></div>
+                    <span class="event-category-name">Orta Trafik (20-50)</span>
+                </div>
+                <div class="event-category-item">
+                    <div class="event-category-color" style="background: var(--success-color);"></div>
+                    <span class="event-category-name">Normal Trafik (0-20)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="calendar-main">
+        <div class="card h-100">
+            <div class="card-header calendar-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" id="calendarPrev"><i class="bi bi-chevron-left"></i></button>
+                        <button class="calendar-nav-btn calendar-today-btn" id="calendarToday">Bugün</button>
+                        <button class="calendar-nav-btn" id="calendarNext"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                    <h2 class="calendar-title" id="calendarTitle">Ocak 2026</h2>
+                </div>
+                <ul class="nav calendar-views-nav" role="tablist" style="display: none;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="month-tab" data-bs-toggle="tab" data-bs-target="#monthView" type="button" role="tab">Month</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="calendar-scroll-wrapper">
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="monthView" role="tabpanel">
+                            <div class="calendar-grid" id="calendarGrid">
+                                <div class="calendar-day-header">Paz</div>
+                                <div class="calendar-day-header">Pzt</div>
+                                <div class="calendar-day-header">Sal</div>
+                                <div class="calendar-day-header">Çar</div>
+                                <div class="calendar-day-header">Per</div>
+                                <div class="calendar-day-header">Cum</div>
+                                <div class="calendar-day-header">Cmt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            let currentDate = new Date();
+            let selectedDate = new Date();
+            let events = []; 
+
+            try {
+                const response = await fetch('/Admin/Calendar/GetCalendarEvents');
+                events = await response.json();
+            } catch (error) {
+                console.error("Ziyaretçi verileri yüklenirken hata oluştu aga:", error);
+            }
+
+            const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            const miniDayNames = ['P', 'P', 'S', 'Ç', 'P', 'C', 'C'];
+
+            const calendarGrid = document.getElementById('calendarGrid');
+            const calendarTitle = document.getElementById('calendarTitle');
+            const miniCalendarGrid = document.getElementById('miniCalendarGrid');
+            const miniCalendarTitle = document.getElementById('miniCalendarTitle');
+
+            function getEventsForDate(dateStr) {
+                return events.filter(event => event.date === dateStr);
+            }
+
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function isSameDay(date1, date2) {
+                return date1.getDate() === date2.getDate() &&
+                       date1.getMonth() === date2.getMonth() &&
+                       date1.getFullYear() === date2.getFullYear();
+            }
+
+            function renderMiniCalendar() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                miniCalendarTitle.textContent = `${monthNames[month]} ${year}`;
+                miniCalendarGrid.innerHTML = '';
+
+                miniDayNames.forEach(day => {
+                    const header = document.createElement('div');
+                    header.className = 'mini-calendar-day-header';
+                    header.textContent = day;
+                    miniCalendarGrid.appendChild(header);
+                });
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const daysInPrevMonth = new Date(year, month, 0).getDate();
+                const today = new Date();
+
+                for (let i = firstDay - 1; i >= 0; i--) {
+                    const day = document.createElement('div');
+                    day.className = 'mini-calendar-day other-month';
+                    day.textContent = daysInPrevMonth - i;
+                    miniCalendarGrid.appendChild(day);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const day = document.createElement('div');
+                    day.className = 'mini-calendar-day';
+                    day.textContent = i;
+                    const thisDate = new Date(year, month, i);
+                    const dateStr = formatDate(thisDate);
+
+                    if (isSameDay(thisDate, today)) day.classList.add('today');
+                    if (isSameDay(thisDate, selectedDate)) day.classList.add('selected');
+                    if (getEventsForDate(dateStr).length > 0) day.classList.add('has-event');
+
+                    day.addEventListener('click', () => {
+                        selectedDate = thisDate;
+                        currentDate = new Date(thisDate);
+                        renderAll();
+                    });
+                    miniCalendarGrid.appendChild(day);
+                }
+
+                const totalCells = miniCalendarGrid.children.length;
+                const remainingCells = 49 - totalCells;
+                for (let i = 1; i <= remainingCells && totalCells + i <= 49; i++) {
+                    const day = document.createElement('div');
+                    day.className = 'mini-calendar-day other-month';
+                    day.textContent = i;
+                    miniCalendarGrid.appendChild(day);
+                }
+            }
+
+            function renderMonthView() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                calendarTitle.textContent = `${monthNames[month]} ${year}`;
+
+                while (calendarGrid.children.length > 7) {
+                    calendarGrid.removeChild(calendarGrid.lastChild);
+                }
+
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const daysInPrevMonth = new Date(year, month, 0).getDate();
+                const today = new Date();
+
+                for (let i = firstDay - 1; i >= 0; i--) {
+                    const dayCell = createMonthDayCell(daysInPrevMonth - i, true, new Date(year, month - 1, daysInPrevMonth - i));
+                    calendarGrid.appendChild(dayCell);
+                }
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const thisDate = new Date(year, month, i);
+                    const dayCell = createMonthDayCell(i, false, thisDate, isSameDay(thisDate, today));
+                    calendarGrid.appendChild(dayCell);
+                }
+
+                const totalCells = calendarGrid.children.length;
+                const remainingCells = 42 + 7 - totalCells;
+                for (let i = 1; i <= remainingCells; i++) {
+                    const dayCell = createMonthDayCell(i, true, new Date(year, month + 1, i));
+                    calendarGrid.appendChild(dayCell);
+                }
+            }
+
+            function createMonthDayCell(dayNumber, isOtherMonth, date, isToday = false) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+                if (isOtherMonth) cell.classList.add('other-month');
+                if (isToday) cell.classList.add('today');
+
+                const dayNum = document.createElement('div');
+                dayNum.className = 'day-number';
+                dayNum.textContent = dayNumber;
+                cell.appendChild(dayNum);
+
+                const eventsContainer = document.createElement('div');
+                eventsContainer.className = 'day-events';
+
+                const dateStr = formatDate(date);
+                const dayEvents = getEventsForDate(dateStr);
+
+                dayEvents.forEach(event => {
+                    const eventEl = document.createElement('div');
+                    eventEl.className = `calendar-event event-${event.category}`;
+                    eventEl.textContent = event.title;
+                    eventsContainer.appendChild(eventEl);
+                });
+
+                cell.appendChild(eventsContainer);
+                return cell;
+            }
+
+            function renderAll() {
+                renderMiniCalendar();
+                renderMonthView();
+            }
+
+            document.getElementById('calendarPrev').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderAll();
+            });
+            document.getElementById('calendarNext').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderAll();
+            });
+            document.getElementById('calendarToday').addEventListener('click', () => {
+                currentDate = new Date();
+                selectedDate = new Date();
+                renderAll();
+            });
+            document.getElementById('miniCalendarPrev').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderAll();
+            });
+            document.getElementById('miniCalendarNext').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderAll();
+            });
+
+            renderAll();
+        });
+    </script>
+}
