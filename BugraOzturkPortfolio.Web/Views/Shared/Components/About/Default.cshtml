@@ -30,7 +30,9 @@
                                 }
                                 if (!string.IsNullOrEmpty(Model.Phone))
                                 {
-                                    <a href="tel:@Model.Phone" class="contact-item">
+                                    var purePhone = Model.Phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+
+                                    <a href="tel:@purePhone" class="contact-item">
                                         <i class="bi bi-telephone"></i>
                                         @Model.Phone
                                     </a>
@@ -61,10 +63,9 @@
                         }
                         else
                         {
-                            <p>Yazılım geliştirme süreçleri ve modern mimariler üzerine odaklanarak kurumsal çözümler üretiyorum.</p>
+                            <p>Yazılım geliştirme süreçleri ve modern mimariler üzerine odaklanarak kurumsal çözümler üreciyorum.</p>
                         }
                     </div>
-                 
 
                     <div class="cta-section">
                         @if (Model != null && !string.IsNullOrEmpty(Model.CvUrl))
