@@ -1,5 +1,6 @@
 ﻿@model List<Testimonial>
-
+@if (Model != null && Model.Any())
+            {
 <section id="testimonials" class="testimonials section light-background">
     <div class="container section-title" data-aos="fade-up">
         <h2>Referanslar</h2>
@@ -7,9 +8,8 @@
 
     <div class="container">
         <div class="testimonial-masonry">
-            @if (Model != null && Model.Any())
-            {
-                int delayCounter = 0;
+            
+                @{int delayCounter = 0;
 
                 foreach (var item in Model)
                 {
@@ -36,7 +36,9 @@
                     delayCounter += 100;
                     if (delayCounter > 500) delayCounter = 0;
                 }
-            }
+                }
+       
         </div>
     </div>
 </section>
+     }
