@@ -57,5 +57,34 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 return (true, "Bilgiler başarıyla güncellendi.");
             }
         }
+
+        public async Task<(bool Success, string Message)> DeleteCvFileAsync(Guid id, string webRootPath)
+        {
+            var repo = _unitOfWork.GetRepository<About>();
+            var existData = await repo.GetByIdAsync(id);
+
+            if (existData == null || string.IsNullOrEmpty(existData.CvUrl))
+                return (false, "Silinecek CV dosyası bulunamadı!");
+
+            try
+            {
+                var fullPath = Path.Combine(webRootPath, existData.CvUrl.TrimStart('/'));
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                }
+
+                existData.CvUrl = null;
+                repo.Update(existData);
+                await _unitOfWork.SaveChangesAsync();
+
+                return (true, "Mevcut CV dosyası başarıyla kaldırıldı.");
+            }
+            catch (Exception)
+            {
+                return (false, "Dosya silinirken sistemsel bir hata oluştu!");
+            }
+        }
+
     }
 }

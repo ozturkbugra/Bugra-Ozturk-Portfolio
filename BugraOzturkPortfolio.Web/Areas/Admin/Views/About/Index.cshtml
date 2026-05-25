@@ -112,10 +112,13 @@
                                 <input type="file" id="CvFile" name="CvFile" accept=".pdf" class="form-control" />
                                 @if (!string.IsNullOrEmpty(Model?.CvUrl))
                                 {
-                                    <div class="mt-2">
-                                        <a href="@Model.CvUrl" target="_blank" class="btn btn-link btn-sm p-0 text-success">
+                                    <div class="mt-2 d-flex align-items-center gap-3" id="cvInfoContainer">
+                                        <a href="@Model.CvUrl" target="_blank" class="btn btn-link btn-sm p-0 text-success fw-semibold text-decoration-none">
                                             <i class="bi bi-file-earmark-pdf me-1"></i> Mevcut CV'yi Görüntüle
                                         </a>
+                                        <button type="button" id="btnDeleteCv" data-id="@Model.Id" class="btn btn-outline-danger btn-xs px-2 py-1" style="font-size: 0.75rem;">
+                                            <i class="bi bi-trash3 me-1"></i> CV'yi Kaldır
+                                        </button>
                                     </div>
                                 }
                             </div>
@@ -314,5 +317,30 @@
                 });
             });
         });
+
+                const btnDeleteCv = document.getElementById('btnDeleteCv');
+        if (btnDeleteCv) {
+            btnDeleteCv.addEventListener('click', function () {
+                if (confirm('Mevcut CV dosyasını tamamen kaldırmak istediğinize emin misiniz?')) {
+                    const aboutId = this.dataset.id;
+
+                    fetch(`/Admin/About/DeleteCv?id=${aboutId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message, true);
+                            const cvContainer = document.getElementById('cvInfoContainer');
+                            if (cvContainer) cvContainer.classList.add('d-none');
+                            document.getElementById('CvFile').value = '';
+                        } else {
+                            showToast(data.message, false);
+                        }
+                    })
+                    .catch(() => showToast('Sistem hatası oluştu!', false));
+                }
+            });
+        }
     </script>
 }

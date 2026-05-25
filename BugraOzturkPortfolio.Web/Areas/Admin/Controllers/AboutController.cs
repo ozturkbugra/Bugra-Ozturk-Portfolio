@@ -54,5 +54,14 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
                 return Json(new { success = false, message = "İşlem sırasında bir hata oluştu!" });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCv(Guid id)
+        {
+            var webRootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var result = await _aboutService.DeleteCvFileAsync(id, webRootPath);
+
+            return Json(new { success = result.Success, message = result.Message });
+        }
     }
 }
