@@ -1377,23 +1377,32 @@ section,
 # Resume Section
 --------------------------------------------------------------*/
 .resume .resume-side {
-  background-color: var(--surface-color);
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  height: 100%;
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    height: 100%;
 }
 
-.resume .resume-side .profile-img {
-  text-align: center;
-}
+    .resume .resume-side .profile-img {
+        text-align: center;
+    }
 
-.resume .resume-side .profile-img img {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  border: 5px solid color-mix(in srgb, var(--accent-color), transparent 85%);
-  border-radius: 50%;
+        .resume .resume-side .profile-img img {
+            /* En-boy oranını kareye kilitliyoruz aga */
+            width: 180px;
+            height: 180px;
+            object-fit: cover; /* Resim ezilmeden kareye sığsın */
+            border: 4px solid color-mix(in srgb, var(--accent-color), transparent 85%);
+            border-radius: 50% !important; /* Daireye zorluyoruz */
+        }
+
+/* Mobilde resim çok büyük kalmasın diye rötuş */
+@@media (max-width: 575px) {
+    .resume .resume-side .profile-img img {
+        width: 150px;
+        height: 150px;
+    }
 }
 
 .resume .resume-side h3 {
