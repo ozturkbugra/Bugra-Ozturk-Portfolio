@@ -1,25 +1,51 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
-using BugraOzturkPortfolio.Entities.Concrete;
-using Microsoft.AspNetCore.Authorization;
+﻿using BugraOzturkPortfolio.Business.Abstract;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize]
     public class DashboardController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IVisitorLogService _visitorLogService;
+        private readonly IContactMessageService _contactMessageService;
+        private readonly IProjectService _projectService;
 
-        public DashboardController(IUnitOfWork unitOfWork)
+        public DashboardController(
+            IVisitorLogService visitorLogService,
+            IContactMessageService contactMessageService,
+            IProjectService projectService)
         {
-            _unitOfWork = unitOfWork;
+            _visitorLogService = visitorLogService;
+            _contactMessageService = contactMessageService;
+            _projectService = projectService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var totalProjects = await _unitOfWork.GetRepository<Project>().CountAsync();
-            ViewBag.TotalProjects = totalProjects;
+            // --- ÜST KART METRİKLERİ ---
+            var messages = await _contactMessageService.GetAllMessagesAsync();
+            ViewBag.UnreadMessagesCount = messages.Count(x => !x.IsRead && !x.IsDeleted);
+            ViewBag.TotalMessagesCount = messages.Count(x => !x.IsDeleted);
+
+            var projects = await _projectService.GetAllProjectsAsync();
+            ViewBag.TotalProjectsCount = projects.Count(x => !x.IsDeleted);
+
+            // --- PERİYODİK ZİYARETÇİ SAYILARI ---
+            ViewBag.DailyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("daily");
+            ViewBag.WeeklyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("weekly");
+            ViewBag.MonthlyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("monthly");
+            ViewBag.YearlyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("yearly");
+
+            // --- GRAFİK VERİ YAPILARI (JSON formatında fırlatıyoruz aga) ---
+            var weekHistory = await _visitorLogService.GetLastWeekVisitorHistoryAsync();
+            ViewBag.WeekHistoryLabels = string.Join(",", weekHistory.Keys.Select(k => $"'{k}'"));
+            ViewBag.WeekHistoryValues = string.Join(",", weekHistory.Values);
+
+            var topDays = await _visitorLogService.GetTopFiveMostVisitedDaysAsync();
+            ViewBag.TopDaysLabels = string.Join(",", topDays.Keys.Select(k => $"'{k}'"));
+            ViewBag.TopDaysValues = string.Join(",", topDays.Values);
 
             return View();
         }

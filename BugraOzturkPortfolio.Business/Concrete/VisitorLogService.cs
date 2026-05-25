@@ -12,7 +12,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
     public class VisitorLogService : IVisitorLogService
     {
         private readonly IUnitOfWork _unitOfWork;
-
+        private readonly TimeZoneInfo _turkeyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
         public VisitorLogService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -61,6 +61,63 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 }
                 return builder.ToString();
             }
+        }
+
+        public async Task<int> GetPeriodicVisitorsCountAsync(string period)
+        {
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+
+            // 1. Veriyi parametresiz çekip filtreyi bellek üstünde uyguluyoruz aga
+            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
+
+            return period.ToLower() switch
+            {
+                "daily" => allLogs.Count(x => x.VisitDate == nowInTurkey.Date),
+                "weekly" => allLogs.Count(x => x.VisitDate >= nowInTurkey.Date.AddDays(-7)),
+                "monthly" => allLogs.Count(x => x.VisitDate >= nowInTurkey.Date.AddDays(-30)),
+                "yearly" => allLogs.Count(x => x.VisitDate.Year == nowInTurkey.Year),
+                _ => allLogs.Count()
+            };
+        }
+
+        public async Task<Dictionary<string, int>> GetLastWeekVisitorHistoryAsync()
+        {
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+
+            // 2. Aynı şekilde burada da in-memory filtreye geçtik aga
+            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
+
+            var history = new Dictionary<string, int>();
+
+            // Son 7 günü geriye doğru tarayıp sıralı sözlük yapıyoruz
+            for (int i = 6; i >= 0; i--)
+            {
+                var targetDate = nowInTurkey.Date.AddDays(-i);
+                var count = allLogs.Count(x => x.VisitDate == targetDate);
+                history.Add(targetDate.ToString("dd.MM (ddd)"), count);
+            }
+
+            return history;
+        }
+
+        public async Task<Dictionary<string, int>> GetTopFiveMostVisitedDaysAsync()
+        {
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+
+            // 3. Pasta grafiği bacağını da hatasız hale getirdik aga
+            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
+
+            // Günlere göre gruplayıp en yüksek hit alan ilk 5 günü pasta dilimine fırlatıyoruz
+            var topDays = allLogs
+                .GroupBy(x => x.VisitDate)
+                .Select(g => new { DateStr = g.Key.ToString("dd.MM.yyyy"), Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .Take(5)
+                .ToDictionary(x => x.DateStr, x => x.Count);
+
+            return topDays;
         }
     }
 }
