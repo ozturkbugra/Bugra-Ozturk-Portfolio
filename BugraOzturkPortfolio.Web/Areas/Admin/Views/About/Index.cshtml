@@ -6,16 +6,8 @@
     var aboutId = isEdit ? Model.Id : Guid.Empty;
 }
 
+   
 
-    <style>
-        /* Modaldaki kırpma alanının sınırlarını korumak için */
-        .cropper-container-wrapper {
-            max-height: 450px;
-            overflow: hidden;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-    </style>
 
 <div class="container-fluid">
     <div class="page-header fx-page-header">
@@ -48,13 +40,9 @@
                         <input type="hidden" id="Id" name="Id" value="@aboutId" />
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label for="Title" class="form-label fw-semibold">Ana Unvan / Başlık</label>
                                 <input type="text" class="form-control" id="Title" name="Title" value="@(Model?.Title)" placeholder="Örn: Full Stack .NET Developer" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="SubTitle" class="form-label fw-semibold">Alt Başlık</label>
-                                <input type="text" class="form-control" id="SubTitle" name="SubTitle" value="@(Model?.SubTitle)" placeholder="Örn: Yazılım Mimarı & Dijital Çözüm Ortağı">
                             </div>
                         </div>
 
@@ -74,21 +62,28 @@
                         </div>
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
+                                <label for="LinkedinUrl" class="form-label fw-semibold">LinkedIn Linki</label>
+                                <input type="url" class="form-control" id="LinkedinUrl" name="LinkedinUrl" value="@(Model?.LinkedinUrl)" placeholder="https://linkedin.com/in/username">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="GithubUrl" class="form-label fw-semibold">GitHub Linki</label>
+                                <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" value="@(Model?.GithubUrl)" placeholder="https://github.com/username">
+                            </div>
+                            <div class="col-md-4">
                                 <label for="TwitterUrl" class="form-label fw-semibold">Twitter (X) Linki</label>
                                 <input type="url" class="form-control" id="TwitterUrl" name="TwitterUrl" value="@(Model?.TwitterUrl)" placeholder="https://x.com/username">
                             </div>
-                            <div class="col-md-3">
-                                <label for="FacebookUrl" class="form-label fw-semibold">Facebook Linki</label>
-                                <input type="url" class="form-control" id="FacebookUrl" name="FacebookUrl" value="@(Model?.FacebookUrl)" placeholder="https://facebook.com/username">
-                            </div>
-                            <div class="col-md-3">
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
                                 <label for="InstagramUrl" class="form-label fw-semibold">Instagram Linki</label>
                                 <input type="url" class="form-control" id="InstagramUrl" name="InstagramUrl" value="@(Model?.InstagramUrl)" placeholder="https://instagram.com/username">
                             </div>
-                            <div class="col-md-3">
-                                <label for="LinkedinUrl" class="form-label fw-semibold">LinkedIn Linki</label>
-                                <input type="url" class="form-control" id="LinkedinUrl" name="LinkedinUrl" value="@(Model?.LinkedinUrl)" placeholder="https://linkedin.com/in/username">
+                            <div class="col-md-6">
+                                <label for="FacebookUrl" class="form-label fw-semibold">Facebook Linki</label>
+                                <input type="url" class="form-control" id="FacebookUrl" name="FacebookUrl" value="@(Model?.FacebookUrl)" placeholder="https://facebook.com/username">
                             </div>
                         </div>
 
@@ -161,172 +156,163 @@
 </div>
 
 @section Scripts {
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-        var quill = new Quill('#quillEditor', {
-        theme: 'snow',
-        placeholder: 'Kendinizden bahsedin...',
-        modules: {
-        toolbar: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['clean']
-        ]
-        }
-        });
+            var quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                placeholder: 'Kendinizden bahsedin...',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
 
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('ImageFile');
-        const previewContainer = document.getElementById('previewContainer');
-        const imgPreview = document.getElementById('imgPreview');
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('ImageFile');
+            const previewContainer = document.getElementById('previewContainer');
+            const imgPreview = document.getElementById('imgPreview');
 
-        // Cropper Tanımlamaları
-        let cropper = null;
-        let croppedBlob = null;
-        const cropperModalElement = document.getElementById('cropperModal');
-        const cropperModal = new bootstrap.Modal(cropperModalElement);
-        const cropperImage = document.getElementById('cropperImage');
-        const btnCropAndSave = document.getElementById('btnCropAndSave');
+            let cropper = null;
+            let croppedBlob = null;
+            const cropperModalElement = document.getElementById('cropperModal');
+            const cropperModal = new bootstrap.Modal(cropperModalElement);
+            const cropperImage = document.getElementById('cropperImage');
+            const btnCropAndSave = document.getElementById('btnCropAndSave');
 
-        dropzone.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
+            dropzone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', function () { handleFile(this.files[0]); });
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-        dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); }, false);
-        });
-        ['dragleave', 'drop'].forEach(eventName => {
-        dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.remove('bg-secondary-subtle'); }, false);
-        });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.add('bg-secondary-subtle'); }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => { e.preventDefault(); dropzone.classList.remove('bg-secondary-subtle'); }, false);
+            });
 
-        dropzone.addEventListener('drop', function (e) {
-        const dt = e.dataTransfer;
-        const file = dt.files[0];
-        if (file && file.type.startsWith('image/')) {
-        handleFile(file);
-        }
-        });
+            dropzone.addEventListener('drop', function (e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleFile(file);
+                }
+            });
 
-        function handleFile(file) {
-        if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-        cropperImage.src = e.target.result;
-        cropperModal.show();
-        }
-        reader.readAsDataURL(file);
-        }
-        }
+            function handleFile(file) {
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        cropperImage.src = e.target.result;
+                        cropperModal.show();
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
 
-        // Modal açıldığında Cropper motorunu 1:1 kare oranına kilitleyip çalıştırıyoruz aga
-        cropperModalElement.addEventListener('shown.bs.modal', function () {
-        cropper = new Cropper(cropperImage, {
-        aspectRatio: 1,
-        viewMode: 1,
-        autoCropArea: 1,
-        responsive: true,
-        restore: false
-        });
-        });
+            cropperModalElement.addEventListener('shown.bs.modal', function () {
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    responsive: true,
+                    restore: false
+                });
+            });
 
-        // Modal her kapandığında hafızayı sıfırlıyoruz ki tarayıcı kasmasın
-        cropperModalElement.addEventListener('hidden.bs.modal', function () {
-        if (cropper) {
-        cropper.destroy();
-        cropper = null;
-        }
-        // Eğer kullanıcı kırpmadan modalı kapattıysa inputu temizle
-        if (!croppedBlob) {
-        fileInput.value = '';
-        }
-        });
+            cropperModalElement.addEventListener('hidden.bs.modal', function () {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                if (!croppedBlob) {
+                    fileInput.value = '';
+                }
+            });
 
-        // Kırpmayı onayla butonuna basıldığında canvas üretim bacağı
-        btnCropAndSave.addEventListener('click', function () {
-        if (cropper) {
-        const canvas = cropper.getCroppedCanvas({
-        width: 500,
-        height: 500,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high'
-        });
+            btnCropAndSave.addEventListener('click', function () {
+                if (cropper) {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 500,
+                        height: 500,
+                        imageSmoothingEnabled: true,
+                        imageSmoothingQuality: 'high'
+                    });
 
-        // Önizleme alanını kırpılmış yeni resimle besle
-        imgPreview.src = canvas.toDataURL('image/jpeg');
-        previewContainer.classList.remove('d-none');
+                    imgPreview.src = canvas.toDataURL('image/jpeg');
+                    previewContainer.classList.remove('d-none');
 
-        // Canvas'ı backend'e gönderilebilir binary dosya (Blob) formatına dönüştür
-        canvas.toBlob(function (blob) {
-        croppedBlob = blob;
-        cropperModal.hide();
-        }, 'image/jpeg', 0.9);
-        }
-        });
+                    canvas.toBlob(function (blob) {
+                        croppedBlob = blob;
+                        cropperModal.hide();
+                    }, 'image/jpeg', 0.9);
+                }
+            });
 
-        function showToast(message, isSuccess) {
-        const toastEl = document.getElementById('resultToast');
-        const toastMessage = document.getElementById('toastMessage');
-        const toastIcon = document.getElementById('toastIcon');
-        toastMessage.textContent = message;
-        if (isSuccess) {
-        toastEl.className = 'toast align-items-center text-white border-0 bg-success';
-        toastIcon.className = 'bi bi-check2-circle me-2 fs-5';
-        } else {
-        toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
-        toastIcon.className = 'bi bi-exclamation-triangle me-2 fs-5';
-        }
-        new bootstrap.Toast(toastEl).show();
-        }
+            function showToast(message, isSuccess) {
+                const toastEl = document.getElementById('resultToast');
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = document.getElementById('toastIcon');
+                toastMessage.textContent = message;
+                if (isSuccess) {
+                    toastEl.className = 'toast align-items-center text-white border-0 bg-success';
+                    toastIcon.className = 'bi bi-check2-circle me-2 fs-5';
+                } else {
+                    toastEl.className = 'toast align-items-center text-white border-0 bg-danger';
+                    toastIcon.className = 'bi bi-exclamation-triangle me-2 fs-5';
+                }
+                new bootstrap.Toast(toastEl).show();
+            }
 
-        const form = document.getElementById('aboutForm');
-        form.addEventListener('submit', function (e) {
-        e.preventDefault();
+            const form = document.getElementById('aboutForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-        if (!document.getElementById('Title').value.trim()) {
-        showToast('Lütfen unvan alanını doldurunuz!', false);
-        return;
-        }
+                if (!document.getElementById('Title').value.trim()) {
+                    showToast('Lütfen unvan alanını doldurunuz!', false);
+                    return;
+                }
 
-        const quillHtml = quill.root.innerHTML;
-        if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
-        showToast('Lütfen biyografi alanını doldurunuz!', false);
-        return;
-        }
-        document.getElementById('Description').value = quillHtml;
+                const quillHtml = quill.root.innerHTML;
+                if (quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
+                    showToast('Lütfen biyografi alanını doldurunuz!', false);
+                    return;
+                }
+                document.getElementById('Description').value = quillHtml;
 
-        const formData = new FormData(form);
+                const formData = new FormData(form);
 
-        // Eğer kullanıcı resmi manuel kırptıysa, sinsi dokunuşla form verisini eziyoruz
-        if (croppedBlob) {
-        formData.delete('ImageFile');
-        formData.append('ImageFile', croppedBlob, 'profile_identity_square.jpg');
-        }
+                if (croppedBlob) {
+                    formData.delete('ImageFile');
+                    formData.append('ImageFile', croppedBlob, 'profile_identity_square.jpg');
+                }
 
-        const btnSubmit = document.getElementById('btnSubmit');
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
+                const btnSubmit = document.getElementById('btnSubmit');
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
 
-        fetch('/Admin/About/Save', {
-        method: 'POST',
-        body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-        if (data.success) {
-        showToast(data.message, true);
-        if (data.newId) document.getElementById('Id').value = data.newId;
-        croppedBlob = null; // Başarılı kayıt sonrası blob hafızasını sıfırla
-        } else {
-        showToast(data.message, false);
-        }
-        })
-        .catch(() => showToast('Sistem hatası oluştu!', false))
-        .finally(() => {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = '<i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet';
-        });
-        });
+                fetch('/Admin/About/Save', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, true);
+                        if (data.newId) document.getElementById('Id').value = data.newId;
+                        croppedBlob = null;
+                    } else {
+                        showToast(data.message, false);
+                    }
+                })
+                .catch(() => showToast('Sistem hatası oluştu!', false))
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="bi bi-shield-check me-1"></i> Değişiklikleri Kaydet';
+                });
+            });
         });
     </script>
 }

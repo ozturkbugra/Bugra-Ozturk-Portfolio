@@ -38,18 +38,18 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 if (existData == null) return (false, "Güncellenecek kayıt bulunamadı!");
 
                 existData.Title = model.Title;
-                existData.SubTitle = model.SubTitle;
                 existData.Description = model.Description;
                 existData.Email = model.Email;
                 existData.Phone = model.Phone;
                 existData.Address = model.Address;
+                existData.GithubUrl = model.GithubUrl;
                 existData.TwitterUrl = model.TwitterUrl;
                 existData.FacebookUrl = model.FacebookUrl;
                 existData.InstagramUrl = model.InstagramUrl;
                 existData.LinkedinUrl = model.LinkedinUrl;
+                existData.CvUrl = model.CvUrl;
 
                 if (!string.IsNullOrEmpty(model.ImageUrl)) existData.ImageUrl = model.ImageUrl;
-                if (!string.IsNullOrEmpty(model.CvUrl)) existData.CvUrl = model.CvUrl;
 
                 repo.Update(existData);
                 await _unitOfWork.SaveChangesAsync();

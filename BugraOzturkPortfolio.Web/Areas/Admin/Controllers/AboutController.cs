@@ -34,8 +34,11 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
                 var uploadedImagePath = await FileHelper.UploadImageAsync(ImageFile, webRootPath, "uploads/images");
                 if (!string.IsNullOrEmpty(uploadedImagePath)) model.ImageUrl = uploadedImagePath;
 
-                var uploadedCvPath = await FileHelper.UploadImageAsync(CvFile, webRootPath, "uploads/docs");
-                if (!string.IsNullOrEmpty(uploadedCvPath)) model.CvUrl = uploadedCvPath;
+                if (CvFile != null)
+                {
+                    var uploadedCvPath = await FileHelper.UploadImageAsync(CvFile, webRootPath, "uploads/docs");
+                    if (!string.IsNullOrEmpty(uploadedCvPath)) model.CvUrl = uploadedCvPath;
+                }
 
                 var result = await _aboutService.SaveAboutAsync(model);
 

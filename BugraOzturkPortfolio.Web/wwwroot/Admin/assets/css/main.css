@@ -34241,3 +34241,12 @@ textarea.form-control {
     display: block;
   }
 }
+
+/* Cropper Styles */
+
+.cropper-container-wrapper {
+    max-height: 450px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
