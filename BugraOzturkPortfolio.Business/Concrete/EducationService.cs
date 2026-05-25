@@ -1,6 +1,10 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BugraOzturkPortfolio.Business.Concrete
 {
@@ -40,9 +44,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 exist.InstitutionName = model.InstitutionName;
                 exist.Degree = model.Degree;
                 exist.FieldOfStudy = model.FieldOfStudy;
+                exist.Description = model.Description; 
                 exist.StartDate = model.StartDate;
                 exist.EndDate = model.EndDate;
                 exist.UpdatedDate = DateTime.UtcNow;
+
                 repo.Update(exist);
                 await _unitOfWork.SaveChangesAsync();
                 return (true, "Eğitim bilgisi güncellendi.");

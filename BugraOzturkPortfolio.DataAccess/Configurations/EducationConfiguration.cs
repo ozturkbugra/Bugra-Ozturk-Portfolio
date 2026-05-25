@@ -12,6 +12,7 @@ namespace BugraOzturkPortfolio.DataAccess.Configurations
             builder.Property(e => e.InstitutionName).IsRequired().HasMaxLength(150);
             builder.Property(e => e.Degree).IsRequired().HasMaxLength(100);
             builder.Property(e => e.FieldOfStudy).IsRequired().HasMaxLength(100);
+            builder.Property(e => e.Description).IsRequired(false);
             builder.Property(e => e.StartDate).IsRequired();
         }
     }

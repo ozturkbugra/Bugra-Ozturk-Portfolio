@@ -110,6 +110,13 @@
                                 <h4>@edu.Degree - @edu.FieldOfStudy</h4>
                                 <h5>@edu.StartDate.ToString("yyyy") - @(edu.EndDate.HasValue ? edu.EndDate.Value.ToString("yyyy") : "Devam Ediyor")</h5>
                                 <p class="company"><i class="bi bi-building"></i> @edu.InstitutionName</p>
+
+                                @if (!string.IsNullOrEmpty(edu.Description))
+                                {
+                                    <div class="resume-item-description mt-2" style="white-space: pre-line;">
+                                        @Html.Raw(edu.Description)
+                                    </div>
+                                }
                             </div>
                         }
                     }
