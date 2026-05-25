@@ -42,11 +42,13 @@
                         <label class="form-label fw-semibold">Meta Description</label>
                         <textarea class="form-control" name="MetaDescription" rows="2" required>@Model?.MetaDescription</textarea>
                     </div>
-               
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Favicon</label>
                         <input type="file" class="form-control" name="FaviconFile" accept="image/*" />
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Önerilen boyut: <strong>32x32 px</strong> (.ico veya .png)
+                        </div>
                         @if (!string.IsNullOrEmpty(Model?.FaviconUrl))
                         {
                             <div class="mt-2"><img src="@Model.FaviconUrl" width="40" class="img-thumbnail" /></div>
@@ -55,6 +57,9 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Apple Touch Icon</label>
                         <input type="file" class="form-control" name="AppleTouchFile" accept="image/*" />
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Önerilen boyut: <strong>180x180 px</strong> (.png)
+                        </div>
                         @if (!string.IsNullOrEmpty(Model?.AppleTouchIconUrl))
                         {
                             <div class="mt-2"><img src="@Model.AppleTouchIconUrl" width="40" class="img-thumbnail" /></div>
