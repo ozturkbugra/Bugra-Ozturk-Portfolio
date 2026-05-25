@@ -17,7 +17,7 @@
                                  class="img-fluid rounded-circle shadow-sm">
                         </div>
 
-                        <h3>Profesyonel Özet</h3>
+                        <h3>Hakkımda</h3>
                         <div class="resume-summary-text mb-4">
                             @Html.Raw(Model.About.Description)
                         </div>
@@ -30,15 +30,28 @@
                             }
                             @if (!string.IsNullOrEmpty(Model.About.Email))
                             {
-                                <li><i class="bi bi-envelope"></i> @Model.About.Email</li>
+                                <li><i class="bi bi-envelope"></i> <a href="mailto:@Model.About.Email" class="text-decoration-none">@Model.About.Email</a></li>
                             }
                             @if (!string.IsNullOrEmpty(Model.About.Phone))
                             {
-                                <li><i class="bi bi-phone"></i> @Model.About.Phone</li>
+                                var purePhone = Model.About.Phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "");
+                                if (!purePhone.StartsWith("+90") && purePhone.StartsWith("0"))
+                                {
+                                    purePhone = "+90" + purePhone.Substring(1);
+                                }
+                                else if (!purePhone.StartsWith("+90") && !purePhone.StartsWith("90"))
+                                {
+                                    purePhone = "+90" + purePhone;
+                                }
+                                <li><i class="bi bi-phone"></i> <a href="tel:@purePhone" class="text-decoration-none">@Model.About.Phone</a></li>
                             }
                             @if (!string.IsNullOrEmpty(Model.About.LinkedinUrl))
                             {
-                                <li><i class="bi bi-linkedin"></i> LinkedIn Profili</li>
+                                <li><i class="bi bi-linkedin"></i> <a href="@Model.About.LinkedinUrl" target="_blank" class="text-decoration-none">LinkedIn Profilim</a></li>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.About.GithubUrl))
+                            {
+                                <li><i class="bi bi-github"></i> <a href="@Model.About.GithubUrl" target="_blank" class="text-decoration-none">GitHub Profilim</a></li>
                             }
                         </ul>
                     }
