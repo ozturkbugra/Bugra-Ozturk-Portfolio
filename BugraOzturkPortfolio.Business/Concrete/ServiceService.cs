@@ -24,7 +24,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
         {
             var repo = _unitOfWork.GetRepository<Service>();
 
-            // DUPLICATE CHECK
             var all = await repo.GetAllAsync();
             if (all.Any(x => x.Title.ToLower() == model.Title.ToLower() && x.Id != model.Id && !x.IsDeleted))
                 return (false, "Bu başlıkta zaten bir hizmet mevcut!");

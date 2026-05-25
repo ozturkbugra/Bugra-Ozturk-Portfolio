@@ -10,7 +10,7 @@ namespace BugraOzturkPortfolio.DataAccess.Configurations
         {
             builder.HasKey(s => s.Id);
             builder.Property(s => s.Title).IsRequired().HasMaxLength(100);
-            builder.Property(s => s.Description).IsRequired().HasMaxLength(300);
+            builder.Property(s => s.Description).IsRequired();
             builder.Property(s => s.IconClass).IsRequired().HasMaxLength(50);
         }
     }
