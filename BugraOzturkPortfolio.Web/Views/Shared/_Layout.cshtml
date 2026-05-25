@@ -40,17 +40,7 @@
 
     <div id="preloader"></div>
 
-    <script src="~/UI/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="~/UI/assets/vendor/aos/aos.js"></script>
-    <script src="~/UI/assets/vendor/typed.js/typed.umd.js"></script>
-    <script src="~/UI/assets/vendor/purecounter/purecounter_vanilla.js"></script>
-    <script src="~/UI/assets/vendor/waypoints/noframework.waypoints.js"></script>
-    <script src="~/UI/assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
-    <script src="~/UI/assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-    <script src="~/UI/assets/vendor/glightbox/js/glightbox.min.js"></script>
-    <script src="~/UI/assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-    <script src="~/UI/assets/js/main.js"></script>
+  
 
     @await RenderSectionAsync("Scripts", required: false)
 
@@ -68,50 +58,8 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        const cookieBar = document.getElementById("cookieNoticeBar");
-        const acceptBtn = document.getElementById("btnAcceptCookies");
+    @await Component.InvokeAsync("LayoutScript")
 
-        if (cookieBar && acceptBtn) {
-        const lastAccepted = localStorage.getItem("cookie_accepted_date");
-        const oneWeek = 7 * 24 * 60 * 60 * 1000;
-
-        if (!lastAccepted || (new Date().getTime() - parseInt(lastAccepted)) > oneWeek) {
-        cookieBar.style.display = "block";
-        }
-
-        acceptBtn.addEventListener("click", function () {
-        localStorage.setItem("cookie_accepted_date", new Date().getTime().toString());
-
-        cookieBar.style.transition = "opacity 0.4s ease";
-        cookieBar.style.opacity = "0";
-        setTimeout(() => {
-        cookieBar.style.display = "none";
-        }, 400);
-        });
-        }
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-        document.addEventListener('click', function (e) {
-        const toggleBtn = e.target.closest('.header-toggle');
-        if (toggleBtn) {
-        const headerEl = document.getElementById('header');
-        if (headerEl) {
-        headerEl.classList.toggle('header-show');
-        }
-        const iconEl = toggleBtn.classList.contains('bi') ? toggleBtn : toggleBtn.querySelector('.bi');
-        if (iconEl) {
-        iconEl.classList.toggle('bi-list');
-        iconEl.classList.toggle('bi-x');
-        }
-        }
-        });
-        });
-
-
-    </script>
 
 </body>
 </html>
