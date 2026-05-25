@@ -22,21 +22,25 @@
         <div class="social-links text-center">
             @if (Model != null)
             {
+                if (!string.IsNullOrEmpty(Model.LinkedinUrl))
+                {
+                    <a href="@Model.LinkedinUrl" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                }
+                if (!string.IsNullOrEmpty(Model.GithubUrl))
+                {
+                    <a href="@Model.GithubUrl" target="_blank" class="github"><i class="bi bi-github"></i></a>
+                }
                 if (!string.IsNullOrEmpty(Model.TwitterUrl))
                 {
                     <a href="@Model.TwitterUrl" target="_blank" class="twitter"><i class="bi bi-twitter-x"></i></a>
-                }
-                if (!string.IsNullOrEmpty(Model.FacebookUrl))
-                {
-                    <a href="@Model.FacebookUrl" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
                 }
                 if (!string.IsNullOrEmpty(Model.InstagramUrl))
                 {
                     <a href="@Model.InstagramUrl" target="_blank" class="instagram"><i class="bi bi-instagram"></i></a>
                 }
-                if (!string.IsNullOrEmpty(Model.LinkedinUrl))
+                if (!string.IsNullOrEmpty(Model.FacebookUrl))
                 {
-                    <a href="@Model.LinkedinUrl" target="_blank" class="linkedin"><i class="bi bi-linkedin"></i></a>
+                    <a href="@Model.FacebookUrl" target="_blank" class="facebook"><i class="bi bi-facebook"></i></a>
                 }
             }
         </div>
