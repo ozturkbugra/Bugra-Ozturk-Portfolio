@@ -327,9 +327,9 @@
                             <td>${dateStr}</td>
                             <td><span class="badge bg-secondary">${item.order}</span></td>
                             <td class="text-end">
-                                <button class="btn btn-outline-primary btn-sm me-1" onclick="openProjectDetailPanel('${item.id}', '${item.title.replace(/'/g, "\\'")}')" title="Detayları Yönet">
-                                    <i class="bi bi-gear"></i> Detayları Yönet
-                                </button>
+                                        <button class="btn btn-outline-primary btn-sm me-1" onclick="window.location.href='/Admin/Project/Detail?id=${item.id}'" title="Detayları Yönet">
+            <i class="bi bi-gear"></i> Detayları Yönet
+        </button>
                                 <button class="btn btn-outline-warning btn-sm me-1" onclick="openEditModal('${item.id}')" title="Düzenle"><i class="bi bi-pencil"></i></button>
                                 <button class="btn btn-outline-danger btn-sm" onclick="deleteProject('${item.id}')" title="Sil"><i class="bi bi-trash"></i></button>
                             </td>
