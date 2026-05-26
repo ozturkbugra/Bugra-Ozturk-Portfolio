@@ -30,7 +30,26 @@ namespace BugraOzturkPortfolio.DataAccess.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+
+            modelBuilder.Entity<About>().ToTable("Abouts");
+            modelBuilder.Entity<Category>().ToTable("Categories");
+            modelBuilder.Entity<ContactMessage>().ToTable("ContactMessages");
+            modelBuilder.Entity<Education>().ToTable("Educations");
+            modelBuilder.Entity<Experience>().ToTable("Experiences");
+            modelBuilder.Entity<Project>().ToTable("Projects");
+            modelBuilder.Entity<ProjectCategoryMapping>().ToTable("ProjectCategoryMappings");
+            modelBuilder.Entity<ProjectFeature>().ToTable("ProjectFeatures");
+            modelBuilder.Entity<ProjectImage>().ToTable("ProjectImages");
+            modelBuilder.Entity<Service>().ToTable("Services");
+            modelBuilder.Entity<SiteSetting>().ToTable("SiteSettings");
+            modelBuilder.Entity<Testimonial>().ToTable("Testimonials");
+            modelBuilder.Entity<Skill>().ToTable("Skills");
+            modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<SiteScript>().ToTable("SiteScripts");
+            modelBuilder.Entity<VisitorLog>().ToTable("VisitorLogs");
         }
     }
 }
