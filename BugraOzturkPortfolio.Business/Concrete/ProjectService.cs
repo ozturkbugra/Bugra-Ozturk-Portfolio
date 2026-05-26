@@ -40,7 +40,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             var projects = (await projectRepo.GetAllAsync()).ToList();
             var allImages = await imageRepo.GetAllAsync();
-            var allMappings = await mappingRepo.GetAllAsync(); // Ara eşleşme tablosunu çekiyoruz
+            var allMappings = await mappingRepo.GetAllAsync(); 
 
             foreach (var project in projects)
             {
@@ -49,12 +49,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 foreach (var img in projectImages) { img.Project = null; }
                 project.ProjectImages = projectImages;
 
-                // 2. Kategori eşleşmelerini bağla (Sonsuz döngüyü engellemek için Project bağını kopar)
                 var projectMappings = allMappings.Where(x => x.ProjectId == project.Id).ToList();
                 foreach (var map in projectMappings)
                 {
                     map.Project = null;
-                    map.Category = null; // Kategori nesnesini null bırakıyoruz, çünkü ID'si bize yetecek!
+                    map.Category = null; 
                 }
                 project.CategoryMappings = projectMappings;
             }
@@ -300,36 +299,20 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 feature.IconClass = "bi bi-check2-circle";
 
             var repo = _unitOfWork.GetRepository<ProjectFeature>();
+            feature.Id = Guid.Empty;
 
-            if (feature.Id == Guid.Empty || feature.Id == default)
+            if (feature.Order == 0)
             {
-                if (feature.Order == 0)
-                {
-                    var allFeatures = await repo.GetAllAsync();
-                    var maxOrder = allFeatures.Where(x => x.ProjectId == feature.ProjectId)
-                                              .Select(x => x.Order)
-                                              .DefaultIfEmpty(0).Max();
-                    feature.Order = maxOrder + 1;
-                }
-
-                await repo.AddAsync(feature);
-                await _unitOfWork.SaveChangesAsync();
-                return (true, "Proje özelliği başarıyla eklendi.");
+                var allFeatures = await repo.GetAllAsync();
+                var maxOrder = allFeatures.Where(x => x.ProjectId == feature.ProjectId)
+                                          .Select(x => x.Order)
+                                          .DefaultIfEmpty(0).Max();
+                feature.Order = maxOrder + 1;
             }
-            else
-            {
-                var existFeature = await repo.GetByIdAsync(feature.Id);
-                if (existFeature == null) return (false, "Güncellenecek özellik bulunamadı!");
 
-                existFeature.Title = feature.Title;
-                existFeature.Description = feature.Description;
-                existFeature.IconClass = feature.IconClass;
-                existFeature.Order = feature.Order;
-
-                repo.Update(existFeature);
-                await _unitOfWork.SaveChangesAsync();
-                return (true, "Proje özelliği başarıyla güncellendi.");
-            }
+            await repo.AddAsync(feature);
+            await _unitOfWork.SaveChangesAsync();
+            return (true, "Proje özelliği başarıyla eklendi.");
         }
 
         public async Task<(bool Success, string Message)> DeleteProjectFeatureAsync(Guid featureId)

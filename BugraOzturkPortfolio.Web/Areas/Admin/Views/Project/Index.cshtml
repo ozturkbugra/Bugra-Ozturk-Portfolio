@@ -66,11 +66,11 @@
 
                             <div class="col-md-4">
                                 <label class="form-label small fw-semibold">Özellik Başlığı</label>
-                                <input type="text" class="form-control form-control-sm" id="FeatureTitle" name="Title" placeholder="Örn: Yüksek Performans" required />
+                                <input type="text" class="form-control form-control-sm" id="FeatureTitle" name="Title" placeholder="Örn: Yüksek Performans" maxlength="100" required />
                             </div>
                             <div class="col-md-5">
                                 <label class="form-label small fw-semibold">Kısa Açıklama</label>
-                                <input type="text" class="form-control form-control-sm" id="FeatureDescription" name="Description" placeholder="Örn: %100 asenkron altyapı..." required />
+                                <input type="text" class="form-control form-control-sm" id="FeatureDescription" name="Description" placeholder="Örn: %100 asenkron altyapı..." maxlength="250" required />
                             </div>
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-primary btn-sm w-100" id="btnFeatureSubmit">Ekle</button>
@@ -109,7 +109,7 @@
                                 <th>Müşteri / İstemci</th>
                                 <th>Proje Tarihi</th>
                                 <th>Sıra</th>
-                                <th class="text-end">İşlemler</th>
+                                <th class="text-end">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="projectTableBody">
@@ -122,7 +122,7 @@
 </div>
 
 <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Yeni Proje Ekle</h5>
@@ -135,7 +135,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-8">
                             <label for="Title" class="form-label fw-semibold">Proje Başlığı</label>
-                            <input type="text" class="form-control" id="Title" name="Title" required placeholder="Örn: Mini ERP Projesi">
+                            <input type="text" class="form-control" id="Title" name="Title" maxlength="150" required placeholder="Örn: Mini ERP Projesi">
                         </div>
                         <div class="col-md-4">
                             <label for="Order" class="form-label fw-semibold">Görüntüleme Sırası</label>
@@ -146,7 +146,7 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="Client" class="form-label fw-semibold">Müşteri / İstemci</label>
-                            <input type="text" class="form-control" id="Client" name="Client" placeholder="Örn: Metaş Yazılım veya Freelance">
+                            <input type="text" class="form-control" id="Client" name="Client" maxlength="100" placeholder="Örn: Metaş Yazılım veya Freelance">
                         </div>
                         <div class="col-md-6">
                             <label for="ProjectDate" class="form-label fw-semibold">Proje Tarihi</label>
@@ -157,17 +157,17 @@
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label for="ProjectUrl" class="form-label fw-semibold">Canlı Önizleme Linki (Opsiyonel)</label>
-                            <input type="url" class="form-control" id="ProjectUrl" name="ProjectUrl" placeholder="https://...">
+                            <input type="url" class="form-control" id="ProjectUrl" name="ProjectUrl" maxlength="500" placeholder="https://...">
                         </div>
                         <div class="col-md-6">
                             <label for="GithubUrl" class="form-label fw-semibold">GitHub Repo Linki (Opsiyonel)</label>
-                            <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" placeholder="https://github.com/...">
+                            <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" maxlength="500" placeholder="https://github.com/...">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="ShortDescription" class="form-label fw-semibold">Kısa Açıklama (Listeleme Alanı İçin)</label>
-                        <input type="text" class="form-control" id="ShortDescription" name="ShortDescription" required placeholder="Projenin kart üzerinde görünecek tek cümlelik özeti.">
+                        <input type="text" class="form-control" id="ShortDescription" name="ShortDescription" maxlength="250" required placeholder="Projenin kart üzerinde görünecek tek cümlelik özeti.">
                     </div>
 
                     <div class="mb-3">
@@ -349,7 +349,6 @@
             document.getElementById('projectForm').reset();
             document.getElementById('Id').value = "00000000-0000-0000-0000-000000000000";
 
-            // Choices.js havuzunu güvenli sıfırla
             if (choicesInstance) {
                 choicesInstance.removeActiveItems();
             }
@@ -380,7 +379,6 @@
                             document.getElementById('ProjectDate').value = '';
                         }
 
-                        // Eski Choices.js seçimlerini native uçur ve havada doldur
                         if (choicesInstance && item.categoryMappings) {
                             choicesInstance.removeActiveItems();
                             const mappedIds = item.categoryMappings.map(m => m.categoryId);
@@ -447,7 +445,6 @@
                         select.appendChild(option);
                     });
 
-                    // Orijinal Choices.js nesnesini burada güvenle koruyoruz aga
                     choicesInstance = new Choices(select, {
                         removeItemButton: true,
                         searchEnabled: true,
@@ -560,7 +557,7 @@
                     data.forEach(item => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td class="fw-semibold text-dark">${item.title}</td>
+                            <td class="fw-semibold">${item.title}</td>
                             <td class="text-muted small">${item.description}</td>
                             <td class="text-end">
                                 <button class="btn btn-link text-danger btn-sm p-0" onclick="deleteDetailFeature('${item.id}')"><i class="bi bi-trash"></i></button>

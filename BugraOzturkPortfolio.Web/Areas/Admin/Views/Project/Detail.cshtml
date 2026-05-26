@@ -7,7 +7,7 @@
     <div class="page-header fx-page-header mb-4">
         <div>
             <h1 class="page-title text-primary">@Model.Title</h1>
-            <p class="fx-subtitle text-muted">Projenin slider görsellerini ve teknik özellik listesini bu sayfadan yönetebilirsiniz.</p>
+            <p class="fx-subtitle ">Projenin slider görsellerini ve teknik özellik listesini bu sayfadan yönetebilirsiniz.</p>
         </div>
         <div class="page-header-actions">
             <a class="btn btn-outline-secondary btn-sm" href="/Admin/Project">
@@ -54,20 +54,20 @@
                 </div>
                 <div class="card-body">
                     <form id="featureForm" class="row g-2 mb-4 align-items-end" novalidate>
-                        <input type="hidden" id="FeatureId" name="Id" value="00000000-0000-0000-0000-000000000000" />
+                        <input type="hidden" id="FeatureId" name="Id" value="" />
                         <input type="hidden" id="FeatureProjectId" name="ProjectId" value="@Model.Id" />
 
                         <div class="col-md-3">
                             <label class="form-label small fw-semibold text-secondary">İkon (Class)</label>
-                            <input type="text" class="form-control" id="FeatureIconClass" name="IconClass" value="bi bi-check2-circle" placeholder="bi bi-cpu" />
+                            <input type="text" class="form-control" id="FeatureIconClass" name="IconClass" value="bi bi-check2-circle" maxlength="50" placeholder="bi bi-cpu" />
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-semibold text-secondary">Başlık</label>
-                            <input type="text" class="form-control" id="FeatureTitle" name="Title" placeholder="Yüksek Hız" required />
+                            <input type="text" class="form-control" id="FeatureTitle" name="Title" placeholder="Yüksek Hız" maxlength="100" required />
                         </div>
                         <div class="col-md-4">
                             <label class="form-label small fw-semibold text-secondary">Açıklama</label>
-                            <input type="text" class="form-control" id="FeatureDescription" name="Description" placeholder="Detaylar..." required />
+                            <input type="text" class="form-control" id="FeatureDescription" name="Description" placeholder="Detaylar..." maxlength="250" required />
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100" id="btnFeatureSubmit">Ekle</button>
@@ -100,40 +100,45 @@
         const currentActiveProjectId = "@Model.Id";
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Sayfa açıldığında verileri asenkron yükle aga
             loadDetailGallery();
             loadDetailFeatures();
 
-            // ÖZELLİK FORMU SUBMIT TRAFİĞİ
-            document.getElementById('featureForm').addEventListener('submit', function (e) {
-                e.preventDefault();
+                   document.getElementById('featureForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-                const title = document.getElementById('FeatureTitle').value.trim();
-                const desc = document.getElementById('FeatureDescription').value.trim();
-                if (!title || !desc) return;
+            const title = document.getElementById('FeatureTitle').value.trim();
+            const desc = document.getElementById('FeatureDescription').value.trim();
+            if (!title || !desc) return;
 
-                const formData = new FormData(this);
+            const formData = new FormData(this);
 
-                fetch('/Admin/Project/SaveFeature', { method: 'POST', body: formData })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showDetailToast(data.message, true);
+            if (!document.getElementById('FeatureId').value) {
+                formData.delete('Id');
+            }
 
-                            // Formu sıfırla ve ID'leri güvenli hale geri getir
-                            document.getElementById('featureForm').reset();
-                            document.getElementById('FeatureId').value = '00000000-0000-0000-0000-000000000000';
-                            document.getElementById('FeatureProjectId').value = currentActiveProjectId;
+            fetch('/Admin/Project/SaveFeature', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showDetailToast(data.message, true);
 
-                            loadDetailFeatures();
-                        } else {
-                            showDetailToast(data.message, false);
-                        }
-                    });
-            });
-        }); // <--- İŞTE PATLAYAN YER BURASIYDI AGA, BU KAPANIŞ EKSİKTİ!
+                        document.getElementById('featureForm').reset();
+                        document.getElementById('FeatureId').value = '';
+                        document.getElementById('FeatureProjectId').value = currentActiveProjectId;
+                        document.getElementById('FeatureIconClass').value = 'bi bi-check2-circle';
 
-        // GALERİ RESİMLERİNİ GETİR
+                        loadDetailFeatures();
+                    } else {
+                        showDetailToast(data.message, false);
+                    }
+                })
+                .catch(err => {
+                    console.error("İstek hatası:", err);
+                    showDetailToast("Sistemsel bir hata oluştu aga!", false);
+                });
+        });
+        });
+
         function loadDetailGallery() {
             fetch(`/Admin/Project/GetProjectById?id=${currentActiveProjectId}`)
                 .then(response => response.json())
@@ -142,7 +147,7 @@
                     wrapper.innerHTML = '';
 
                     if (!res.success || !res.data.projectImages || res.data.projectImages.length === 0) {
-                        wrapper.innerHTML = '<div class="col-12 text-center text-muted py-5">Bu projeye ait henüz bir galeri resmi yok aga.</div>';
+                        wrapper.innerHTML = '<div class="col-12 text-center py-5">Bu projeye ait henüz bir galeri resmi yok aga.</div>';
                         return;
                     }
 
@@ -163,7 +168,6 @@
                 });
         }
 
-        // GALERİYE ANLIK TEK RESİM YÜKLE
         function uploadSingleGalleryImage() {
             const fileInput = document.getElementById('detailGalleryInput');
             if (fileInput.files.length === 0) return;
@@ -185,7 +189,6 @@
                 });
         }
 
-        // GALERİDEN TEK RESİM SİL
         function deleteDetailGalleryImage(imageId) {
             if (confirm('Bu görseli sunucudan ve galeriden kalıcı olarak silmek istediğinize emin misiniz?')) {
                 const formData = new FormData();
@@ -204,7 +207,6 @@
             }
         }
 
-        // TEKNİK ÖZELLİKLERİ LİSTELE
         function loadDetailFeatures() {
             fetch(`/Admin/Project/GetFeatures?projectId=${currentActiveProjectId}`)
                 .then(response => response.json())
@@ -213,29 +215,28 @@
                     tbody.innerHTML = '';
 
                     if (data.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Bu projeye ait teknik özellik eklenmemiş.</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center  py-4">Bu projeye ait teknik özellik eklenmemiş.</td></tr>';
                         return;
                     }
 
-                            data.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="text-center"><i class="${item.iconClass} fs-5 text-primary"></i></td>
-                <td class="fw-semibold">${item.title}</td>
-                <td class="text-muted small">${item.description}</td>
-                <td class="text-center"><span class="badge bg-secondary">${item.order}</span></td>
-                <td class="text-end">
-                    <button class="btn btn-outline-danger btn-sm p-1 px-2" onclick="deleteDetailFeature('${item.id}')" title="Sil">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="text-center"><i class="${item.iconClass} fs-5 text-primary"></i></td>
+                            <td class="">${item.title}</td>
+                            <td class=" small">${item.description}</td>
+                            <td class="text-center"><span class="badge bg-secondary">${item.order}</span></td>
+                            <td class="text-end">
+                                <button class="btn btn-outline-danger btn-sm p-1 px-2" onclick="deleteDetailFeature('${item.id}')" title="Sil">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
                 });
         }
 
-        // TEKNİK ÖZELLİK SİL
         function deleteDetailFeature(featureId) {
             if (confirm('Bu teknik özelliği silmek istediğinize emin misiniz?')) {
                 const formData = new FormData();
@@ -254,7 +255,6 @@
             }
         }
 
-        // TOAST BİLDİRİM MOTORU
         function showDetailToast(message, isSuccess) {
             const toastEl = document.getElementById('detailToast');
             document.getElementById('toastMessage').textContent = message;
