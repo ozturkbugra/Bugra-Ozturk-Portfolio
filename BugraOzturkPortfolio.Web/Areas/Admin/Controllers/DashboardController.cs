@@ -1,4 +1,5 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly IVisitorLogService _visitorLogService;

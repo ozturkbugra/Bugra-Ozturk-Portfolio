@@ -65,6 +65,7 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -73,12 +74,15 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseMiddleware<VisitorTrackerMiddleware>();
+
 app.UseRouting();
 
-app.UseAuthentication();
 app.UseSession();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<VisitorTrackerMiddleware>();
 
 app.MapControllerRoute(
     name: "areas",
@@ -88,8 +92,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Anasayfa}/{action=Index}/{id?}");
 
-
-await using (var scope = app.Services.CreateAsyncScope()) 
+// Seed Data Operasyonu
+await using (var scope = app.Services.CreateAsyncScope())
 {
     var services = scope.ServiceProvider;
     try
