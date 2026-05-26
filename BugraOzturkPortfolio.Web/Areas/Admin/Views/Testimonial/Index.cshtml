@@ -1,4 +1,6 @@
-﻿@{
+﻿@model Testimonial
+
+@{
     ViewData["Title"] = "Referans Yönetimi";
 }
 
@@ -58,7 +60,7 @@
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Ad Soyad</label>
-                            <input type="text" class="form-control" id="FullName" name="FullName" required />
+                            <input type="text" class="form-control" id="FullName" name="FullName" maxlength="100" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Sıralama</label>
@@ -66,11 +68,11 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Şirket</label>
-                            <input type="text" class="form-control" id="Company" name="Company" required />
+                            <input type="text" class="form-control" id="Company" name="Company" maxlength="100" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Pozisyon</label>
-                            <input type="text" class="form-control" id="Position" name="Position" required />
+                            <input type="text" class="form-control" id="Position" name="Position" maxlength="100" required />
                         </div>
                         <div class="col-md-12 mb-3">
                             <label class="form-label fw-semibold">Profil Fotoğrafı</label>
@@ -81,7 +83,7 @@
                         </div>
                         <div class="col-md-12 mb-3">
                             <label class="form-label fw-semibold">Yorum / Mesaj</label>
-                            <textarea class="form-control" id="Comment" name="Comment" rows="4" required></textarea>
+                            <textarea class="form-control" id="Comment" name="Comment" rows="4" maxlength="500" required></textarea>
                         </div>
                     </div>
                 </div>
@@ -124,6 +126,16 @@
 
         document.getElementById('testimonialForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            if (!document.getElementById('FullName').value.trim() ||
+                !document.getElementById('Company').value.trim() ||
+                !document.getElementById('Position').value.trim() ||
+                document.getElementById('Order').value === '' ||
+                !document.getElementById('Comment').value.trim()) {
+                showTestimonialToast('Lütfen gerekli tüm alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Kaydediliyor...';
