@@ -34,12 +34,37 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
         public async Task<(bool Success, string Message)> AddMessageAsync(ContactMessage model)
         {
+            if (string.IsNullOrWhiteSpace(model.FullName) ||
+                string.IsNullOrWhiteSpace(model.Email) ||
+                string.IsNullOrWhiteSpace(model.PhoneNumber) ||
+                string.IsNullOrWhiteSpace(model.Subject) ||
+                string.IsNullOrWhiteSpace(model.Body))
+            {
+                return (false, "Lütfen zorunlu alanları doldurunuz!");
+            }
+
+            if (model.FullName.Length > 100 ||
+                model.Email.Length > 100 ||
+                model.PhoneNumber.Length > 20 ||
+                model.Subject.Length > 150 ||
+                model.Body.Length > 2000)
+            {
+                return (false, "Lütfen girdiğiniz metinlerin uzunluğunu kontrol ediniz!");
+            }
+
             var repo = _unitOfWork.GetRepository<ContactMessage>();
 
             if (model.Id == Guid.Empty)
             {
                 model.Id = Guid.NewGuid();
             }
+
+            if (!string.IsNullOrEmpty(model.IpAddress) && model.IpAddress.Length > 45)
+            {
+                model.IpAddress = model.IpAddress.Substring(0, 45);
+            }
+
+            model.CreatedDate = DateTime.UtcNow;
 
             await repo.AddAsync(model);
             await _unitOfWork.SaveChangesAsync();

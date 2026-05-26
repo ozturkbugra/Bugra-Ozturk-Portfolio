@@ -14,6 +14,7 @@ namespace BugraOzturkPortfolio.DataAccess.Configurations
             builder.Property(cm => cm.Subject).IsRequired().HasMaxLength(150);
             builder.Property(cm => cm.Body).IsRequired().HasMaxLength(2000);
             builder.Property(cm => cm.IpAddress).IsRequired().HasMaxLength(45);
+            builder.Property(cm => cm.PhoneNumber).IsRequired().HasMaxLength(20);
         }
     }
 }

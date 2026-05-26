@@ -53,7 +53,7 @@
             <div class="col-lg-7">
                 <div class="contact-form">
                     <h3>Mesaj Gönderin</h3>
-                    <p>Aşağıdaki formu eksiksiz doldurarak doğrudan veritabanıma güvenli mesaj bırakabilirsiniz.</p>
+                    <p>Aşağıdaki formu eksikosiz doldurarak doğrudan veritabanıma güvenli mesaj bırakabilirsiniz.</p>
 
                     <form id="vitrinContactForm" class="php-email-form">
                         <div class="row gy-4">
@@ -62,6 +62,9 @@
                             </div>
                             <div class="col-md-6">
                                 <input type="email" id="ContactEmail" class="form-control" name="Email" maxlength="100" placeholder="E-Posta Adresiniz" required>
+                            </div>
+                            <div class="col-12">
+                                <input type="tel" id="ContactPhone" name="PhoneNumber" class="form-control" maxlength="14" placeholder="Telefon Numaranız (Örn: 0506 157 6563)" required>
                             </div>
                             <div class="col-12">
                                 <input type="text" id="ContactSubject" class="form-control" name="Subject" maxlength="150" placeholder="Konu" required>
@@ -88,6 +91,11 @@
 </section>
 
 <script>
+    document.getElementById('ContactPhone').addEventListener('input', function (e) {
+        let x = e.target.value.replace(/\D/g, '').match(/(\d{0,4})(\d{0,3})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : x[1] + ' ' + x[2] + (x[3] ? ' ' + x[3] : '');
+    });
+
     document.getElementById('vitrinContactForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -98,11 +106,18 @@
 
         if (!document.getElementById('ContactFullName').value.trim() ||
             !document.getElementById('ContactEmail').value.trim() ||
+            !document.getElementById('ContactPhone').value.trim() ||
             !document.getElementById('ContactSubject').value.trim() ||
             !document.getElementById('ContactBody').value.trim() ||
             !document.getElementById('ContactCaptcha').value) {
             errBox.style.display = 'block';
             errBox.textContent = 'Lütfen tüm alanları eksiksiz doldurunuz!';
+            return;
+        }
+
+        if (document.getElementById('ContactPhone').value.length < 13) {
+            errBox.style.display = 'block';
+            errBox.textContent = 'Lütfen telefon numaranızı geçerli formatta giriniz!';
             return;
         }
 
