@@ -57,16 +57,16 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Kurum Adı</label>
-                        <input type="text" class="form-control" id="InstitutionName" name="InstitutionName" required />
+                        <input type="text" class="form-control" id="InstitutionName" name="InstitutionName" maxlength="150" required />
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Derece</label>
-                            <input type="text" class="form-control" id="Degree" name="Degree" required />
+                            <input type="text" class="form-control" id="Degree" name="Degree" maxlength="100" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Bölüm</label>
-                            <input type="text" class="form-control" id="FieldOfStudy" name="FieldOfStudy" required />
+                            <input type="text" class="form-control" id="FieldOfStudy" name="FieldOfStudy" maxlength="100" required />
                         </div>
                     </div>
                     <div class="row">
@@ -122,6 +122,15 @@
 
         document.getElementById('eduForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            if (!document.getElementById('InstitutionName').value.trim() ||
+                !document.getElementById('Degree').value.trim() ||
+                !document.getElementById('FieldOfStudy').value.trim() ||
+                !document.getElementById('StartDate').value) {
+                showEduToast('Lütfen gerekli alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
             const formData = new FormData(e.target);
             const res = await (await fetch('/Admin/Education/Save', { method: 'POST', body: formData })).json();
             if(res.success) {
