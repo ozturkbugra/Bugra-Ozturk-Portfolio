@@ -33,6 +33,8 @@ namespace BugraOzturkPortfolio.Web.Controllers
             try
             {
                 model.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+                model.UserAgent = Request.Headers["User-Agent"].ToString();
+
                 var result = await _messageService.AddMessageAsync(model);
                 return Json(new { success = result.Success, message = result.Message });
             }

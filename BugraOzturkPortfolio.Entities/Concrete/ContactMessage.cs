@@ -11,5 +11,6 @@ namespace BugraOzturkPortfolio.Entities.Concrete
         public string Body { get; set; }
         public bool IsRead { get; set; } = false;
         public string IpAddress { get; set; }
+        public string UserAgent { get; set; }
     }
 }

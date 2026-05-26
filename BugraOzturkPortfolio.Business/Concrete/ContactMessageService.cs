@@ -54,6 +54,21 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             var repo = _unitOfWork.GetRepository<ContactMessage>();
 
+            DateTime todayStart = DateTime.Now.Date;
+
+            var allMessages = await repo.GetAllAsync();
+            bool isSpam = allMessages.Any(x =>
+                !x.IsDeleted &&
+                x.IpAddress == model.IpAddress &&
+                x.UserAgent == model.UserAgent &&
+                x.CreatedDate >= todayStart 
+            );
+
+            if (isSpam)
+            {
+                return (false, "Bugün zaten bir mesaj gönderdiniz. Lütfen yarın tekrar deneyiniz veya doğrudan iletişim kanallarını kullanınız.");
+            }
+
             if (model.Id == Guid.Empty)
             {
                 model.Id = Guid.NewGuid();
@@ -64,7 +79,12 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 model.IpAddress = model.IpAddress.Substring(0, 45);
             }
 
-            model.CreatedDate = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(model.UserAgent) && model.UserAgent.Length > 500)
+            {
+                model.UserAgent = model.UserAgent.Substring(0, 500);
+            }
+
+            model.CreatedDate = DateTime.Now;
 
             await repo.AddAsync(model);
             await _unitOfWork.SaveChangesAsync();
