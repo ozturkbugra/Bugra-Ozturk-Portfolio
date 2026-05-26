@@ -1,4 +1,7 @@
-﻿@model ProjectDetailViewModel
+﻿@await Component.InvokeAsync("Header")
+
+
+@model ProjectDetailViewModel
 
 @{
     ViewData["Title"] = Model.Project.Title;
