@@ -64,7 +64,7 @@
 
                     <div class="mb-3">
                         <label for="CatName" class="form-label fw-semibold">Kategori Adı</label>
-                        <input type="text" class="form-control" id="CatName" name="Name" required placeholder="Örn: ASP.NET Core, React, Docker">
+                        <input type="text" class="form-control" id="CatName" name="Name" maxlength="50" required placeholder="Örn: ASP.NET Core, React, Docker">
                     </div>
 
                     <div class="text-end border-top pt-3">
@@ -84,10 +84,8 @@
         const bootstrapCatModal = new bootstrap.Modal(catModalEl);
 
         document.addEventListener('DOMContentLoaded', function () {
-            // 1. İLK YÜKLENMEDE KATEGORİLERİ GETİR
             loadCategories();
 
-            // 2. FORM SUBMIT 
             const form = document.getElementById('categoryForm');
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -125,7 +123,6 @@
             });
         });
 
-        // 3. KATEGORİLERİ AJAX İLE ÇEKİP DATATABLE'A BASMA
         function loadCategories() {
             fetch('/Admin/Category/GetCategoriesJson')
                 .then(response => response.json())
@@ -158,15 +155,13 @@
                 });
         }
 
-        // 4. MODAL TEMİZLEME VE EKLEME MODU
         function openCategoryCreateModal() {
             document.getElementById('categoryForm').reset();
-            document.getElementById('CatId').value = '';
+            document.getElementById('CatId').value = "00000000-0000-0000-0000-000000000000";
             document.getElementById('catModalTitle').textContent = 'Yeni Kategori Ekle';
             bootstrapCatModal.show();
         }
 
-        // 5. GÜNCELLEME İÇİN VERİ GETİRME
         function openCategoryEditModal(id) {
             fetch(`/Admin/Category/GetCategoryById?id=${id}`)
                 .then(response => response.json())
@@ -183,7 +178,6 @@
                 });
         }
 
-        // 6. ASENKRON KATEGORİ SİLME
         function deleteCategory(id) {
             if (confirm('Bu kategoriyi silmek istediğinize emin misiniz aga?')) {
                 fetch(`/Admin/Category/Delete?id=${id}`, { method: 'POST' })
@@ -199,7 +193,6 @@
             }
         }
 
-        // 7. TOAST TETİKLEYİCİ
         function showCategoryToast(message, isSuccess) {
             const toastEl = document.getElementById('categoryToast');
             document.getElementById('categoryToastMessage').textContent = message;
@@ -211,16 +204,6 @@
                 document.getElementById('categoryToastIcon').className = 'bi bi-exclamation-triangle me-2 fs-5';
             }
             new bootstrap.Toast(toastEl).show();
-        }
-
-        function openCategoryCreateModal() {
-            document.getElementById('categoryForm').reset();
-
-            document.getElementById('CatId').value = "00000000-0000-0000-0000-000000000000";
-
-            document.getElementById('catModalTitle').textContent = 'Yeni Kategori Ekle';
-
-            bootstrapCatModal.show();
         }
     </script>
 }
