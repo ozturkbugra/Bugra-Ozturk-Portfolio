@@ -6,7 +6,9 @@ using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
 using BugraOzturkPortfolio.Web.Middlewares;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,8 +61,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(10); 
-    
+    options.IdleTimeout = TimeSpan.FromMinutes(10);
+
 });
 
 var app = builder.Build();
@@ -105,5 +107,14 @@ await using (var scope = app.Services.CreateAsyncScope())
         Console.WriteLine($"Seed data hatasý: {ex.Message}");
     }
 }
+        var supportedCultures = new[] { new CultureInfo("tr-TR") };
+        var localizationOptions = new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("tr-TR"),
+            SupportedCultures = supportedCultures,
+            SupportedUICultures = supportedCultures
+        };
+        app.UseRequestLocalization(localizationOptions);
+
 
 app.Run();
