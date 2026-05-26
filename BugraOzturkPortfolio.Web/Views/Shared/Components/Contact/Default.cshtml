@@ -1,5 +1,4 @@
-﻿@model BugraOzturkPortfolio.Entities.Concrete.About
-
+﻿@model About
 <section id="contact" class="contact section">
     <div class="container section-title" data-aos="fade-up">
         <h2>İletişim</h2>
@@ -59,20 +58,20 @@
                     <form id="vitrinContactForm" class="php-email-form">
                         <div class="row gy-4">
                             <div class="col-md-6">
-                                <input type="text" name="FullName" class="form-control" placeholder="Adınız Soyadınız" required>
+                                <input type="text" id="ContactFullName" name="FullName" class="form-control" maxlength="100" placeholder="Adınız Soyadınız" required>
                             </div>
                             <div class="col-md-6">
-                                <input type="email" class="form-control" name="Email" placeholder="E-Posta Adresiniz" required>
+                                <input type="email" id="ContactEmail" class="form-control" name="Email" maxlength="100" placeholder="E-Posta Adresiniz" required>
                             </div>
                             <div class="col-12">
-                                <input type="text" class="form-control" name="Subject" placeholder="Konu" required>
+                                <input type="text" id="ContactSubject" class="form-control" name="Subject" maxlength="150" placeholder="Konu" required>
                             </div>
                             <div class="col-12">
-                                <textarea class="form-control" name="Body" rows="6" placeholder="Mesajınız" required></textarea>
+                                <textarea class="form-control" id="ContactBody" name="Body" rows="6" maxlength="2000" placeholder="Mesajınız" required></textarea>
                             </div>
                             <div class="col-12 mb-3">
                                 <label class="form-label fw-semibold text-secondary">Bot Koruması: @ViewBag.Num1 + @ViewBag.Num2 = ?</label>
-                                <input type="number" name="UserCaptchaAnswer" class="form-control" placeholder="İşlem sonucunu yazınız" required />
+                                <input type="number" id="ContactCaptcha" name="UserCaptchaAnswer" class="form-control" placeholder="İşlem sonucunu yazınız" required />
                             </div>
                             <div class="col-12 text-center">
                                 <div class="loading" id="contactLoading" style="display:none;">Gönderiliyor...</div>
@@ -96,6 +95,16 @@
         const errBox = document.getElementById('contactError');
         const succBox = document.getElementById('contactSuccess');
         const btn = document.getElementById('btnContactSubmit');
+
+        if (!document.getElementById('ContactFullName').value.trim() ||
+            !document.getElementById('ContactEmail').value.trim() ||
+            !document.getElementById('ContactSubject').value.trim() ||
+            !document.getElementById('ContactBody').value.trim() ||
+            !document.getElementById('ContactCaptcha').value) {
+            errBox.style.display = 'block';
+            errBox.textContent = 'Lütfen tüm alanları eksiksiz doldurunuz!';
+            return;
+        }
 
         loader.style.display = 'block';
         errBox.style.display = 'none';
