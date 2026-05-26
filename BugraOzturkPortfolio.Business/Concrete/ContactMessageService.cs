@@ -114,5 +114,26 @@ namespace BugraOzturkPortfolio.Business.Concrete
             await _unitOfWork.SaveChangesAsync();
             return (true, "Mesaj başarıyla silindi.");
         }
+
+        public async Task<(bool Success, string Message)> DeleteMultipleMessagesAsync(List<Guid> ids)
+        {
+            if (ids == null || !ids.Any())
+                return (false, "Silinecek herhangi bir mesaj seçilmedi!");
+
+            var repo = _unitOfWork.GetRepository<ContactMessage>();
+
+            foreach (var id in ids)
+            {
+                var message = await repo.GetByIdAsync(id);
+                if (message != null && !message.IsDeleted)
+                {
+                    message.IsDeleted = true;
+                    repo.Update(message);
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            return (true, $"{ids.Count} adet mesaj başarıyla silindi.");
+        }
     }
 }

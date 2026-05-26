@@ -43,5 +43,12 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             var result = await _messageService.DeleteMessageAsync(id);
             return Json(new { success = result.Success, message = result.Message });
         }
+
+        [HttpPost("DeleteMultiple")]
+        public async Task<IActionResult> DeleteMultiple([FromBody] List<Guid> ids)
+        {
+            var result = await _messageService.DeleteMultipleMessagesAsync(ids);
+            return Json(new { success = result.Success, message = result.Message });
+        }
     }
 }

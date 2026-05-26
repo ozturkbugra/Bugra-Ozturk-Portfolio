@@ -9,5 +9,7 @@ namespace BugraOzturkPortfolio.Business.Abstract
         Task<(bool Success, string Message)> AddMessageAsync(ContactMessage model);
         Task<(bool Success, string Message)> MarkAsReadAsync(Guid id);
         Task<(bool Success, string Message)> DeleteMessageAsync(Guid id);
+        Task<(bool Success, string Message)> DeleteMultipleMessagesAsync(List<Guid> ids);
+
     }
 }

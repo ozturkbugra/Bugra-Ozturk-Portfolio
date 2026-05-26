@@ -5,7 +5,6 @@
     (string DeviceName, string IconClass) GetDeviceDetails(string userAgent)
     {
         if (string.IsNullOrEmpty(userAgent)) return ("Bilinmeyen Cihaz", "bi-laptop-fill");
-
         string ua = userAgent.ToLower();
         if (ua.Contains("iphone")) return ("iPhone", "bi-phone-fill ");
         if (ua.Contains("ipad")) return ("iPad", "bi-tablet-fill ");
@@ -13,7 +12,6 @@
         if (ua.Contains("windows")) return ("Windows PC", "bi-windows text-primary");
         if (ua.Contains("macintosh") || ua.Contains("mac os")) return ("Mac", "bi-apple ");
         if (ua.Contains("linux")) return ("Linux PC", "bi-terminal text-warning");
-
         return ("Web Cihazı", "bi-globe text-secondary");
     }
 }
@@ -31,12 +29,28 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
+            <div class="card mb-3 d-none" id="bulkActionsBar">
+                <div class="card-body d-flex align-items-center justify-content-between py-2">
+                    <div>
+                        <span class="fw-bold text-secondary" id="selectedCountText">0 satır seçildi</span>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedMessages()">
+                            <i class="bi bi-trash-fill me-1"></i> Seçilenleri Sil
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-body pt-3">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle" id="msgDataTable">
                             <thead>
                                 <tr>
+                                    <th style="width: 40px;" data-sortable="false">
+                                        <input type="checkbox" class="form-check-input" id="checkAllMessages">
+                                    </th>
                                     <th style="width: 50px;">Durum</th>
                                     <th>Gönderen</th>
                                     <th>Telefon</th>
@@ -55,6 +69,9 @@
                                         var device = GetDeviceDetails(msg.UserAgent);
 
                                         <tr class="@rowStyle" id="row-@msg.Id">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input msg-checkbox" data-id="@msg.Id">
+                                            </td>
                                             <td>
                                                 @if (!msg.IsRead)
                                                 {
@@ -91,7 +108,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="7" class="text-center py-4">Gelen mesaj bulunamadı</td>
+                                        <td colspan="8" class="text-center py-4">Gelen mesaj bulunamadı</td>
                                     </tr>
                                 }
                             </tbody>
@@ -104,6 +121,8 @@
 </section>
 
 <script>
+    let lastChecked = null;
+
     document.addEventListener("DOMContentLoaded", function() {
         const table = document.getElementById("msgDataTable");
         if (table && typeof simpleDatatables !== "undefined") {
@@ -119,29 +138,101 @@
                 }
             });
         }
+
+        document.body.addEventListener('change', function(e) {
+            if (e.target && e.target.id === 'checkAllMessages') {
+                toggleAll(e.target.checked);
+            }
+            if (e.target && e.target.classList.contains('msg-checkbox')) {
+                updateBulkActionsBar();
+            }
+        });
+
+        document.body.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('msg-checkbox')) {
+                const checkboxes = Array.from(document.querySelectorAll('.msg-checkbox'));
+
+                if (e.shiftKey && lastChecked) {
+                    let start = checkboxes.indexOf(e.target);
+                    let end = checkboxes.indexOf(lastChecked);
+
+                    checkboxes.slice(Math.min(start, end), Math.max(start, end) + 1)
+                              .forEach(cb => cb.checked = lastChecked.checked);
+                }
+                lastChecked = e.target;
+                updateBulkActionsBar();
+            }
+        });
     });
+
+    function toggleAll(isChecked) {
+        document.querySelectorAll('.msg-checkbox').forEach(cb => {
+            cb.checked = isChecked;
+        });
+        updateBulkActionsBar();
+    }
+
+    function updateBulkActionsBar() {
+        const checkedBoxes = document.querySelectorAll('.msg-checkbox:checked');
+        const bar = document.getElementById('bulkActionsBar');
+        const text = document.getElementById('selectedCountText');
+
+        if (checkedBoxes.length > 0) {
+            bar.classList.remove('d-none');
+            text.textContent = `${checkedBoxes.length} satır seçildi`;
+        } else {
+            bar.classList.add('d-none');
+            const checkAll = document.getElementById('checkAllMessages');
+            if(checkAll) checkAll.checked = false;
+        }
+    }
 
     async function deleteMessage(id) {
         if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+        executeDelete([id]);
+    }
 
+    async function deleteSelectedMessages() {
+        const checkedBoxes = document.querySelectorAll('.msg-checkbox:checked');
+        const ids = Array.from(checkedBoxes).map(cb => cb.getAttribute('data-id'));
+
+        if (ids.length === 0) return;
+        if (!confirm(`Seçtiğin ${ids.length} adet mesajı toplu silmek istediğine emin misin?`)) return;
+
+        executeDelete(ids, true);
+    }
+    async function executeDelete(ids, isBulk = false) {
         try {
-            const response = await fetch(`/Admin/ContactMessage/Delete/${id}`, {
-                method: 'POST'
-            });
+            const url = isBulk ? '/Admin/ContactMessage/DeleteMultiple' : `/Admin/ContactMessage/Delete/${ids[0]}`;
+            const options = isBulk ? {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(ids)
+            } : { method: 'POST' };
+
+            const response = await fetch(url, options);
             const res = await response.json();
 
             if (res.success) {
-                const row = document.getElementById(`row-${id}`);
-                if (row) {
-                    row.style.transition = 'all 0.5s ease';
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 500);
+                ids.forEach(id => {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) {
+                        row.style.transition = 'all 0.5s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            updateBulkActionsBar();
+                        }, 500);
+                    }
+                });
+                if(isBulk) {
+                     setTimeout(() => location.reload(), 600); 
                 }
             } else {
                 alert(res.message);
             }
         } catch (error) {
-            alert('Mesaj silinirken bir bağlantı hatası oluştu!');
+            alert('İşlem gerçekleştirilirken bir bağlantı hatası oluştu!');
         }
     }
 </script>
