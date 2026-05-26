@@ -1,6 +1,21 @@
 ﻿@model List<ContactMessage>
 @{
     ViewData["Title"] = "Gelen Mesajlar";
+
+    (string DeviceName, string IconClass) GetDeviceDetails(string userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent)) return ("Bilinmeyen Cihaz", "bi-laptop-fill");
+
+        string ua = userAgent.ToLower();
+        if (ua.Contains("iphone")) return ("iPhone", "bi-phone-fill ");
+        if (ua.Contains("ipad")) return ("iPad", "bi-tablet-fill ");
+        if (ua.Contains("android")) return ("Android", "bi-phone text-success");
+        if (ua.Contains("windows")) return ("Windows PC", "bi-windows text-primary");
+        if (ua.Contains("macintosh") || ua.Contains("mac os")) return ("Mac", "bi-apple ");
+        if (ua.Contains("linux")) return ("Linux PC", "bi-terminal text-warning");
+
+        return ("Web Cihazı", "bi-globe text-secondary");
+    }
 }
 
 <div class="pagetitle">
@@ -24,9 +39,10 @@
                                 <tr>
                                     <th style="width: 50px;">Durum</th>
                                     <th>Gönderen</th>
+                                    <th>Telefon</th>
                                     <th>Konu</th>
                                     <th>Tarih</th>
-                                    <th>IP Adresi</th>
+                                    <th>Cihaz / IP</th>
                                     <th style="width: 150px;" class="text-end" data-sortable="false">İşlemler</th>
                                 </tr>
                             </thead>
@@ -36,6 +52,7 @@
                                     foreach (var msg in Model)
                                     {
                                         string rowStyle = !msg.IsRead ? "fw-bold table-light" : string.Empty;
+                                        var device = GetDeviceDetails(msg.UserAgent);
 
                                         <tr class="@rowStyle" id="row-@msg.Id">
                                             <td>
@@ -49,9 +66,17 @@
                                                 }
                                             </td>
                                             <td>@msg.FullName<br><small class="">@msg.Email</small></td>
+                                            <td><span class="font-monospace">@msg.PhoneNumber</span></td>
                                             <td>@msg.Subject</td>
-                                            <td>@msg.CreatedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                                            <td><span class="badge bg-secondary">@msg.IpAddress</span></td>
+                                            <td>@msg.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>
+                                                <div class="d-flex flex-column gap-1">
+                                                    <small class=" d-flex align-items-center gap-1">
+                                                        <i class="bi @device.IconClass"></i> @device.DeviceName
+                                                    </small>
+                                                    <span class="badge bg-secondary w-fit">@msg.IpAddress</span>
+                                                </div>
+                                            </td>
                                             <td class="text-end">
                                                 <a href="/Admin/ContactMessage/Detail/@msg.Id" class="btn btn-sm btn-outline-info" title="Oku">
                                                     <i class="bi bi-eye"></i>
@@ -66,7 +91,7 @@
                                 else
                                 {
                                     <tr>
-                                        <td colspan="6" class="text-center py-4">Gelen mesaj bulunamadı</td>
+                                        <td colspan="7" class="text-center py-4">Gelen mesaj bulunamadı</td>
                                     </tr>
                                 }
                             </tbody>
