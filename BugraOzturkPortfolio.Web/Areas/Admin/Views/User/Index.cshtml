@@ -57,23 +57,23 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Adı</label>
-                            <input type="text" class="form-control" id="FirstName" name="FirstName" required />
+                            <input type="text" class="form-control" id="FirstName" name="FirstName" maxlength="50" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Soyadı</label>
-                            <input type="text" class="form-control" id="LastName" name="LastName" required />
+                            <input type="text" class="form-control" id="LastName" name="LastName" maxlength="50" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Kullanıcı Adı</label>
-                            <input type="text" class="form-control" id="Username" name="Username" required />
+                            <input type="text" class="form-control" id="Username" name="Username" maxlength="50" required />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">E-Posta Adresi</label>
-                            <input type="email" class="form-control" id="Email" name="Email" required />
+                            <input type="email" class="form-control" id="Email" name="Email" maxlength="100" required />
                         </div>
                         <div class="col-md-12">
                             <label class="form-label small fw-semibold">Şifre</label>
-                            <input type="password" class="form-control" id="PlainPassword" name="plainPassword" placeholder="Değiştirmek istemiyorsanız boş bırakın" />
+                            <input type="password" class="form-control" id="PlainPassword" name="plainPassword" maxlength="100" placeholder="Değiştirmek istemiyorsanız boş bırakın" />
                             <div id="passwordHelp" class="form-text small text-muted d-none">Yeni kayıtlarda şifre zorunludur.</div>
                         </div>
                     </div>
@@ -146,6 +146,18 @@
 
         document.getElementById('userForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            const isNewUser = document.getElementById('UserId').value === '00000000-0000-0000-0000-000000000000' || document.getElementById('UserId').value === '';
+
+            if (!document.getElementById('FirstName').value.trim() ||
+                !document.getElementById('LastName').value.trim() ||
+                !document.getElementById('Username').value.trim() ||
+                !document.getElementById('Email').value.trim() ||
+                (isNewUser && !document.getElementById('PlainPassword').value)) {
+                showUserToast('Lütfen gerekli alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> İşleniyor...';
