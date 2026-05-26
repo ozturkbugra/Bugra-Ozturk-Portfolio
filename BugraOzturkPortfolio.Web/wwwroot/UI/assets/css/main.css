@@ -1763,7 +1763,6 @@ section,
         color: var(--heading-color);
     }
 
-        /* Başlık içindeki span alt satıra düşmesin, yan yana nizamlı kalsın aga */
         .services .service-card h3 span {
             display: inline;
             color: var(--accent-color);
@@ -1810,7 +1809,7 @@ section,
 
 @media (max-width: 768px) {
     .services .service-card {
-        padding: 40px 25px 25px; /* Üst padding karmaşasını düzelttik aga */
+        padding: 40px 25px 25px;
     }
 
         .services .service-card h3 {

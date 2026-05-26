@@ -32,13 +32,11 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             var projects = await _projectService.GetAllProjectsAsync();
             ViewBag.TotalProjectsCount = projects.Count(x => !x.IsDeleted);
 
-            // --- PERİYODİK ZİYARETÇİ SAYILARI ---
             ViewBag.DailyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("daily");
             ViewBag.WeeklyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("weekly");
             ViewBag.MonthlyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("monthly");
             ViewBag.YearlyVisitors = await _visitorLogService.GetPeriodicVisitorsCountAsync("yearly");
 
-            // --- GRAFİK VERİ YAPILARI (JSON formatında fırlatıyoruz aga) ---
             var weekHistory = await _visitorLogService.GetLastWeekVisitorHistoryAsync();
             ViewBag.WeekHistoryLabels = string.Join(",", weekHistory.Keys.Select(k => $"'{k}'"));
             ViewBag.WeekHistoryValues = string.Join(",", weekHistory.Values);

@@ -27,12 +27,10 @@ namespace BugraOzturkPortfolio.Web.Middlewares
                 string ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
                 string userAgent = context.Request.Headers["User-Agent"].ToString() ?? "Unknown";
 
-                // Arka plan thread'i için tamamen bağımsız, izole bir yaşam alanı (Scope) açıyoruz aga!
                 _ = Task.Run(async () =>
                 {
                     using (var scope = _scopeFactory.CreateScope())
                     {
-                        // Servisi bu izole scope içinden çağırarak yeni bir DbContext örneğiyle çalıştırıyoruz
                         var scopedVisitorService = scope.ServiceProvider.GetRequiredService<IVisitorLogService>();
                         await scopedVisitorService.LogVisitAsync(ipAddress, userAgent);
                     }

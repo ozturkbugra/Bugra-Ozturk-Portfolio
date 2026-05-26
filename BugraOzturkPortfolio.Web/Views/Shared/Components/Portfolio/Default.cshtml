@@ -7,7 +7,7 @@
         return text.Trim().ToLower()
             .Replace("ğ", "g").Replace("ü", "u").Replace("ş", "s")
             .Replace("ı", "i").Replace("ö", "o").Replace("ç", "c")
-            .Replace(".", "-")  // Sinsi nokta hatasını burada kesiyoruz aga!
+            .Replace(".", "-")  
             .Replace(" ", "-");
     }
 }
@@ -47,7 +47,6 @@
 
                                 if (project.CategoryMappings != null && project.CategoryMappings.Any() && Model.Categories != null)
                                 {
-                                    // Projenin mapping tablosundaki CategoryId'lerini ana kategori havuzuyla havada eşleştiriyoruz aga:
                                     var matchedCategoryNames = Model.Categories
                                         .Where(c => project.CategoryMappings.Any(m => m.CategoryId == c.Id))
                                         .Select(c => "filter-" + GetSlug(c.Name))
@@ -55,7 +54,6 @@
 
                                     filterClasses = string.Join(" ", matchedCategoryNames);
 
-                                    // Kartın üzerinde görünecek ilk kategorinin adını alıyoruz
                                     var firstCat = Model.Categories.FirstOrDefault(c => project.CategoryMappings.Any(m => m.CategoryId == c.Id));
                                     if (firstCat != null)
                                     {
