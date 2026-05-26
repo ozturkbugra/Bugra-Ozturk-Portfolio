@@ -56,15 +56,15 @@
                     <input type="hidden" id="ExpId" name="Id" />
                     <div class="mb-3">
                         <label class="form-label">Firma Adı</label>
-                        <input type="text" class="form-control" id="ExpCompany" name="CompanyName" required>
+                        <input type="text" class="form-control" id="ExpCompany" name="CompanyName" maxlength="150" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Pozisyon</label>
-                        <input type="text" class="form-control" id="ExpPosition" name="Position" required>
+                        <input type="text" class="form-control" id="ExpPosition" name="Position" maxlength="100" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Konum</label>
-                        <input type="text" class="form-control" id="ExpLocation" name="Location">
+                        <input type="text" class="form-control" id="ExpLocation" name="Location" maxlength="100" required>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -78,7 +78,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
-                        <textarea class="form-control" id="ExpDesc" name="Description" rows="3"></textarea>
+                        <textarea class="form-control" id="ExpDesc" name="Description" rows="3" maxlength="1000" required></textarea>
                     </div>
                     <div class="text-end border-top pt-3">
                         <button type="submit" class="btn btn-primary px-4">Kaydet</button>
@@ -98,6 +98,17 @@
 
         document.getElementById('experienceForm').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // JS tarafında required doğrulaması aga
+            if (!document.getElementById('ExpCompany').value.trim() ||
+                !document.getElementById('ExpPosition').value.trim() ||
+                !document.getElementById('ExpLocation').value.trim() ||
+                !document.getElementById('ExpStart').value ||
+                !document.getElementById('ExpDesc').value.trim()) {
+                showExpToast('Lütfen gerekli alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
             fetch('/Admin/Experience/Save', { method: 'POST', body: new FormData(this) })
                 .then(r => r.json())
                 .then(d => {
