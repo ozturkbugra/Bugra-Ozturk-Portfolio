@@ -179,7 +179,7 @@
         }
 
         function deleteCategory(id) {
-            if (confirm('Bu kategoriyi silmek istediğinize emin misiniz aga?')) {
+            if (confirm('Bu kategoriyi silmek istediğinize emin misiniz ?')) {
                 fetch(`/Admin/Category/Delete?id=${id}`, { method: 'POST' })
                     .then(response => response.json())
                     .then(data => {

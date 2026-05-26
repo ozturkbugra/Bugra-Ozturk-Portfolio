@@ -114,7 +114,7 @@
         } else {
         const res = await (await fetch('/Admin/Profile/SetupTwoFactor')).json();
         if (res.success) {
-        document.getElementById('qrcode').innerHTML = ''; // Önceki kodları temizle
+        document.getElementById('qrcode').innerHTML = ''; 
         document.getElementById('txtSecretKey').value = res.secretKey;
 
         new QRCode(document.getElementById("qrcode"), {

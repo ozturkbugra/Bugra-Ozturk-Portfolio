@@ -74,15 +74,12 @@
     <script>
             const inputs = document.querySelectorAll('.fauth-otp-input');
 
-            // Sayfa açıldığında ilk kutuya kesin focus atıyoruz aga
             if(inputs.length > 0) {
                 inputs[0].focus();
             }
 
-            // Kutucuklar arası akıllı geçiş ve toplu yapıştırma (paste) logic'i
             inputs.forEach((input, index) => {
                 input.addEventListener('input', (e) => {
-                    // Sadece sayı girişine izin ver
                     input.value = input.value.replace(/[^0-9]/g, '');
 
                     if (input.value.length === 1 && index < inputs.length - 1) {
@@ -97,18 +94,15 @@
                         e.preventDefault();
                     }
                 });
-
-                // Instagram/Facebook tarzı kopyala-yapıştır canavarı aga
                 input.addEventListener('paste', (e) => {
                     e.preventDefault();
                     const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim();
 
-                    // Sadece rakamlardan oluşan 6 haneli bir kod mu kontrolü
                     if (/^\d{6}$/.test(pasteData)) {
                         inputs.forEach((otpInput, otpIndex) => {
                             otpInput.value = pasteData[otpIndex];
                         });
-                        inputs[inputs.length - 1].focus(); // Son kutuya odağı çek
+                        inputs[inputs.length - 1].focus(); 
                     }
                 });
             });
@@ -126,7 +120,7 @@
                 inputs.forEach(input => code += input.value);
 
                 if(code.length !== 6) {
-                    alertDiv.textContent = 'Lütfen 6 haneli doğrulama kodunu eksiksiz girin aga!';
+                    alertDiv.textContent = 'Lütfen 6 haneli doğrulama kodunu eksiksiz girin!';
                     alertDiv.classList.remove('d-none');
                     btn.disabled = false;
                     btn.innerHTML = 'Kodu Doğrula';

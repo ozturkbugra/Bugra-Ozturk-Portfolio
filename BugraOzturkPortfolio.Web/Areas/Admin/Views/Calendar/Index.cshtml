@@ -99,7 +99,7 @@
                 const response = await fetch('/Admin/Calendar/GetCalendarEvents');
                 events = await response.json();
             } catch (error) {
-                console.error("Ziyaretçi verileri yüklenirken hata oluştu aga:", error);
+                console.error("Ziyaretçi verileri yüklenirken hata oluştu:", error);
             }
 
             const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];

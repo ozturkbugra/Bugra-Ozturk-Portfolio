@@ -32,15 +32,15 @@
                 <div class="row g-3">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Meta Title</label>
-                        <input type="text" class="form-control" name="MetaTitle" value="@Model?.MetaTitle" required />
+                        <input type="text" class="form-control" id="MetaTitle" name="MetaTitle" value="@Model?.MetaTitle" maxlength="70" required />
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Meta Keywords</label>
-                        <input type="text" class="form-control" name="MetaKeywords" value="@Model?.MetaKeywords" required />
+                        <input type="text" class="form-control" id="MetaKeywords" name="MetaKeywords" value="@Model?.MetaKeywords" maxlength="200" required />
                     </div>
                     <div class="col-md-12 mb-3">
                         <label class="form-label fw-semibold">Meta Description</label>
-                        <textarea class="form-control" name="MetaDescription" rows="2" required>@Model?.MetaDescription</textarea>
+                        <textarea class="form-control" id="MetaDescription" name="MetaDescription" rows="2" maxlength="160" required>@Model?.MetaDescription</textarea>
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -81,6 +81,13 @@
     <script>
         document.getElementById('settingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            if (!document.getElementById('MetaTitle').value.trim() ||
+                !document.getElementById('MetaKeywords').value.trim() ||
+                !document.getElementById('MetaDescription').value.trim()) {
+                showToast('Lütfen SEO (Meta) alanlarını eksiksiz doldurunuz!', false);
+                return;
+            }
+
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
             btn.innerHTML = 'Kaydediliyor...';

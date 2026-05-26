@@ -134,7 +134,7 @@
                 })
                 .catch(err => {
                     console.error("İstek hatası:", err);
-                    showDetailToast("Sistemsel bir hata oluştu aga!", false);
+                    showDetailToast("Sistemsel bir hata oluştu!", false);
                 });
         });
         });
@@ -147,7 +147,7 @@
                     wrapper.innerHTML = '';
 
                     if (!res.success || !res.data.projectImages || res.data.projectImages.length === 0) {
-                        wrapper.innerHTML = '<div class="col-12 text-center py-5">Bu projeye ait henüz bir galeri resmi yok aga.</div>';
+                        wrapper.innerHTML = '<div class="col-12 text-center py-5">Bu projeye ait henüz bir galeri resmi yok.</div>';
                         return;
                     }
 
