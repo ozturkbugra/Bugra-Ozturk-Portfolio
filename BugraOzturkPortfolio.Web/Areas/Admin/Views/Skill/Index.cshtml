@@ -64,7 +64,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Yetenek Adı (Örn: .NET 8)</label>
-                        <input type="text" class="form-control" id="Title" name="Title" required />
+                        <input type="text" class="form-control" id="Title" name="Title" maxlength="500" required />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Seviye (%)</label>
@@ -107,6 +107,20 @@
 
         document.getElementById('skillForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            if (!document.getElementById('GroupName').value ||
+                !document.getElementById('Title').value.trim() ||
+                document.getElementById('Percentage').value === '') {
+                showSkillToast('Lütfen gerekli alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
+            const pct = parseInt(document.getElementById('Percentage').value);
+            if (pct < 0 || pct > 100 || isNaN(pct)) {
+                showSkillToast('Yetenek seviyesi 0 ile 100 arasında olmalıdır!', false);
+                return;
+            }
+
             const res = await (await fetch('/Admin/Skill/Save', { method: 'POST', body: new FormData(e.target) })).json();
             if(res.success) { showSkillToast(res.message, true); skillModal.hide(); loadSkills(); }
             else showSkillToast(res.message, false);
@@ -118,17 +132,14 @@
             skillModal.show();
         }
 
-                async function editSkill(id) {
+        async function editSkill(id) {
             const res = await (await fetch('/Admin/Skill/GetById?id=' + id)).json();
             if(res.success) {
                 const item = res.data;
                 document.getElementById('SkillId').value = item.id;
                 document.getElementById('Title').value = item.title;
                 document.getElementById('Percentage').value = item.percentage;
-
-                // Select elementindeki değeri set et
                 document.getElementById('GroupName').value = item.groupName;
-
                 skillModal.show();
             }
         }
