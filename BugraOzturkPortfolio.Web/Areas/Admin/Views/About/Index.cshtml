@@ -6,9 +6,6 @@
     var aboutId = isEdit ? Model.Id : Guid.Empty;
 }
 
-   
-
-
 <div class="container-fluid">
     <div class="page-header fx-page-header">
         <div>
@@ -30,7 +27,7 @@
     </div>
 
     <div class="row">
-        <div class="col-100">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title">Profil ve İletişim Bilgilerini Güncelle</h5>
@@ -42,54 +39,54 @@
                         <div class="row g-3 mb-3">
                             <div class="col-md-12">
                                 <label for="Title" class="form-label fw-semibold">Ana Unvan / Başlık</label>
-                                <input type="text" class="form-control" id="Title" name="Title" value="@(Model?.Title)" placeholder="Örn: Full Stack .NET Developer" required>
+                                <input type="text" class="form-control" id="Title" name="Title" value="@(Model?.Title)" maxlength="100" placeholder="Örn: Full Stack .NET Developer" required>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <label for="Email" class="form-label fw-semibold">E-posta Adresi</label>
-                                <input type="email" class="form-control" id="Email" name="Email" value="@(Model?.Email)" placeholder="Örn: bugra@example.com">
+                                <input type="email" class="form-control" id="Email" name="Email" value="@(Model?.Email)" maxlength="100" placeholder="Örn: bugra@example.com">
                             </div>
                             <div class="col-md-4">
                                 <label for="Phone" class="form-label fw-semibold">Telefon Numarası</label>
-                                <input type="tel" class="form-control" id="Phone" name="Phone" value="@(Model?.Phone)" placeholder="Örn: +90 555 555 55 55">
+                                <input type="tel" class="form-control" id="Phone" name="Phone" value="@(Model?.Phone)" maxlength="20" placeholder="Örn: +90 555 555 55 55">
                             </div>
                             <div class="col-md-4">
                                 <label for="Address" class="form-label fw-semibold">Adres / Lokasyon</label>
-                                <input type="text" class="form-control" id="Address" name="Address" value="@(Model?.Address)" placeholder="Örn: Ankara, Türkiye">
+                                <input type="text" class="form-control" id="Address" name="Address" value="@(Model?.Address)" maxlength="250" placeholder="Örn: Ankara, Türkiye">
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <label for="LinkedinUrl" class="form-label fw-semibold">LinkedIn Linki</label>
-                                <input type="url" class="form-control" id="LinkedinUrl" name="LinkedinUrl" value="@(Model?.LinkedinUrl)" placeholder="https://linkedin.com/in/username">
+                                <input type="url" class="form-control" id="LinkedinUrl" name="LinkedinUrl" value="@(Model?.LinkedinUrl)" maxlength="200" placeholder="https://linkedin.com/in/username">
                             </div>
                             <div class="col-md-4">
                                 <label for="GithubUrl" class="form-label fw-semibold">GitHub Linki</label>
-                                <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" value="@(Model?.GithubUrl)" placeholder="https://github.com/username">
+                                <input type="url" class="form-control" id="GithubUrl" name="GithubUrl" value="@(Model?.GithubUrl)" maxlength="200" placeholder="https://github.com/username">
                             </div>
                             <div class="col-md-4">
                                 <label for="TwitterUrl" class="form-label fw-semibold">Twitter (X) Linki</label>
-                                <input type="url" class="form-control" id="TwitterUrl" name="TwitterUrl" value="@(Model?.TwitterUrl)" placeholder="https://x.com/username">
+                                <input type="url" class="form-control" id="TwitterUrl" name="TwitterUrl" value="@(Model?.TwitterUrl)" maxlength="200" placeholder="https://x.com/username">
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="InstagramUrl" class="form-label fw-semibold">Instagram Linki</label>
-                                <input type="url" class="form-control" id="InstagramUrl" name="InstagramUrl" value="@(Model?.InstagramUrl)" placeholder="https://instagram.com/username">
+                                <input type="url" class="form-control" id="InstagramUrl" name="InstagramUrl" value="@(Model?.InstagramUrl)" maxlength="200" placeholder="https://instagram.com/username">
                             </div>
                             <div class="col-md-6">
                                 <label for="FacebookUrl" class="form-label fw-semibold">Facebook Linki</label>
-                                <input type="url" class="form-control" id="FacebookUrl" name="FacebookUrl" value="@(Model?.FacebookUrl)" placeholder="https://facebook.com/username">
+                                <input type="url" class="form-control" id="FacebookUrl" name="FacebookUrl" value="@(Model?.FacebookUrl)" maxlength="200" placeholder="https://facebook.com/username">
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Biyografi / Detaylı Hakkımda Yazısı</label>
-                            <div id="quillEditor" style="height: 200px;">
+                            <div id="quillEditor" style="height: 500px;">
                                 @Html.Raw(Model?.Description)
                             </div>
                             <input type="hidden" id="Description" name="Description" />
@@ -108,7 +105,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="CvFile" class="form-label fw-semibold">Güncel CV Dosyası (PDF)</label>
+                                <label class="form-label fw-semibold">Güncel CV Dosyası (PDF)</label>
                                 <input type="file" id="CvFile" name="CvFile" accept=".pdf" class="form-control" />
                                 @if (!string.IsNullOrEmpty(Model?.CvUrl))
                                 {
@@ -318,7 +315,7 @@
             });
         });
 
-                const btnDeleteCv = document.getElementById('btnDeleteCv');
+        const btnDeleteCv = document.getElementById('btnDeleteCv');
         if (btnDeleteCv) {
             btnDeleteCv.addEventListener('click', function () {
                 if (confirm('Mevcut CV dosyasını tamamen kaldırmak istediğinize emin misiniz?')) {
