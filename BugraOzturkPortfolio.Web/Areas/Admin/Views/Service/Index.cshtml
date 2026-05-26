@@ -54,12 +54,12 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Başlık</label>
-                        <input type="text" class="form-control" id="Title" name="Title" required />
+                        <input type="text" class="form-control" id="Title" name="Title" maxlength="100" required />
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">İkon Class (Örn: bi-code-slash)</label>
-                            <input type="text" class="form-control" id="IconClass" name="IconClass" required />
+                            <input type="text" class="form-control" id="IconClass" name="IconClass" maxlength="50" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Sıralama</label>
@@ -106,6 +106,16 @@
 
         document.getElementById('serviceForm').onsubmit = async (e) => {
             e.preventDefault();
+
+            // JS tarafında required alanların sıkı kontrolü aga
+            if (!document.getElementById('Title').value.trim() ||
+                !document.getElementById('IconClass').value.trim() ||
+                !document.getElementById('Order').value ||
+                !document.getElementById('Description').value.trim()) {
+                showServiceToast('Lütfen gerekli alanları eksiksiz doldurunuz!', false);
+                return;
+            }
+
             const formData = new FormData(e.target);
             const res = await (await fetch('/Admin/Service/Save', { method: 'POST', body: formData })).json();
             if(res.success) {
