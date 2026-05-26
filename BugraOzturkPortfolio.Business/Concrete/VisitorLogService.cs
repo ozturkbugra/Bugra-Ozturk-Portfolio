@@ -2,6 +2,7 @@
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.Entities.Concrete;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,6 +14,7 @@ namespace BugraOzturkPortfolio.Business.Concrete
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly TimeZoneInfo _turkeyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
+
         public VisitorLogService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
@@ -20,14 +22,15 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
         public async Task LogVisitAsync(string ipAddress, string userAgent)
         {
-            var today = DateTime.Now.Date;
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
+            var today = nowInTurkey.Date; 
+
             string rawData = $"{ipAddress}_{userAgent}_{today:yyyyMMdd}";
             string hashedData = ComputeSha256Hash(rawData);
 
             var repo = _unitOfWork.GetRepository<VisitorLog>();
-            var allLogs = await repo.GetAllAsync();
 
-            bool alreadyLogged = allLogs.Any(x => x.VisitorHash == hashedData && x.VisitDate == today);
+            bool alreadyLogged = await repo.AnyAsync(x => x.VisitorHash == hashedData && x.VisitDate == today);
 
             if (!alreadyLogged)
             {
@@ -44,9 +47,74 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
         public async Task<int> GetTodayUniqueVisitorsCountAsync()
         {
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
             var repo = _unitOfWork.GetRepository<VisitorLog>();
-            var allLogs = await repo.GetAllAsync();
-            return allLogs.Count(x => x.VisitDate == DateTime.UtcNow.Date && !x.IsDeleted);
+
+            return await repo.CountAsync(x => x.VisitDate == nowInTurkey.Date && !x.IsDeleted);
+        }
+
+        public async Task<int> GetPeriodicVisitorsCountAsync(string period)
+        {
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+            var targetDate = nowInTurkey.Date;
+
+            return period.ToLower() switch
+            {
+                "daily" => await repo.CountAsync(x => !x.IsDeleted && x.VisitDate == targetDate),
+                "weekly" => await repo.CountAsync(x => !x.IsDeleted && x.VisitDate >= targetDate.AddDays(-7)),
+                "monthly" => await repo.CountAsync(x => !x.IsDeleted && x.VisitDate >= targetDate.AddDays(-30)),
+                "yearly" => await repo.CountAsync(x => !x.IsDeleted && x.VisitDate.Year == targetDate.Year),
+                _ => await repo.CountAsync(x => !x.IsDeleted)
+            };
+        }
+
+        public async Task<Dictionary<string, int>> GetLastWeekVisitorHistoryAsync()
+        {
+            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+            var startDate = nowInTurkey.Date.AddDays(-6);
+
+            var logs = await repo.GetWhereAsync(x => !x.IsDeleted && x.VisitDate >= startDate);
+
+            var history = new Dictionary<string, int>();
+            for (int i = 6; i >= 0; i--)
+            {
+                var targetDate = nowInTurkey.Date.AddDays(-i);
+                var count = logs.Count(x => x.VisitDate == targetDate);
+                history.Add(targetDate.ToString("dd.MM (ddd)"), count);
+            }
+
+            return history;
+        }
+
+        public async Task<Dictionary<string, int>> GetTopFiveMostVisitedDaysAsync()
+        {
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+
+            var logs = await repo.GetAllAsync();
+            var topDays = logs
+                .Where(x => !x.IsDeleted)
+                .GroupBy(x => x.VisitDate)
+                .Select(g => new { DateStr = g.Key.ToString("dd.MM.yyyy"), Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .Take(5)
+                .ToDictionary(x => x.DateStr, x => x.Count);
+
+            return topDays;
+        }
+
+        public async Task<Dictionary<string, int>> GetVisitorCountHistoryForCalendarAsync()
+        {
+            var repo = _unitOfWork.GetRepository<VisitorLog>();
+            var logs = await repo.GetWhereAsync(x => !x.IsDeleted);
+
+            return logs
+                .GroupBy(x => x.VisitDate)
+                .ToDictionary(
+                    g => g.Key.ToString("yyyy-MM-dd"),
+                    g => g.Count()
+                );
         }
 
         private string ComputeSha256Hash(string rawData)
@@ -61,73 +129,6 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 }
                 return builder.ToString();
             }
-        }
-
-        public async Task<int> GetPeriodicVisitorsCountAsync(string period)
-        {
-            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
-            var repo = _unitOfWork.GetRepository<VisitorLog>();
-
-            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
-
-            return period.ToLower() switch
-            {
-                "daily" => allLogs.Count(x => x.VisitDate == nowInTurkey.Date),
-                "weekly" => allLogs.Count(x => x.VisitDate >= nowInTurkey.Date.AddDays(-7)),
-                "monthly" => allLogs.Count(x => x.VisitDate >= nowInTurkey.Date.AddDays(-30)),
-                "yearly" => allLogs.Count(x => x.VisitDate.Year == nowInTurkey.Year),
-                _ => allLogs.Count()
-            };
-        }
-
-        public async Task<Dictionary<string, int>> GetLastWeekVisitorHistoryAsync()
-        {
-            var nowInTurkey = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _turkeyTimeZone);
-            var repo = _unitOfWork.GetRepository<VisitorLog>();
-
-            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
-
-            var history = new Dictionary<string, int>();
-
-            for (int i = 6; i >= 0; i--)
-            {
-                var targetDate = nowInTurkey.Date.AddDays(-i);
-                var count = allLogs.Count(x => x.VisitDate == targetDate);
-                history.Add(targetDate.ToString("dd.MM (ddd)"), count);
-            }
-
-            return history;
-        }
-
-        public async Task<Dictionary<string, int>> GetTopFiveMostVisitedDaysAsync()
-        {
-            var repo = _unitOfWork.GetRepository<VisitorLog>();
-
-            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
-            var topDays = allLogs
-                .GroupBy(x => x.VisitDate)
-                .Select(g => new { DateStr = g.Key.ToString("dd.MM.yyyy"), Count = g.Count() })
-                .OrderByDescending(g => g.Count)
-                .Take(5)
-                .ToDictionary(x => x.DateStr, x => x.Count);
-
-            return topDays;
-        }
-
-        public async Task<Dictionary<string, int>> GetVisitorCountHistoryForCalendarAsync()
-        {
-            var repo = _unitOfWork.GetRepository<VisitorLog>();
-
-            var allLogs = (await repo.GetAllAsync()).Where(x => !x.IsDeleted).ToList();
-
-            var calendarData = allLogs
-                .GroupBy(x => x.VisitDate)
-                .ToDictionary(
-                    g => g.Key.ToString("yyyy-MM-dd"),
-                    g => g.Count()
-                );
-
-            return calendarData;
         }
     }
 }

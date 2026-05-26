@@ -92,7 +92,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Anasayfa}/{action=Index}/{id?}");
 
-// Seed Data Operasyonu
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var services = scope.ServiceProvider;

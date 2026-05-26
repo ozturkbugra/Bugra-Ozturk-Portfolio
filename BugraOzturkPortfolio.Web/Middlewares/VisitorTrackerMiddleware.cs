@@ -1,6 +1,7 @@
 ﻿using BugraOzturkPortfolio.Business.Abstract;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading.Tasks;
 
 namespace BugraOzturkPortfolio.Web.Middlewares
@@ -18,10 +19,8 @@ namespace BugraOzturkPortfolio.Web.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // 1. Önce isteğin önünü açıyoruz, kullanıcı bekletilmeden sayfaya gitsin
             await _next(context);
 
-            // 2. Sayfa yüklendikten sonra arkadan sessizce loglama operasyonunu başlatıyoruz
             string path = context.Request.Path.Value ?? "";
 
             if (!path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) &&
@@ -31,19 +30,20 @@ namespace BugraOzturkPortfolio.Web.Middlewares
                 string ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
                 string userAgent = context.Request.Headers["User-Agent"].ToString() ?? "Unknown";
 
-                try
+                _ = Task.Run(async () =>
                 {
-                    // Task.Run tuzağından kurtulduk, güvenli scope içinde direkt await ediyoruz
-                    using (var scope = _scopeFactory.CreateScope())
+                    try
                     {
-                        var scopedVisitorService = scope.ServiceProvider.GetRequiredService<IVisitorLogService>();
-                        await scopedVisitorService.LogVisitAsync(ipAddress, userAgent);
+                        using (var scope = _scopeFactory.CreateScope())
+                        {
+                            var scopedVisitorService = scope.ServiceProvider.GetRequiredService<IVisitorLogService>();
+                            await scopedVisitorService.LogVisitAsync(ipAddress, userAgent);
+                        }
                     }
-                }
-                catch
-                {
-                    // Loglama sırasında bir hata olursa (DB yoğunluğu vs.) ana siteyi asla etkilemesin kalkanı
-                }
+                    catch
+                    {
+                    }
+                });
             }
         }
     }
