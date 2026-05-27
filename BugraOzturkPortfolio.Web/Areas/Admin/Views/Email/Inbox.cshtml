@@ -74,11 +74,13 @@
                 {
                     foreach (var mail in Model)
                     {
+                        DateTime localMailDate = mail.Date.Kind == DateTimeKind.Utc ? mail.Date.ToLocalTime() : mail.Date;
+
                         <div class="email-item unread"
                              data-sender-name="@mail.FromName"
                              data-sender-mail="@mail.FromAddress"
                              data-subject="@mail.Subject"
-                             data-date="@mail.Date.ToString("dd MMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"))">
+                             data-date="@localMailDate.ToString("dd MMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"))">
 
                             <div class="email-item-avatar bg-primary-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; border-radius:50%;">
                                 <span>@mail.FromName.Replace("Kime: ", "").AsSpan(0, Math.Min(2, mail.FromName.Replace("Kime: ", "").Length)).ToString().ToUpper()</span>
@@ -86,7 +88,7 @@
                             <div class="email-item-content">
                                 <div class="email-item-header">
                                     <span class="email-item-sender">@mail.FromName</span>
-                                    <span class="email-item-time">@mail.Date.ToString("HH:mm")</span>
+                                    <span class="email-item-time">@localMailDate.ToString("HH:mm")</span>
                                 </div>
                                 <div class="email-item-subject">@mail.Subject</div>
                                 <div class="email-item-preview">@mail.Snippet</div>
@@ -183,7 +185,6 @@
         const composeModalInstance = new bootstrap.Modal(document.getElementById('composeModal'));
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Quill Editör Kurulumu
             emailQuill = new Quill('#emailQuillEditor', {
                 theme: 'snow',
                 placeholder: 'Mesajınızı buraya yazın aga...',
@@ -195,7 +196,6 @@
             const emailDetailView = document.getElementById('emailDetailView');
             const emailBackBtn = document.getElementById('emailBackBtn');
 
-            // Listeden e-postaya tıklanınca detay doldurma şovu
             emailItems.forEach(item => {
                 item.addEventListener('click', function() {
                     emailItems.forEach(i => i.classList.remove('active'));
@@ -220,7 +220,6 @@
                 });
             });
 
-            // Geri Dönüş Butonu
             if(emailBackBtn) {
                 emailBackBtn.addEventListener('click', function() {
                     emailDetailView.style.display = 'none';
@@ -228,7 +227,6 @@
                 });
             }
 
-            // Canlı Arama Filtresi
             const searchInput = document.getElementById('emailSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function (e) {
@@ -241,7 +239,6 @@
             }
         });
 
-        // Form Post İşlemi (AJAX)
         function submitComposeForm() {
             const form = document.getElementById('composeForm');
             const to = document.getElementById('composeTo').value.trim();
@@ -284,7 +281,6 @@
             });
         }
 
-        // Cevapla
         function replyCurrentEmail() {
             const currentSenderMail = document.getElementById('viewSenderMail').textContent.replace(/[<>]/g, '').trim();
             const currentSubject = document.getElementById('viewSubject').textContent;

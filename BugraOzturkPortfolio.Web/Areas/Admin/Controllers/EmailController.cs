@@ -18,14 +18,13 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             _emailService = emailService;
         }
 
-        // Klasör parametresine göre tetiklenen dinamik inbox yapısı aga
         [HttpGet("")]
         public async Task<IActionResult> Inbox([FromQuery] string folder = "INBOX")
         {
             try
             {
                 var messages = await _emailService.GetMessagesFromFolderAsync(folder, 20);
-                ViewBag.CurrentFolder = folder; // Ön yüze hangi klasörde olduğumuzu paslıyoruz aga
+                ViewBag.CurrentFolder = folder; 
                 return View(messages);
             }
             catch (Exception ex)
