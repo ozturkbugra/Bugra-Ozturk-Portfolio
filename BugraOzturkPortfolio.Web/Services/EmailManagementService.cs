@@ -96,8 +96,8 @@ namespace BugraOzturkPortfolio.Web.Services
                     {
                         UniqueId = message.MessageId ?? Guid.NewGuid().ToString(),
                         FromName = folderName.Equals("Sent", StringComparison.OrdinalIgnoreCase)
-                            ? ($"Kime: {recipient?.Name ?? recipient?.Address}")
-                            : (sender?.Name ?? "Bilinmeyen Gönderen"),
+                        ? ($"Kime: {(string.IsNullOrWhiteSpace(recipient?.Name) ? recipient?.Address : recipient.Name)}")
+                        : (sender?.Name ?? "Bilinmeyen Gönderen"),
                         FromAddress = sender?.Address ?? "",
                         Subject = message.Subject ?? "(Konu Yok)",
                         Snippet = message.TextBody != null ? (message.TextBody.Length > 100 ? message.TextBody.Substring(0, 100) + "..." : message.TextBody) : "",
