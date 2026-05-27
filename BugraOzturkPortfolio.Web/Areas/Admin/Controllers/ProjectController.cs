@@ -155,5 +155,17 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             var result = await _projectService.DeleteProjectFeatureAsync(featureId);
             return Json(new { success = result.Success, message = result.Message });
         }
+
+        [HttpPost]
+        [Route("Admin/Project/UpdateOrders")]
+        public async Task<IActionResult> UpdateOrders([FromBody] List<Guid> projectIds)
+        {
+            var result = await _projectService.UpdateProjectOrdersAsync(projectIds);
+
+            if (result.Success)
+                return Json(new { success = true, message = result.Message });
+
+            return Json(new { success = false, message = result.Message });
+        }
     }
 }

@@ -9,6 +9,9 @@
             <p class="fx-subtitle">Portfolyonuzda sergilenecek projelerin yönetim, listeleme ve düzenleme paneli.</p>
         </div>
         <div class="page-header-actions">
+            <button class="btn btn-outline-warning btn-sm me-2" onclick="openOrderModal()">
+                <i class="bi bi-arrow-down-up me-1"></i> Proje Sırasını Düzenle
+            </button>
             <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
                 <i class="bi bi-plus-lg me-1"></i> Yeni Proje Ekle
             </button>
@@ -206,6 +209,26 @@
                         <button type="submit" id="btnProjectSubmit" class="btn btn-primary px-4">Kaydet</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-arrow-down-up me-2 text-warning"></i>Sürükle-Bırak Sıralama</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Projeleri listelenmesini istediğiniz sıraya göre aşağı yukarı sürükleyin.</p>
+                <ul class="list-group" id="sortableProjectList">
+                </ul>
+            </div>
+            <div class="modal-content-footer p-3 border-top text-end">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" id="btnSaveProjectOrder" class="btn btn-warning text-dark fw-semibold" onclick="saveProjectOrder()">Sıralamayı Kaydet</button>
             </div>
         </div>
     </div>
@@ -608,6 +631,91 @@
                         }
                     });
             }
+        }
+
+                let orderModalInstance;
+        const orderModalEl = document.getElementById('orderModal');
+
+        function openOrderModal() {
+            orderModalInstance = new bootstrap.Modal(orderModalEl);
+            const listWrapper = document.getElementById('sortableProjectList');
+            listWrapper.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-warning"></div></div>';
+
+            orderModalInstance.show();
+
+            fetch('/Admin/Project/GetProjectsJson')
+                .then(response => response.json())
+                .then(data => {
+                    listWrapper.innerHTML = '';
+
+                    // Sıralama numarasına göre sıralayıp listeye basıyoruz
+                    data.sort((a, b) => a.order - b.order).forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex align-items-center justify-content-between p-3 mb-2 border rounded shadow-sm bg-light';
+                        li.setAttribute('draggable', 'true'); 
+                        li.setAttribute('data-id', item.id); 
+                        li.style.cursor = 'move';
+
+                        li.innerHTML = `
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-grip-vertical text-muted fs-4 me-3"></i>
+                                <span class="fw-semibold small">${item.title}</span>
+                            </div>
+                            <span class="badge bg-secondary-subtle text-secondary border">Sıra: ${item.order}</span>
+                        `;
+
+                        li.addEventListener('dragstart', () => li.classList.add('dragging'));
+                        li.addEventListener('dragend', () => li.classList.remove('dragging'));
+
+                        listWrapper.appendChild(li);
+                    });
+
+                    listWrapper.addEventListener('dragover', e => {
+                        e.preventDefault();
+                        const draggingItem = document.querySelector('.dragging');
+                        const siblings = [...listWrapper.querySelectorAll('.list-group-item:not(.dragging)')];
+
+                        let nextSibling = siblings.find(sibling => {
+                            return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
+                        });
+
+                        listWrapper.insertBefore(draggingItem, nextSibling);
+                    });
+                });
+        }
+
+        function saveProjectOrder() {
+            const listItems = [...document.querySelectorAll('#sortableProjectList .list-group-item')];
+            const projectIds = listItems.map(item => item.getAttribute('data-id'));
+
+            if (projectIds.length === 0) return;
+
+            const btnSave = document.getElementById('btnSaveProjectOrder');
+            btnSave.disabled = true;
+            btnSave.textContent = 'Güncelleniyor...';
+
+            fetch('/Admin/Project/UpdateOrders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(projectIds)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showProjectToast(data.message, true);
+                    orderModalInstance.hide();
+                    loadProjects(); 
+                } else {
+                    showProjectToast(data.message, false);
+                }
+            })
+            .catch(() => showProjectToast('Sıralama güncellenirken sistem hatası!', false))
+            .finally(() => {
+                btnSave.disabled = false;
+                btnSave.textContent = 'Sıralamayı Kaydet';
+            });
         }
     </script>
 }

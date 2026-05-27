@@ -17,5 +17,7 @@ namespace BugraOzturkPortfolio.Business.Abstract
         Task<List<Project>> GetAllProjectsWithRelationsAsync();
 
         Task<Project?> GetProjectBySlugWithRelationsAsync(string slug);
+
+        Task<(bool Success, string Message)> UpdateProjectOrdersAsync(List<Guid> projectIds);
     }
 }

@@ -350,5 +350,39 @@ namespace BugraOzturkPortfolio.Business.Concrete
 
             return project;
         }
+
+        public async Task<(bool Success, string Message)> UpdateProjectOrdersAsync(List<Guid> projectIds)
+        {
+            if (projectIds == null || !projectIds.Any())
+                return (false, "Sıralanacak proje verisi bulunamadı!");
+
+            try
+            {
+                var projectRepo = _unitOfWork.GetRepository<Project>();
+
+                var allProjects = await projectRepo.GetAllAsync();
+
+                int currentOrder = 1;
+
+                foreach (var projectId in projectIds)
+                {
+                    var project = allProjects.FirstOrDefault(x => x.Id == projectId);
+                    if (project != null)
+                    {
+                        project.Order = currentOrder;
+                        projectRepo.Update(project);
+                        currentOrder++;
+                    }
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+
+                return (true, "Proje sıralaması başarıyla güncellendi.");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Sıralama güncellenirken bir hata oluştu: {ex.Message}");
+            }
+        }
     }
 }
