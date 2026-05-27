@@ -13,7 +13,6 @@ using System.Globalization;
 var builder = WebApplication.CreateBuilder(args);
 
 var keysFolder = Path.Combine(builder.Environment.ContentRootPath, "keys");
-
 if (!Directory.Exists(keysFolder))
 {
     Directory.CreateDirectory(keysFolder);
@@ -25,10 +24,8 @@ builder.Services.AddDataProtection()
 
 builder.Services.AddControllersWithViews();
 
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -58,16 +55,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
     });
 
-
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(10);
-
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -77,13 +71,20 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+app.UseRouting(); 
+
+var supportedCultures = new[] { new CultureInfo("tr-TR") };
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("tr-TR"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+app.UseRequestLocalization(localizationOptions);
 
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseMiddleware<VisitorTrackerMiddleware>();
 
 app.MapControllerRoute(
@@ -107,14 +108,5 @@ await using (var scope = app.Services.CreateAsyncScope())
         Console.WriteLine($"Seed data hatasý: {ex.Message}");
     }
 }
-        var supportedCultures = new[] { new CultureInfo("tr-TR") };
-        var localizationOptions = new RequestLocalizationOptions
-        {
-            DefaultRequestCulture = new RequestCulture("tr-TR"),
-            SupportedCultures = supportedCultures,
-            SupportedUICultures = supportedCultures
-        };
-        app.UseRequestLocalization(localizationOptions);
-
 
 app.Run();

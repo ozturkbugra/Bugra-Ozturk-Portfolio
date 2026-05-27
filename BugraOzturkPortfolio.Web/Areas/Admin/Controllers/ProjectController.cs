@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
@@ -156,16 +157,33 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             return Json(new { success = result.Success, message = result.Message });
         }
 
-        [HttpPost]
-        [Route("Admin/Project/UpdateOrders")]
-        public async Task<IActionResult> UpdateOrders([FromBody] List<Guid> projectIds)
+        public class UpdateProjectOrdersDto
         {
+            [JsonPropertyName("projectIds")]
+            public List<Guid> ProjectIds { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrders([FromForm] List<Guid> projectIds)
+        {
+            if (projectIds == null || !projectIds.Any())
+            {
+                TempData["ErrorMessage"] = "Sıralama verisi sunucuya ulaşmadı!";
+                return RedirectToAction("Index");
+            }
+
             var result = await _projectService.UpdateProjectOrdersAsync(projectIds);
 
             if (result.Success)
-                return Json(new { success = true, message = result.Message });
+            {
+                TempData["SuccessMessage"] = result.Message;
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Message;
+            }
 
-            return Json(new { success = false, message = result.Message });
+            return RedirectToAction("Index");
         }
     }
 }

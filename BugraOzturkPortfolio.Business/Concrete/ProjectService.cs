@@ -359,14 +359,11 @@ namespace BugraOzturkPortfolio.Business.Concrete
             try
             {
                 var projectRepo = _unitOfWork.GetRepository<Project>();
-
-                var allProjects = await projectRepo.GetAllAsync();
-
                 int currentOrder = 1;
 
                 foreach (var projectId in projectIds)
                 {
-                    var project = allProjects.FirstOrDefault(x => x.Id == projectId);
+                    var project = await projectRepo.GetByIdAsync(projectId);
                     if (project != null)
                     {
                         project.Order = currentOrder;
@@ -376,12 +373,12 @@ namespace BugraOzturkPortfolio.Business.Concrete
                 }
 
                 await _unitOfWork.SaveChangesAsync();
-
                 return (true, "Proje sıralaması başarıyla güncellendi.");
             }
             catch (Exception ex)
             {
-                return (false, $"Sıralama güncellenirken bir hata oluştu: {ex.Message}");
+                string innerDetail = ex.InnerException != null ? $" -> İç Hata: {ex.InnerException.Message}" : "";
+                return (false, $"[Service Hatası]: {ex.Message}{innerDetail} | Yer: {ex.StackTrace}");
             }
         }
     }

@@ -223,8 +223,13 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted small">Projeleri listelenmesini istediğiniz sıraya göre aşağı yukarı sürükleyin.</p>
-                <ul class="list-group" id="sortableProjectList">
-                </ul>
+
+                <form id="orderForm" action="/Admin/Project/UpdateOrders" method="POST">
+                    @Html.AntiForgeryToken()
+
+                    <ul class="list-group" id="sortableProjectList">
+                    </ul>
+                </form>
             </div>
             <div class="modal-content-footer p-3 border-top text-end">
                 <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Vazgeç</button>
@@ -648,12 +653,11 @@
                 .then(data => {
                     listWrapper.innerHTML = '';
 
-                    // Sıralama numarasına göre sıralayıp listeye basıyoruz
                     data.sort((a, b) => a.order - b.order).forEach(item => {
                         const li = document.createElement('li');
                         li.className = 'list-group-item d-flex align-items-center justify-content-between p-3 mb-2 border rounded shadow-sm bg-light';
-                        li.setAttribute('draggable', 'true'); 
-                        li.setAttribute('data-id', item.id); 
+                        li.setAttribute('draggable', 'true');
+                        li.setAttribute('data-id', item.id);
                         li.style.cursor = 'move';
 
                         li.innerHTML = `
@@ -684,38 +688,20 @@
                 });
         }
 
-        function saveProjectOrder() {
+            function saveProjectOrder() {
             const listItems = [...document.querySelectorAll('#sortableProjectList .list-group-item')];
             const projectIds = listItems.map(item => item.getAttribute('data-id'));
-
             if (projectIds.length === 0) return;
-
-            const btnSave = document.getElementById('btnSaveProjectOrder');
-            btnSave.disabled = true;
-            btnSave.textContent = 'Güncelleniyor...';
-
-            fetch('/Admin/Project/UpdateOrders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(projectIds)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showProjectToast(data.message, true);
-                    orderModalInstance.hide();
-                    loadProjects(); 
-                } else {
-                    showProjectToast(data.message, false);
-                }
-            })
-            .catch(() => showProjectToast('Sıralama güncellenirken sistem hatası!', false))
-            .finally(() => {
-                btnSave.disabled = false;
-                btnSave.textContent = 'Sıralamayı Kaydet';
+            const form = document.getElementById('orderForm');
+            projectIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'projectIds';
+                input.value = id;
+                form.appendChild(input);
             });
+
+            form.submit();
         }
     </script>
 }
