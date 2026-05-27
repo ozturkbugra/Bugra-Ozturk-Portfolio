@@ -1,151 +1,177 @@
 ﻿@model List<MailDisplayViewModel>
 @{
-    ViewData["Title"] = "Kurumsal E-Posta Yönetimi";
+    ViewData["Title"] = "E-Posta";
     Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    string currentFolder = ViewBag.CurrentFolder ?? "INBOX";
 }
 
-<div class="container-fluid">
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger border-0 shadow-sm mb-3">
-            <i class="bi bi-exclamation-triangle me-2"></i> @ViewBag.Error
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger border-0 shadow-sm mb-3">
+        <i class="bi bi-exclamation-triangle me-2"></i> @ViewBag.Error
+    </div>
+}
+
+<div class="email-container">
+    <div class="email-sidebar-overlay" id="emailSidebarOverlay"></div>
+
+    <div class="email-sidebar" id="emailSidebar">
+        <button class="email-sidebar-close" id="emailSidebarClose" aria-label="Menüyü kapat">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="email-sidebar-header">
+            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#composeModal">
+                <i class="bi bi-pencil-square me-2"></i>E-Posta Yaz
+            </button>
         </div>
-    }
 
-    <div class="card border-0 shadow-sm overflow-hidden" style="height: calc(100vh - 160px);">
-        <div class="row g-0 h-100">
+        <nav class="email-nav">
+            <ul class="email-nav-list">
+                <li class="email-nav-item @(currentFolder.Equals("INBOX", StringComparison.OrdinalIgnoreCase) ? "active" : "")" onclick="window.location.href='/Admin/Email?folder=INBOX'">
+                    <i class="bi bi-inbox"></i>
+                    <span>Gelen Kutusu</span>
+                    @if (currentFolder.Equals("INBOX", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="email-nav-badge">@Model.Count</span>
+                    }
+                </li>
+                <li class="email-nav-item @(currentFolder.Equals("Sent", StringComparison.OrdinalIgnoreCase) ? "active" : "")" onclick="window.location.href='/Admin/Email?folder=Sent'">
+                    <i class="bi bi-send"></i>
+                    <span>Gönderilenler</span>
+                    @if (currentFolder.Equals("Sent", StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="email-nav-badge">@Model.Count</span>
+                    }
+                </li>
+                <li class="email-nav-item @(currentFolder.Equals("Trash", StringComparison.OrdinalIgnoreCase) ? "active" : "")" onclick="window.location.href='/Admin/Email?folder=Trash'">
+                    <i class="bi bi-trash"></i>
+                    <span>Çöp Kutusu</span>
+                </li>
+            </ul>
+        </nav>
+    </div>
 
-            <div class="col-md-3 col-lg-2 border-end bg-light p-3 d-flex flex-column h-100">
-                <button class="btn btn-primary btn-sm w-100 py-2 fw-semibold mb-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#composeModal">
-                    <i class="bi bi-pencil-square me-1"></i> E-Posta Yaz
+    <div class="email-main" id="emailMain">
+        <div class="email-list-view" id="emailListView">
+            <div class="email-list-header">
+                <button class="email-sidebar-toggle" id="emailSidebarToggle" aria-label="Klasörleri aç">
+                    <i class="bi bi-folder"></i>
                 </button>
 
-                <ul class="nav nav-pills flex-column gap-1 email-nav">
-                    <li class="nav-item">
-                        <a href="#" class="nav-link active d-flex align-items-center bg-primary-subtle text-primary">
-                            <i class="bi bi-inbox me-2 fs-5"></i>
-                            <span>Gelen Kutusu</span>
-                            <span class="badge bg-primary ms-auto rounded-pill">@Model.Count</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link d-flex align-items-center text-secondary disabled" style="cursor: not-allowed;">
-                            <i class="bi bi-send me-2 fs-5"></i>
-                            <span>Gönderilenler</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link d-flex align-items-center text-secondary disabled" style="cursor: not-allowed;">
-                            <i class="bi bi-trash me-2 fs-5"></i>
-                            <span>Çöp Kutusu</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="mt-auto text-center py-2 border-top">
-                    <small class="text-muted fw-bold"><i class="bi bi-shield-check text-success"></i> Webmail Active</small>
+                <div class="email-list-actions">
+                    <button class="email-action-btn" title="Yenile" onclick="window.location.reload();">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                <div class="email-search">
+                    <i class="bi bi-search email-search-icon"></i>
+                    <input type="text" id="emailSearchInput" class="form-control" placeholder="E-postalar içinde ara...">
                 </div>
             </div>
 
-            <div class="col-md-4 col-lg-4 border-end d-flex flex-column h-100 bg-white">
-                <div class="p-3 border-bottom bg-light">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="emailSearchInput" class="form-control border-start-0" placeholder="E-postalar içinde ara...">
-                    </div>
-                </div>
-
-                <div class="list-group list-group-flush overflow-y-auto flex-grow-1" id="emailListWrapper" style="max-height: calc(100vh - 220px);">
-                    @if (Model != null && Model.Any())
+            <div class="email-list">
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var mail in Model)
                     {
-                        foreach (var mail in Model)
-                        {
-                            <div class="position-relative border-bottom">
-                                <button class="list-group-item list-group-item-action p-3 text-start border-0 email-list-item-btn"
-                                        type="button"
-                                        data-sender-name="@mail.FromName"
-                                        data-sender-mail="@mail.FromAddress"
-                                        data-subject="@mail.Subject"
-                                        data-date="@mail.Date.ToString("dd MMMM yyyy HH:mm")"
-                                        onclick="viewEmailDetails(this)">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold text-dark text-truncate small" style="max-width: 180px;">@mail.FromName</span>
-                                        <small class="text-muted" style="font-size:0.7rem;">@mail.Date.ToString("dd.MM HH:mm")</small>
-                                    </div>
-                                    <div class="text-dark fw-semibold small text-truncate mb-1">@mail.Subject</div>
-                                    <div class="text-muted small text-truncate" style="font-size:0.75rem;">@mail.Snippet</div>
-                                </button>
+                        <div class="email-item unread"
+                             data-sender-name="@mail.FromName"
+                             data-sender-mail="@mail.FromAddress"
+                             data-subject="@mail.Subject"
+                             data-date="@mail.Date.ToString("dd MMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"))">
 
-                                <div class="d-none-mail-body d-none">@Html.Raw(mail.Body)</div>
+                            <div class="email-item-avatar bg-primary-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; border-radius:50%;">
+                                <span>@mail.FromName.Replace("Kime: ", "").AsSpan(0, Math.Min(2, mail.FromName.Replace("Kime: ", "").Length)).ToString().ToUpper()</span>
                             </div>
-                        }
+                            <div class="email-item-content">
+                                <div class="email-item-header">
+                                    <span class="email-item-sender">@mail.FromName</span>
+                                    <span class="email-item-time">@mail.Date.ToString("HH:mm")</span>
+                                </div>
+                                <div class="email-item-subject">@mail.Subject</div>
+                                <div class="email-item-preview">@mail.Snippet</div>
+                            </div>
+                            <div class="d-none-mail-body d-none">@Html.Raw(mail.Body)</div>
+                        </div>
                     }
-                    else
-                    {
-                        <div class="text-center py-5 text-muted small">Gelen kutunuzda e-posta bulunmuyor.</div>
-                    }
+                }
+                else
+                {
+                    <div class="text-center py-5 text-muted small">Bu klasörde e-posta bulunmuyor aga.</div>
+                }
+            </div>
+        </div>
+
+        <div class="email-detail-view" id="emailDetailView" style="display: none;">
+            <div class="email-detail-header">
+                <button class="email-back-btn" id="emailBackBtn" title="Listeye Geri Dön">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <div class="email-detail-actions">
+                    <button class="email-action-btn" title="Cevapla" onclick="replyCurrentEmail()">
+                        <i class="bi bi-reply"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="col-md-5 col-lg-6 d-flex flex-column h-100 bg-white" id="emailDetailContainer">
-                <div class="d-flex align-items-center justify-content-center h-100 text-muted small flex-column py-5" id="emptyEmailState">
-                    <i class="bi bi-envelope-open fs-1 text-secondary mb-2"></i>
-                    <span>Detaylarını görüntülemek için sol listeden bir e-posta seçin aga.</span>
+            <div class="email-detail-content w-100">
+                <div class="email-detail-subject">
+                    <h4 id="viewSubject">Konu Başlığı</h4>
                 </div>
 
-                <div class="d-none flex-column h-100 overflow-hidden" id="emailDetailContent">
-                    <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
-                        <h5 class="text-dark fw-bold mb-0 text-truncate" id="viewSubject" style="max-width: 80%;">Konu Başlığı</h5>
-                        <button class="btn btn-outline-primary btn-sm" onclick="replyCurrentEmail()">
-                            <i class="bi bi-reply-fill me-1"></i> Cevapla
-                        </button>
-                    </div>
-                    <div class="p-3 border-bottom">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3 shadow-sm" style="width:40px; height:40px; font-size:1.1rem;" id="viewAvatar">B</div>
-                            <div>
-                                <div class="fw-bold text-dark small" id="viewSenderName">Gönderen Adı</div>
-                                <div class="text-muted" style="font-size:0.75rem;" id="viewSenderMail">gonderen@mail.com</div>
+                <div class="email-message">
+                    <div class="email-message-header">
+                        <div class="email-message-sender">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2" style="width: 40px; height: 40px;" id="viewAvatar">B</div>
+                            <div class="email-message-sender-info">
+                                <div class="email-message-sender-name">
+                                    <span id="viewSenderName">Gönderen Adı</span>
+                                    <span class="email-message-sender-email" id="viewSenderMail">&lt;sender@example.com&gt;</span>
+                                </div>
                             </div>
-                            <div class="ms-auto text-muted small" style="font-size:0.75rem;" id="viewDate">Tarih</div>
+                        </div>
+                        <div class="email-message-meta">
+                            <span class="email-message-date" id="viewDate">Tarih Bilgisi</span>
                         </div>
                     </div>
-                    <div class="p-4 flex-grow-1 overflow-y-auto small" id="viewBody" style="line-height: 1.6; color:#333; background-color:#fafafa;">
+
+                    <div class="email-message-body text-body p-3" id="viewBody" style="min-height:200px; overflow-y:auto; line-height: 1.6;">
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="composeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title fw-semibold"><i class="bi bi-envelope-plus me-2"></i>Yeni E-Posta Gönder</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="composeModal" tabindex="-1" aria-labelledby="composeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="composeModalLabel">Yeni Mesaj</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
             </div>
             <div class="modal-body">
                 <form id="composeForm" novalidate>
                     <div class="mb-3">
-                        <label for="composeTo" class="form-label small fw-semibold">Alıcı (To)</label>
-                        <input type="email" class="form-control" id="composeTo" name="to" placeholder="ornek@alanadi.com" required />
+                        <label class="form-label">Alıcı (To)</label>
+                        <input type="email" class="form-control" id="composeTo" name="to" placeholder="Alıcı e-posta adresi..." required>
                     </div>
                     <div class="mb-3">
-                        <label for="composeSubject" class="form-label small fw-semibold">Konu</label>
-                        <input type="text" class="form-control" id="composeSubject" name="subject" placeholder="E-posta konusunu girin..." required />
+                        <label class="form-label">Konu</label>
+                        <input type="text" class="form-control" id="composeSubject" name="subject" placeholder="Mesaj konusu..." required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Mesaj İçeriği</label>
+                        <label class="form-label">Mesaj İçeriği</label>
                         <div id="emailQuillEditor" style="height: 220px;"></div>
                         <input type="hidden" id="composeBody" name="body" />
                     </div>
-                    <div class="text-end border-top pt-3">
-                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">İptal</button>
-                        <button type="submit" id="btnSendEmail" class="btn btn-primary px-4 fw-semibold">E-Postayı Gönder</button>
-                    </div>
                 </form>
+            </div>
+            <div class="modal-footer justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                <button type="button" id="btnSendEmail" class="btn btn-primary" onclick="submitComposeForm()">
+                    <i class="bi bi-send me-1"></i>Gönder
+                </button>
             </div>
         </div>
     </div>
@@ -156,101 +182,117 @@
         let emailQuill;
         const composeModalInstance = new bootstrap.Modal(document.getElementById('composeModal'));
 
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Quill Editör Kurulumu
             emailQuill = new Quill('#emailQuillEditor', {
                 theme: 'snow',
-                placeholder: 'E-posta içeriğini buraya yazın aga...',
+                placeholder: 'Mesajınızı buraya yazın aga...',
                 modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
             });
 
-            const form = document.getElementById('composeForm');
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
+            const emailItems = document.querySelectorAll('.email-item');
+            const emailListView = document.getElementById('emailListView');
+            const emailDetailView = document.getElementById('emailDetailView');
+            const emailBackBtn = document.getElementById('emailBackBtn');
 
-                const to = document.getElementById('composeTo').value.trim();
-                const subject = document.getElementById('composeSubject').value.trim();
-                const quillHtml = emailQuill.root.innerHTML;
+            // Listeden e-postaya tıklanınca detay doldurma şovu
+            emailItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    emailItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    this.classList.remove('unread');
 
-                if (!to || !subject || quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
-                    alert('Lütfen e-posta alanlarını eksiksiz doldurun aga!');
-                    return;
-                }
+                    const senderName = this.getAttribute('data-sender-name');
+                    const senderMail = this.getAttribute('data-sender-mail');
+                    const subject = this.getAttribute('data-subject');
+                    const date = this.getAttribute('data-date');
+                    const fullBodyHTML = this.querySelector('.d-none-mail-body').innerHTML;
 
-                document.getElementById('composeBody').value = quillHtml;
+                    document.getElementById('viewSubject').textContent = subject;
+                    document.getElementById('viewSenderName').textContent = senderName;
+                    document.getElementById('viewSenderMail').textContent = `<${senderMail}>`;
+                    document.getElementById('viewDate').textContent = date;
+                    document.getElementById('viewAvatar').textContent = senderName.replace("Kime: ", "").charAt(0).toUpperCase();
+                    document.getElementById('viewBody').innerHTML = fullBodyHTML;
 
-                const btnSend = document.getElementById('btnSendEmail');
-                btnSend.disabled = true;
-                btnSend.textContent = 'Gönderiliyor...';
-
-                const formData = new FormData(form);
-
-                fetch('/Admin/Email/Send', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        composeModalInstance.hide();
-                        form.reset();
-                        emailQuill.root.innerHTML = '';
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(() => alert('E-posta gönderilirken sistemsel bir hata oluştu!'))
-                .finally(() => {
-                    btnSend.disabled = false;
-                    btnSend.textContent = 'E-Postayı Gönder';
+                    emailListView.style.display = 'none';
+                    emailDetailView.style.display = 'flex';
                 });
             });
 
+            // Geri Dönüş Butonu
+            if(emailBackBtn) {
+                emailBackBtn.addEventListener('click', function() {
+                    emailDetailView.style.display = 'none';
+                    emailListView.style.display = 'flex';
+                });
+            }
+
+            // Canlı Arama Filtresi
             const searchInput = document.getElementById('emailSearchInput');
             if (searchInput) {
                 searchInput.addEventListener('input', function (e) {
                     const searchVal = e.target.value.toLowerCase();
-                    const items = document.querySelectorAll('.email-list-item-btn');
-                    items.forEach(item => {
+                    emailItems.forEach(item => {
                         const text = item.textContent.toLowerCase();
-                        item.parentElement.style.display = text.includes(searchVal) ? '' : 'none';
+                        item.style.display = text.includes(searchVal) ? '' : 'none';
                     });
                 });
             }
         });
 
-        function viewEmailDetails(element) {
-            document.querySelectorAll('.email-list-item-btn').forEach(btn => btn.classList.remove('active'));
-            element.classList.add('active');
+        // Form Post İşlemi (AJAX)
+        function submitComposeForm() {
+            const form = document.getElementById('composeForm');
+            const to = document.getElementById('composeTo').value.trim();
+            const subject = document.getElementById('composeSubject').value.trim();
+            const quillHtml = emailQuill.root.innerHTML;
 
-            document.getElementById('emptyEmailState').classList.add('d-none');
-            const contentPanel = document.getElementById('emailDetailContent');
-            contentPanel.classList.remove('d-none');
-            contentPanel.classList.add('d-flex');
+            if (!to || !subject || quillHtml === '<p><br></p>' || quillHtml.trim() === '') {
+                alert('Lütfen tüm alanları eksiksiz doldurun aga!');
+                return;
+            }
 
-            const senderName = element.getAttribute('data-sender-name');
-            const senderMail = element.getAttribute('data-sender-mail');
-            const subject = element.getAttribute('data-subject');
-            const date = element.getAttribute('data-date');
-            const fullBodyHTML = element.nextElementSibling.innerHTML;
+            document.getElementById('composeBody').value = quillHtml;
 
-            document.getElementById('viewSubject').textContent = subject;
-            document.getElementById('viewSenderName').textContent = senderName;
-            document.getElementById('viewSenderMail').textContent = senderMail;
-            document.getElementById('viewDate').textContent = date;
-            document.getElementById('viewAvatar').textContent = senderName.charAt(0).toUpperCase();
+            const btnSend = document.getElementById('btnSendEmail');
+            btnSend.disabled = true;
+            btnSend.textContent = 'Gönderiliyor...';
 
-            document.getElementById('viewBody').innerHTML = fullBodyHTML;
+            const formData = new FormData(form);
+
+            fetch('/Admin/Email/Send', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    composeModalInstance.hide();
+                    form.reset();
+                    emailQuill.root.innerHTML = '';
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(() => alert('E-posta gönderilirken sistemsel bir hata oluştu!'))
+            .finally(() => {
+                btnSend.disabled = false;
+                btnSend.innerHTML = '<i class="bi bi-send me-1"></i>Gönder';
+            });
         }
 
+        // Cevapla
         function replyCurrentEmail() {
-            const currentSenderMail = document.getElementById('viewSenderMail').textContent;
+            const currentSenderMail = document.getElementById('viewSenderMail').textContent.replace(/[<>]/g, '').trim();
             const currentSubject = document.getElementById('viewSubject').textContent;
 
             document.getElementById('composeTo').value = currentSenderMail;
             document.getElementById('composeSubject').value = currentSubject.startsWith("Re:") ? currentSubject : "Re: " + currentSubject;
 
-            emailQuill.root.innerHTML = "<br><br>-------------------<br>Gelen E-Posta İçeriği:<br>";
+            emailQuill.root.innerHTML = "<br><br>-------------------<br>Yanıtlanan Mesaj:<br>";
             composeModalInstance.show();
         }
     </script>

@@ -2,8 +2,6 @@
 using BugraOzturkPortfolio.Web.Services;
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using BugraOzturkPortfolio.Web.Models;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
@@ -20,18 +18,21 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
             _emailService = emailService;
         }
 
+        // Klasör parametresine göre tetiklenen dinamik inbox yapısı aga
         [HttpGet("")]
-        public async Task<IActionResult> Inbox()
+        public async Task<IActionResult> Inbox([FromQuery] string folder = "INBOX")
         {
             try
             {
-                var messages = await _emailService.GetInboxMessagesAsync(20);
+                var messages = await _emailService.GetMessagesFromFolderAsync(folder, 20);
+                ViewBag.CurrentFolder = folder; // Ön yüze hangi klasörde olduğumuzu paslıyoruz aga
                 return View(messages);
             }
             catch (Exception ex)
             {
-                ViewBag.Error = $"E-posta sunucusuna bağlanırken bir hata oluştu: {ex.Message}";
-                return View(new List<MailDisplayViewModel>());
+                ViewBag.Error = $"E-posta listesi alınamadı: {ex.Message}";
+                ViewBag.CurrentFolder = folder;
+                return View(new System.Collections.Generic.List<BugraOzturkPortfolio.Web.Models.MailDisplayViewModel>());
             }
         }
 
@@ -40,23 +41,18 @@ namespace BugraOzturkPortfolio.Web.Areas.Admin.Controllers
         {
             if (string.IsNullOrEmpty(to) || string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(body))
             {
-                return Json(new { success = false, message = "Lütfen alıcı (To), konu ve mesaj alanlarını eksiksiz doldurun aga!" });
+                return Json(new { success = false, message = "Lütfen gerekli alanları eksiksiz doldurun aga!" });
             }
 
             try
             {
                 var result = await _emailService.SendEmailAsync(to, subject, body);
-
-                if (result)
-                {
-                    return Json(new { success = true, message = "E-posta başarıyla gönderildi, alıcısına mermi gibi ulaştı!" });
-                }
-
-                return Json(new { success = false, message = "E-posta gönderilirken beklenmedik bir hata oluştu." });
+                if (result) return Json(new { success = true, message = "E-posta mermi gibi gönderildi ve kaydedildi!" });
+                return Json(new { success = false, message = "E-posta gönderilirken hata oluştu." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"E-posta gönderilemedi: {ex.Message}" });
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }
