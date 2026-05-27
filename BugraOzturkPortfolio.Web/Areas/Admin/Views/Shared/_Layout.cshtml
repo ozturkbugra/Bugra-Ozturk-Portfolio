@@ -395,6 +395,81 @@
         });
     </script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/messageHub")
+        .withAutomaticReconnect() 
+        .build();
+
+        connection.on("ReceiveNewMessage", function (message) {
+
+        const sidebarLink = document.querySelector("a[href='/Admin/ContactMessage']");
+        if (sidebarLink) {
+        let sidebarBadge = sidebarLink.querySelector(".badge");
+        if (!sidebarBadge) {
+        sidebarBadge = document.createElement("span");
+        sidebarBadge.className = "badge bg-danger ms-auto rounded-pill";
+        sidebarBadge.style.cssText = "font-size: 0.75rem; padding: 0.35em 0.65em;";
+        sidebarLink.appendChild(sidebarBadge);
+        }
+        let currentCount = parseInt(sidebarBadge.textContent) || 0;
+        sidebarBadge.textContent = currentCount + 1;
+        }
+
+        const dropdownToggle = document.querySelector(".messages-dropdown .header-action");
+        if (dropdownToggle) {
+        let headerBadge = dropdownToggle.querySelector(".header-badge");
+        if (!headerBadge) {
+        headerBadge = document.createElement("span");
+        headerBadge.className = "header-badge";
+        dropdownToggle.appendChild(headerBadge);
+        }
+        let currentHeaderCount = parseInt(headerBadge.textContent) || 0;
+        headerBadge.textContent = currentHeaderCount + 1;
+
+        const notificationCountText = document.querySelector(".messages-menu .notification-count");
+        if (notificationCountText) {
+        notificationCountText.textContent = (currentHeaderCount + 1) + " yeni mesaj var";
+        }
+        }
+
+        const notificationList = document.querySelector(".messages-menu .notification-list");
+        if (notificationList) {
+        const emptyText = notificationList.querySelector(".text-center");
+        if (emptyText) emptyText.remove();
+
+        const newItem = document.createElement("a");
+        newItem.href = `/Admin/ContactMessage/Detail/${message.id}`;
+        newItem.className = "notification-item unread animate__animated animate__fadeInDown"; 
+        newItem.innerHTML = `
+        <span class="notification-dot"></span>
+        <div class="notification-content">
+        <div class="notification-title">${message.fullName}</div>
+        <div class="notification-text">${message.subject}</div>
+        <span class="notification-time">${message.createdDate}</span>
+        </div>
+        `;
+
+        notificationList.insertBefore(newItem, notificationList.firstChild);
+
+        if (notificationList.children.length > 5) {
+        notificationList.lastChild.remove();
+        }
+        }
+
+        if (typeof showProjectToast === "function") {
+        showProjectToast(`Yeni Mesaj: ${message.fullName} bir mesaj gönderdi!`, true);
+        }
+        });
+
+        // Bağlantıyı başlat
+        connection.start().catch(function (err) {
+        return console.error(err.toString());
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

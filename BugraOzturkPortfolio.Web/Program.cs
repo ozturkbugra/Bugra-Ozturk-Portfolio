@@ -3,6 +3,7 @@ using BugraOzturkPortfolio.Business.Concrete;
 using BugraOzturkPortfolio.DataAccess.Context;
 using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
+using BugraOzturkPortfolio.Web.Hubs;
 using BugraOzturkPortfolio.Web.Middlewares;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISiteScriptService, SiteScriptService>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 builder.Services.AddScoped<IVisitorLogService, VisitorLogService>();
+builder.Services.AddSignalR();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -59,6 +61,8 @@ builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(10);
 });
+
+
 
 var app = builder.Build();
 
@@ -94,6 +98,8 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Anasayfa}/{action=Index}/{id?}");
+
+app.MapHub<MessageHub>("/messageHub");
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
