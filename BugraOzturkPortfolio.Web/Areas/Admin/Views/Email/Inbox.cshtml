@@ -74,26 +74,32 @@
                 {
                     foreach (var mail in Model)
                     {
-                        DateTime localMailDate = mail.Date.Kind == DateTimeKind.Utc ? mail.Date.ToLocalTime() : mail.Date;
+                        DateTime localMailDate = mail.Date;
 
-                        <div class="email-item unread"
-                             data-sender-name="@mail.FromName"
-                             data-sender-mail="@mail.FromAddress"
-                             data-subject="@mail.Subject"
-                             data-date="@localMailDate.ToString("dd MMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"))">
+                        <div class="position-relative border-bottom border-translucent">
+                            <div class="email-item unread"
+                                 data-sender-name="@mail.FromName"
+                                 data-sender-mail="@mail.FromAddress"
+                                 data-subject="@mail.Subject"
+                                 data-date="@localMailDate.ToString("dd MMM yyyy, HH:mm", new System.Globalization.CultureInfo("tr-TR"))">
 
-                            <div class="email-item-avatar bg-primary-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; border-radius:50%;">
-                                <span>@mail.FromName.Replace("Kime: ", "").AsSpan(0, Math.Min(2, mail.FromName.Replace("Kime: ", "").Length)).ToString().ToUpper()</span>
-                            </div>
-                            <div class="email-item-content">
-                                <div class="email-item-header">
-                                    <span class="email-item-sender">@mail.FromName</span>
-                                    <span class="email-item-time">@localMailDate.ToString("HH:mm")</span>
+                                <div class="email-item-avatar bg-primary d-flex align-items-center justify-content-center fw-bold" style="width:36px; height:36px; border-radius:50%;">
+                                    <span>@mail.FromName.Replace("Kime: ", "").AsSpan(0, Math.Min(2, mail.FromName.Replace("Kime: ", "").Length)).ToString().ToUpper()</span>
                                 </div>
-                                <div class="email-item-subject">@mail.Subject</div>
-                                <div class="email-item-preview">@mail.Snippet</div>
+                                <div class="email-item-content">
+                                    <div class="email-item-header">
+                                        <span class="email-item-sender">@mail.FromName</span>
+                                        <span class="email-item-time">@localMailDate.ToString("HH:mm")</span>
+                                    </div>
+                                    <div class="email-item-subject">@mail.Subject</div>
+                                    <div class="email-item-preview">@mail.Snippet</div>
+                                </div>
+                                <div class="d-none-mail-body d-none">@Html.Raw(mail.Body)</div>
                             </div>
-                            <div class="d-none-mail-body d-none">@Html.Raw(mail.Body)</div>
+
+                            <div class="d-none-mail-attachments d-none">
+                                @System.Text.Json.JsonSerializer.Serialize(mail.Attachments)
+                            </div>
                         </div>
                     }
                 }
@@ -116,12 +122,12 @@
                 </div>
             </div>
 
-            <div class="email-detail-content w-100">
+            <div class="email-detail-content w-100 d-flex flex-column h-100">
                 <div class="email-detail-subject">
                     <h4 id="viewSubject">Konu Başlığı</h4>
                 </div>
 
-                <div class="email-message">
+                <div class="email-message d-flex flex-column flex-grow-1">
                     <div class="email-message-header">
                         <div class="email-message-sender">
                             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-2" style="width: 40px; height: 40px;" id="viewAvatar">B</div>
@@ -137,7 +143,14 @@
                         </div>
                     </div>
 
-                    <div class="email-message-body text-body p-3" id="viewBody" style="min-height:200px; overflow-y:auto; line-height: 1.6;">
+                    <div class="p-0 flex-grow-1 w-100 mt-2" style="min-height:350px; height: calc(100vh - 420px);">
+                        <iframe id="emailRenderFrame" style="width: 100%; height: 100%; border: none; background: transparent;" allowtransparency="true"></iframe>
+                    </div>
+
+                    <div id="emailAttachmentsWrapper" class="p-3 border-top border-translucent d-none" style="background: rgba(var(--bs-light-rgb), 0.03);">
+                        <h6 class="small fw-bold mb-2"><i class="bi bi-paperclip text-primary me-1"></i> Ekteki Dosyalar</h6>
+                        <div id="attachmentsContainer" class="d-flex flex-wrap gap-2">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,7 +200,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             emailQuill = new Quill('#emailQuillEditor', {
                 theme: 'snow',
-                placeholder: 'Mesajınızı buraya yazın aga...',
+                placeholder: 'Mesajınızı buraya yazın',
                 modules: { toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['clean']] }
             });
 
@@ -206,14 +219,64 @@
                     const senderMail = this.getAttribute('data-sender-mail');
                     const subject = this.getAttribute('data-subject');
                     const date = this.getAttribute('data-date');
-                    const fullBodyHTML = this.querySelector('.d-none-mail-body').innerHTML;
+
+                    const parentNode = this.parentElement;
+                    const fullBodyHTML = parentNode.querySelector('.d-none-mail-body').innerHTML;
+                    const attachmentsJson = parentNode.querySelector('.d-none-mail-attachments')?.innerHTML;
 
                     document.getElementById('viewSubject').textContent = subject;
                     document.getElementById('viewSenderName').textContent = senderName;
                     document.getElementById('viewSenderMail').textContent = `<${senderMail}>`;
                     document.getElementById('viewDate').textContent = date;
                     document.getElementById('viewAvatar').textContent = senderName.replace("Kime: ", "").charAt(0).toUpperCase();
-                    document.getElementById('viewBody').innerHTML = fullBodyHTML;
+
+                    const iframe = document.getElementById('emailRenderFrame');
+                    const iframeDoc = iframe.contentWindow.document;
+                    iframeDoc.open();
+
+                    iframeDoc.write(`
+                        <style>
+                            body {
+                                color: inherit;
+                                font-family: 'Manrope', sans-serif;
+                                font-size: 14px;
+                                line-height: 1.6;
+                                margin: 0;
+                                padding: 10px;
+                                background: transparent !important;
+                            }
+                            div, p, span, table {
+                                background-color: transparent !important;
+                            }
+                            img { max-width: 100% !important; height: auto !important; }
+                        </style>
+                        <body>${fullBodyHTML}</body>
+                    `);
+                    iframeDoc.close();
+
+                    const attachmentsWrapper = document.getElementById('emailAttachmentsWrapper');
+                    const container = document.getElementById('attachmentsContainer');
+                    container.innerHTML = "";
+
+                    if (attachmentsJson && attachmentsJson.trim() !== "" && attachmentsJson !== "[]") {
+                        try {
+                            const attachs = JSON.parse(attachmentsJson);
+                            attachs.forEach(file => {
+                                const btn = document.createElement('a');
+                                btn.className = 'btn btn-sm btn-outline-secondary d-inline-flex align-items-center fw-semibold';
+                                btn.style.cssText = 'font-size: 12px; padding: 4px 10px; text-decoration: none;';
+                                btn.href = `data:${file.ContentType};base64,${file.Base64Data}`;
+                                btn.download = file.FileName;
+                                btn.innerHTML = `<i class="bi bi-file-earmark-arrow-down me-1 text-success"></i> ${file.FileName}`;
+                                container.appendChild(btn);
+                            });
+                            attachmentsWrapper.classList.remove('d-none');
+                        } catch (e) {
+                            attachmentsWrapper.classList.add('d-none');
+                        }
+                    } else {
+                        attachmentsWrapper.classList.add('d-none');
+                    }
 
                     emailListView.style.display = 'none';
                     emailDetailView.style.display = 'flex';

@@ -10,5 +10,14 @@
         public string Body { get; set; }
         public DateTime Date { get; set; }
         public bool IsRead { get; set; }
+
+        public List<MailAttachmentViewModel> Attachments { get; set; } = new List<MailAttachmentViewModel>();
+    }
+
+    public class MailAttachmentViewModel
+    {
+        public string FileName { get; set; }
+        public string ContentType { get; set; }
+        public string Base64Data { get; set; } 
     }
 }

@@ -61,6 +61,37 @@ namespace BugraOzturkPortfolio.Web.Services
 
                     DateTime trMailDate = message.Date.LocalDateTime;
 
+                    var attachmentList = new List<MailAttachmentViewModel>();
+                    string mailBodyHtml = message.HtmlBody ?? message.TextBody ?? "";
+
+                    foreach (var attachment in message.Attachments)
+                    {
+                        if (attachment is MimePart mimePart)
+                        {
+                            using (var memory = new MemoryStream())
+                            {
+                                await mimePart.Content.DecodeToAsync(memory);
+                                var byteData = memory.ToArray();
+                                string base64String = Convert.ToBase64String(byteData);
+
+                                if (!string.IsNullOrEmpty(mimePart.ContentId) && mimePart.ContentLocation == null)
+                                {
+                                    string srcUri = $"data:{mimePart.ContentType.MimeType};base64,{base64String}";
+                                    mailBodyHtml = mailBodyHtml.Replace($"cid:{mimePart.ContentId}", srcUri);
+                                }
+                                else 
+                                {
+                                    attachmentList.Add(new MailAttachmentViewModel
+                                    {
+                                        FileName = mimePart.FileName ?? "unnamed_file",
+                                        ContentType = mimePart.ContentType.MimeType,
+                                        Base64Data = base64String
+                                    });
+                                }
+                            }
+                        }
+                    }
+
                     emails.Add(new MailDisplayViewModel
                     {
                         UniqueId = message.MessageId ?? Guid.NewGuid().ToString(),
@@ -70,9 +101,10 @@ namespace BugraOzturkPortfolio.Web.Services
                         FromAddress = sender?.Address ?? "",
                         Subject = message.Subject ?? "(Konu Yok)",
                         Snippet = message.TextBody != null ? (message.TextBody.Length > 100 ? message.TextBody.Substring(0, 100) + "..." : message.TextBody) : "",
-                        Body = message.HtmlBody ?? message.TextBody ?? "",
-                        Date = trMailDate, 
-                        IsRead = true
+                        Body = mailBodyHtml,
+                        Date = trMailDate,
+                        IsRead = true,
+                        Attachments = attachmentList 
                     });
                 }
 
@@ -120,7 +152,7 @@ namespace BugraOzturkPortfolio.Web.Services
                     await imapClient.DisconnectAsync(true);
                 }
             }
-            catch {  }
+            catch { }
 
             return true;
         }
