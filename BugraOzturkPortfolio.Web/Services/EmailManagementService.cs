@@ -31,11 +31,11 @@ namespace BugraOzturkPortfolio.Web.Services
 
                 if (folderName.Equals("Sent", StringComparison.OrdinalIgnoreCase))
                 {
-                    targetFolder = client.GetFolder("INBOX.Sent")
+                    targetFolder = client.GetFolder("Sent Items")
                                    ?? client.GetFolder(SpecialFolder.Sent)
+                                   ?? client.GetFolder("INBOX.Sent")
                                    ?? client.GetFolder("Sent")
-                                   ?? client.GetFolder("Sent Messages")
-                                   ?? client.GetFolder("Sent Items");
+                                   ?? client.GetFolder("Sent Messages");
                 }
                 else if (folderName.Equals("Trash", StringComparison.OrdinalIgnoreCase))
                 {
@@ -140,10 +140,10 @@ namespace BugraOzturkPortfolio.Web.Services
                     await imapClient.ConnectAsync(_config["EmailSettings:ImapServer"], int.Parse(_config["EmailSettings:ImapPort"]), SecureSocketOptions.SslOnConnect);
                     await imapClient.AuthenticateAsync(_config["EmailSettings:EmailAddress"], _config["EmailSettings:Password"]);
 
-                    var sentFolder = imapClient.GetFolder("INBOX.Sent")
+                    var sentFolder = imapClient.GetFolder("Sent Items")
+                                     ?? imapClient.GetFolder("INBOX.Sent")
                                      ?? imapClient.GetFolder(SpecialFolder.Sent)
                                      ?? imapClient.GetFolder("Sent");
-
                     if (sentFolder != null)
                     {
                         await sentFolder.OpenAsync(FolderAccess.ReadWrite);
