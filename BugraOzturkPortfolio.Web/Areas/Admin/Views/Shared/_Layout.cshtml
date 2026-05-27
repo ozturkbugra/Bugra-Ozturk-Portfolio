@@ -238,6 +238,13 @@
                 </li>
 
                 <li class="nav-item">
+                    <a class="nav-link @(currentPath.StartsWith("/Admin/Email", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/Email">
+                        <span class="nav-icon"><i class="ph-light ph-envelope-simple"></i></span>
+                        <span class="nav-text">Mail</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a class="nav-link @(currentPath.StartsWith("/Admin/SiteSetting", StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="/Admin/SiteSetting">
                         <span class="nav-icon"><i class="ph-light ph-sliders"></i></span>
                         <span class="nav-text">Site Ayarları</span>

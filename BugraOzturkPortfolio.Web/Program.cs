@@ -5,6 +5,7 @@ using BugraOzturkPortfolio.DataAccess.Repositories.Abstract;
 using BugraOzturkPortfolio.DataAccess.Repositories.Concrete;
 using BugraOzturkPortfolio.Web.Hubs;
 using BugraOzturkPortfolio.Web.Middlewares;
+using BugraOzturkPortfolio.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISiteScriptService, SiteScriptService>();
 builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 builder.Services.AddScoped<IVisitorLogService, VisitorLogService>();
+builder.Services.AddScoped<EmailManagementService>();
 builder.Services.AddSignalR();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
